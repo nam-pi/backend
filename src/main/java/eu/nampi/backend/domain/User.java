@@ -9,15 +9,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 
 import eu.nampi.backend.ontology.NampiCore;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class User {
 
     private UUID id;
@@ -27,6 +19,16 @@ public class User {
 
     @JsonProperty
     private String email;
+
+    public User() {
+
+    }
+
+    public User(UUID id, String userName, String email) {
+        this.id = id;
+        this.userName = userName;
+        this.email = email;
+    }
 
     public Model toModel() {
         return toResource().getModel();
@@ -38,6 +40,30 @@ public class User {
         user.addProperty(NampiCore.userName, userName);
         user.addProperty(NampiCore.email, email);
         return user;
+    }
+
+    public UUID getId() {
+        return this.id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getUserName() {
+        return this.userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
 }

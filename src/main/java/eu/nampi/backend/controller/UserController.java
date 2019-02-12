@@ -1,9 +1,9 @@
 package eu.nampi.backend.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,8 +23,12 @@ import eu.nampi.backend.service.UserService;
 @RequestMapping("/users")
 class ResourceController {
 
-    @Autowired
-    UserService userService;
+    @NonNull
+    private final UserService userService;
+
+    public ResourceController(UserService userService) {
+        this.userService = userService;
+    }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping

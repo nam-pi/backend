@@ -6,17 +6,8 @@ import java.io.UnsupportedEncodingException;
 import org.apache.jena.rdf.model.Model;
 
 import eu.nampi.backend.exception.SerializationException;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 public class ModelSerializer {
-
-    @Getter
-    @AllArgsConstructor
-    public enum SerializationFormat {
-        JSON_LD("JSON-LD"), N_TRIPLE("N-TRIPLE"), RDF_XML("RDF/XML"), TURTLE("TURTLE");
-        private final String value;
-    }
 
     public static String serialize(Model model, SerializationFormat format) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();

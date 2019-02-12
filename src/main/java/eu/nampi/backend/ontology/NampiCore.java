@@ -6,12 +6,12 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 
 /**
- * Vocabulary definition for the <a href="http://nampi.eu/ontologies/core">
- * Nampi Core Model</a>
+ * Vocabulary definition for the
+ * <a href="http://purl.org/nampi/ontologies/core"> Nampi Core Model</a>
  */
 public class NampiCore {
 
-    public static final String BASE_URI = "http://nampi.eu/";
+    public static final String BASE_URI = "http://purl.org/nampi/";
 
     /**
      * The RDF model that holds the Nampi Core entities

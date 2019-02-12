@@ -7,7 +7,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionRemoteBuilder;
 import org.apache.jena.system.Txn;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.ModelSerializer;
@@ -19,8 +19,12 @@ import eu.nampi.backend.ontology.NampiCore;
 @Repository
 public class UserRepository {
 
-    @Autowired
-    RDFConnectionRemoteBuilder builder;
+    @NonNull
+    private final RDFConnectionRemoteBuilder builder;
+
+    public UserRepository(RDFConnectionRemoteBuilder builder) {
+        this.builder = builder;
+    }
 
     public User create(User user) {
         if (user.getUserName().isEmpty() || user.getEmail().isEmpty()) {
