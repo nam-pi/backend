@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import eu.nampi.backend.ModelSerializer;
-import eu.nampi.backend.domain.RequestBodyCreateUser;
-import eu.nampi.backend.domain.User;
 import eu.nampi.backend.exception.UserNotFoundException;
+import eu.nampi.backend.model.RequestBodyCreateUser;
+import eu.nampi.backend.model.User;
 import eu.nampi.backend.service.UserService;
 
 @RestController

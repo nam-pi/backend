@@ -45,7 +45,7 @@
 			<type>pom</type>
 			<version>3.8.0</version>
 		</dependency>
-		<!-- Doesn't work with the dev server -->
+		<!-- Doesn't work with the spring boot dev server -->
 		<!-- <dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

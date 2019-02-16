@@ -11,9 +11,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.ModelSerializer;
-import eu.nampi.backend.domain.User;
 import eu.nampi.backend.exception.InvalidUserDataException;
 import eu.nampi.backend.exception.UserAlreadyExistingException;
+import eu.nampi.backend.model.User;
 import eu.nampi.backend.ontology.NampiCore;
 
 @Repository

@@ -1,4 +1,4 @@
-package eu.nampi.backend.domain;
+package eu.nampi.backend.model;
 
 import java.util.UUID;
 

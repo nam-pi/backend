@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
-import eu.nampi.backend.domain.User;
+import eu.nampi.backend.model.User;
 import eu.nampi.backend.repository.UserRepository;
 
 @Service
