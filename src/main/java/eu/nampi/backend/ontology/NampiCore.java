@@ -6,8 +6,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 
 /**
- * Vocabulary definition for the
- * <a href="http://purl.org/nampi/ontologies/core"> Nampi Core Model</a>
+ * Vocabulary definition for the <a href="http://purl.org/nampi/ontologies/core"> Nampi Core Model</a>
  */
 public class NampiCore {
 

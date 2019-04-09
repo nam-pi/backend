@@ -6,8 +6,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 
 /**
- * Vocabulary definition for the <a href="http://purl.com/net/factoid"> Factoid
- * Model</a>
+ * Vocabulary definition for the <a href="http://purl.com/net/factoid"> Factoid Model</a>
  */
 class Factoid {
 
