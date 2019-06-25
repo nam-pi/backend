@@ -7,16 +7,14 @@ import org.springframework.stereotype.Service;
 
 import eu.nampi.backend.model.User;
 import eu.nampi.backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
     @NonNull
     private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     public User createUser(String userName, String email) {
         User user = new User();

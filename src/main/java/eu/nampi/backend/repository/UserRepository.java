@@ -15,16 +15,14 @@ import eu.nampi.backend.exception.InvalidUserDataException;
 import eu.nampi.backend.exception.UserAlreadyExistingException;
 import eu.nampi.backend.model.User;
 import eu.nampi.backend.ontology.NampiCore;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Repository
 public class UserRepository {
 
     @NonNull
     private final RDFConnectionRemoteBuilder builder;
-
-    public UserRepository(RDFConnectionRemoteBuilder builder) {
-        this.builder = builder;
-    }
 
     public User create(User user) {
         if (user.getUserName().isEmpty() || user.getEmail().isEmpty()) {

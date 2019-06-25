@@ -45,12 +45,11 @@
 			<type>pom</type>
 			<version>3.12.0</version>
 		</dependency>
-		<!-- Doesn't work with the spring boot dev server -->
-		<!-- <dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-		</dependency> -->
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

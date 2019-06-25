@@ -18,17 +18,15 @@ import eu.nampi.backend.exception.UserNotFoundException;
 import eu.nampi.backend.model.RequestBodyCreateUser;
 import eu.nampi.backend.model.User;
 import eu.nampi.backend.service.UserService;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
 class ResourceController {
 
     @NonNull
     private final UserService userService;
-
-    public ResourceController(UserService userService) {
-        this.userService = userService;
-    }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping

@@ -5,6 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Configuration
 @ConfigurationProperties("nampi")
 public class PropertiesConfiguration {
@@ -16,14 +21,6 @@ public class PropertiesConfiguration {
         PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
         configurer.setNullValue("");
         return configurer;
-    }
-
-    public String getFusekiUrl() {
-        return this.fusekiUrl;
-    }
-
-    public void setFusekiUrl(String fusekiUrl) {
-        this.fusekiUrl = fusekiUrl;
     }
 
 }
