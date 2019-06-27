@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ConnectionConfiguration {
 
-    @Value("${nampi.fuseki_url}")
+    @Value("${nampi.fuseki-url}")
     private String url;
 
     @Bean
