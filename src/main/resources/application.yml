@@ -1,0 +1,16 @@
+keycloak:
+    auth-server-url: ${KEYCLOAK_URL}
+    principal-attribute: preferred_username
+    public-client: true
+    realm: ${KEYCLOAK_REALM}
+    resource: ${KEYCLOAK_RESOURCE}
+
+logging:
+    level:
+        org:
+            springframework:
+                web: ${LOGGING_LEVEL:INFO} 
+
+spring:
+    main:
+        allow-bean-definition-overriding: true
