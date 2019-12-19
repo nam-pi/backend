@@ -4,6 +4,7 @@ keycloak:
     public-client: true
     realm: ${KEYCLOAK_REALM}
     resource: ${KEYCLOAK_RESOURCE}
+    bearer-only: true
 
 logging:
     level:
