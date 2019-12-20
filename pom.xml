@@ -26,7 +26,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -73,6 +77,7 @@
 			<artifactId>jaxb-runtime</artifactId>
 			<version>2.4.0-b180830.0438</version>
 		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>
@@ -114,21 +119,6 @@
 				<configuration>
 					<argLine>--enable-preview</argLine>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>net.revelc.code.formatter</groupId>
-				<artifactId>formatter-maven-plugin</artifactId>
-				<version>2.11.0</version>
-				<configuration>
-					<configFile>${project.basedir}/eclipse-java-google-style.xml</configFile>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

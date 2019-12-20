@@ -33,14 +33,13 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
   @Override
   protected void configure(final HttpSecurity http) throws Exception {
     super.configure(http);
-    http.authorizeRequests().antMatchers("/events/**").permitAll().antMatchers("/users/**")
+    http.authorizeRequests().antMatchers("/events/**", "/persons/**").permitAll().antMatchers("/users/**")
         .hasRole("USER").anyRequest().authenticated();
   }
 
   @Override
   protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-    KeycloakAuthenticationProvider keycloakAuthenticationProvider =
-        keycloakAuthenticationProvider();
+    KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
     auth.authenticationProvider(keycloakAuthenticationProvider);
   }
 
@@ -55,5 +54,4 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
   protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
     return new NullAuthenticatedSessionStrategy();
   }
-
 }

@@ -19,5 +19,4 @@ public class UserController {
   public User currentUser() {
     return userRepository.getCurrentUser();
   }
-
 }

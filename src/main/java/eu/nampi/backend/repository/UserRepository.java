@@ -15,13 +15,10 @@ public class UserRepository {
 
   public User getCurrentUser() {
     @SuppressWarnings("unchecked")
-    KeycloakPrincipal<KeycloakSecurityContext> principal =
-        (KeycloakPrincipal<KeycloakSecurityContext>) SecurityContextHolder.getContext()
-            .getAuthentication().getPrincipal();
+    KeycloakPrincipal<KeycloakSecurityContext> principal = (KeycloakPrincipal<KeycloakSecurityContext>) SecurityContextHolder
+        .getContext().getAuthentication().getPrincipal();
     KeycloakSecurityContext context = principal.getKeycloakSecurityContext();
     AccessToken accessToken = context.getToken();
-    return new User(UUID.fromString(accessToken.getId()), accessToken.getName(),
-        accessToken.getEmail());
+    return new User(UUID.fromString(accessToken.getId()), accessToken.getName(), accessToken.getEmail());
   }
-
 }

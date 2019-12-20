@@ -20,5 +20,4 @@ public class User {
 
   @NonNull
   private String email;
-
 }
