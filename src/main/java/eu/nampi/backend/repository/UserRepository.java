@@ -1,60 +1,24 @@
 package eu.nampi.backend.repository;
 
-import java.util.Optional;
 import java.util.UUID;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionRemoteBuilder;
-import org.apache.jena.system.Txn;
-import org.springframework.lang.NonNull;
+import org.keycloak.KeycloakPrincipal;
+import org.keycloak.KeycloakSecurityContext;
+import org.keycloak.representations.AccessToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
-import eu.nampi.backend.ModelSerializer;
-import eu.nampi.backend.exception.InvalidUserDataException;
-import eu.nampi.backend.exception.UserAlreadyExistingException;
 import eu.nampi.backend.model.User;
-import eu.nampi.backend.ontology.NampiCore;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Repository
 public class UserRepository {
 
-    @NonNull
-    private final RDFConnectionRemoteBuilder builder;
-
-    public User create(User user) {
-        if (user.getUserName().isEmpty() || user.getEmail().isEmpty()) {
-            throw new InvalidUserDataException();
-        }
-        if (findByEmail(user.getEmail()).isPresent()) {
-            throw new UserAlreadyExistingException();
-        }
-        user.setId(UUID.randomUUID());
-        String query = "INSERT DATA {" + ModelSerializer.toNTriples(user.toModel()) + "}";
-        try (RDFConnection conn = builder.build()) {
-            Txn.executeWrite(conn, () -> {
-                conn.update(query);
-            });
-        }
-        return user;
-    }
-
-    public Optional<User> findByEmail(String email) {
-        String query = "CONSTRUCT {?s ?p ?o} WHERE {?s <" + NampiCore.email.getURI() + "> '" + email + "' . ?s ?p ?o}";
-        try (RDFConnection conn = builder.build()) {
-            Model model = Txn.calculateRead(conn, () -> {
-                return conn.queryConstruct(query);
-            });
-            if (!model.isEmpty()) {
-                String userUri = model.listSubjectsWithProperty(NampiCore.userName).next().getURI();
-                UUID id = UUID.fromString(userUri.substring(userUri.lastIndexOf("/") + 1));
-                String userName = model.listObjectsOfProperty(NampiCore.userName).next().asLiteral().toString();
-                return Optional.of(new User(id, userName, email));
-            }
-        }
-        return Optional.empty();
-    }
-
+  public User getCurrentUser() {
+    @SuppressWarnings("unchecked")
+    KeycloakPrincipal<KeycloakSecurityContext> principal = (KeycloakPrincipal<KeycloakSecurityContext>) SecurityContextHolder
+        .getContext().getAuthentication().getPrincipal();
+    KeycloakSecurityContext context = principal.getKeycloakSecurityContext();
+    AccessToken accessToken = context.getToken();
+    return new User(UUID.fromString(accessToken.getId()), accessToken.getName(), accessToken.getEmail());
+  }
 }
