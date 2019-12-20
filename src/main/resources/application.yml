@@ -1,0 +1,24 @@
+keycloak:
+  auth-server-url: ${KEYCLOAK_URL}
+  principal-attribute: preferred_username
+  public-client: true
+  realm: ${KEYCLOAK_REALM}
+  resource: ${KEYCLOAK_RESOURCE}
+  bearer-only: true
+
+logging:
+  level:
+    org:
+      springframework:
+        web: ${LOGGING_LEVEL:INFO} 
+
+nampi:
+  triple-store-url: ${TRIPLE_STORE_URL} 
+  core-owl-url: ${CORE_OWL_URL:https://raw.githubusercontent.com/nam-pi/ontologies/master/core.owl}
+
+server:
+  port: ${APPLICATION_PORT:8080}
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
