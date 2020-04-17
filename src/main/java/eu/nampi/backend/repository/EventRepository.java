@@ -12,14 +12,9 @@ public class EventRepository {
   @Autowired
   JenaUtils jenaHelper;
 
-  private static final String CONSTRUCT_EVENT_LIST = """
-      PREFIX nampi:<https://purl.org/nampi/owl/core#>
-      CONSTRUCT {
-        ?p a nampi:event .
-      } WHERE {
-        ?p a nampi:event .
-      }
-      """;
+  private static final String CONSTRUCT_EVENT_LIST = new StringBuilder()
+      .append("PREFIX nampi:<https://purl.org/nampi/owl/core#>").append("CONSTRUCT {").append("?p a nampi:event .")
+      .append("} WHERE {").append("?p a nampi:event .").append("}").toString();
 
   public Model getEvents() {
     return jenaHelper.constructCore(CONSTRUCT_EVENT_LIST, true);

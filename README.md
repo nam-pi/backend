@@ -6,6 +6,8 @@ This is the server backend and API for NAMPI.
 
 The NAMPI backend is a [Spring Boot](https://spring.io/projects/spring-boot) app, the data is stored in [Apache Fuseki](https://jena.apache.org/documentation/fuseki2/) and the identity management is handled by [Keycloak](https://www.keycloak.org/).
 
+*Note: Currently the server only runs on Java 13, Java 14 doesn't work yet with Keycloak, see this [issue](https://issues.redhat.com/browse/KEYCLOAK-13690).*
+
 ### Keycloak
 
 * A new keycloak [realm](https://www.keycloak.org/docs/latest/server_admin/index.html#_create-realm) needs to be created using the default settings.

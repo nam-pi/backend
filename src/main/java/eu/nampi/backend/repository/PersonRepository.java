@@ -14,28 +14,15 @@ public class PersonRepository {
   @Autowired
   JenaUtils jenaHelper;
 
-  private static final String CONSTRUCT_PERSON_DETAILS = """
-      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      PREFIX data: <https://purl.org/nampi/data/>
-      CONSTRUCT {
-          <data:$ID$> rdf:label ?label .
-          ?s ?p data:$ID$ .
-      }
-      WHERE {
-          <data:$ID$> rdf:label ?label .
-          ?s ?p data:$ID$ .
-      }
-      """;
+  private static final String CONSTRUCT_PERSON_DETAILS = new StringBuilder()
+      .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>")
+      .append("PREFIX data: <https://purl.org/nampi/data/>").append("CONSTRUCT {")
+      .append("<data:$ID$> rdf:label ?label .").append("?s ?p data:$ID$ .").append("}").append("WHERE {")
+      .append("<data:$ID$> rdf:label ?label .").append("?s ?p data:$ID$ .").append("}").toString();
 
-  private static final String CONSTRUCT_PERSON_LIST = """
-      PREFIX nampi: <https://purl.org/nampi/owl/core#>
-      CONSTRUCT {
-          ?p a nampi:person .
-      }
-      WHERE {
-          ?p a nampi:person .
-      }
-      """;
+  private static final String CONSTRUCT_PERSON_LIST = new StringBuilder()
+      .append("PREFIX nampi: <https://purl.org/nampi/owl/core#>").append("CONSTRUCT {").append("?p a nampi:person .")
+      .append("}").append("WHERE {").append("?p a nampi:person .").append("}").toString();
 
   public Model getPerson(UUID id) {
     return jenaHelper.constructCore(CONSTRUCT_PERSON_DETAILS.replace("$ID$", id.toString()), false);
