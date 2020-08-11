@@ -46,6 +46,18 @@ The application can be run from the command line using Maven, the environment pa
 
 `mvn spring-boot:run "'-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://localhost:8081/auth,--KEYCLOAK_REALM=nampi,--KEYCLOAK_RESOURCE=nampi-client,--LOGGING_LEVEL=DEBUG,--TRIPLE_STORE_URL=http://localhost:3030/nampi-data'"`
 
+#### Windows
+
+`mvn spring-boot:run "-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://keycloak.dev.local:8080/auth --KEYCLOAK_REALM=nampi --KEYCLOAK_RESOURCE=nampi-client --LOGGING_LEVEL=DEBUG --TRIPLE_STORE_URL=http://localhost:3030/nampi-data"`
+
+Note: To work on Windows, Keycloak must be reachable with a domain, this can be configured in the hosts file:
+
+Location: `C:\Windows\System32\Drivers\etc\hosts`
+
+Added mapping: `127.0.0.1 keycloak.dev.local`
+
+
+
 ## Requesting data
 
 The application runs on the configured port, requests can be made using standard HTTP requests
