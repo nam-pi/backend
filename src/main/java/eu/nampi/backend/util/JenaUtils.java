@@ -1,7 +1,6 @@
 package eu.nampi.backend.util;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -21,7 +20,6 @@ import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ReasonerRegistry;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.util.FileManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -36,12 +34,7 @@ public class JenaUtils {
 
   private OntModel readOntology(String url) {
     OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, null);
-    try {
-      InputStream in = FileManager.get().open(url);
-      model.read(in, null);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    RDFDataMgr.read(model, url);
     return model;
   }
 
