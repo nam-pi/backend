@@ -12,13 +12,14 @@ public class PersonRepository {
   @Autowired
   JenaService sparql;
 
-  private final String findAllQuery =
+  private final ConstructBuilder findAllQueryBuilder =
       new ConstructBuilder().addPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
           .addPrefix("core", "https://purl.org/nampi/owl/core#")
           .addConstruct("?p", "rdf:type", "core:person").addWhere("?p", "rdf:type", "core:person")
-          .buildString();
+          .addOrderBy("?p");
 
-  public Model findAll() {
-    return sparql.construct(findAllQuery, true);
+  public Model findAll(int limit, int offset) {
+    return sparql.construct(findAllQueryBuilder.setLimit(limit).setOffset(offset).buildString(),
+        true);
   }
 }
