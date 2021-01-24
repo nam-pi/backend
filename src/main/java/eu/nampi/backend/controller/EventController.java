@@ -6,22 +6,21 @@ import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.repository.EventRepository;
-import eu.nampi.backend.service.JenaService;
 
 @RestController
-public class EventController {
+public class EventController extends AbstractRdfController {
 
   @Autowired
   EventRepository eventRepository;
 
-  @Autowired
-  JenaService service;
-
   @GetMapping("/events")
-  public void getEvents(@RequestHeader("accept") Lang lang, HttpServletResponse response) {
-    Model model = eventRepository.findAll();
-    service.writeToOutStream(model, lang, response);
+  public void getEvents(@RequestHeader("accept") Lang lang,
+      @RequestParam(defaultValue = "25") int limit, @RequestParam(defaultValue = "0") int offset,
+      HttpServletResponse response) {
+    Model model = eventRepository.findAll(limit, offset);
+    writeToOutStream(model, lang, response);
   }
 }

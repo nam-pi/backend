@@ -1,25 +1,20 @@
 package eu.nampi.backend.repository;
 
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.rdf.model.Model;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.springframework.stereotype.Repository;
-import eu.nampi.backend.service.JenaService;
+import eu.nampi.backend.vocabulary.Core;
 
 @Repository
-public class PersonRepository {
-
-  @Autowired
-  JenaService sparql;
-
-  private final ConstructBuilder findAllQueryBuilder =
-      new ConstructBuilder().addPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-          .addPrefix("core", "https://purl.org/nampi/owl/core#")
-          .addConstruct("?p", "rdf:type", "core:person").addWhere("?p", "rdf:type", "core:person")
-          .addOrderBy("?p");
+public class PersonRepository extends AbstractRdfRepository {
 
   public Model findAll(int limit, int offset) {
-    return sparql.construct(findAllQueryBuilder.setLimit(limit).setOffset(offset).buildString(),
-        true);
+    String query = getHydraCollectionBuilder("?person", limit, offset)
+        .addConstruct("?person", RDF.type, "core:person")
+        .addConstruct("?person", RDFS.label, "?label").addWhere("?person", RDF.type, Core.person)
+        .addWhere("?person", RDFS.label, "?label").addOrderBy("label").buildString();
+    return jenaService.construct(query, true);
   }
+
 }

@@ -11,9 +11,11 @@ import org.apache.jena.reasoner.ReasonerRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import eu.nampi.backend.service.FusekiService;
+import eu.nampi.backend.service.JenaService;
 
 @Configuration
-public class RdfConfig {
+public class JenaConfig {
 
   @Value("${nampi.core-owl-url}")
   private String coreOwlUrl;
@@ -44,6 +46,11 @@ public class RdfConfig {
   @Bean
   public RDFConnectionRemoteBuilder getConnectionBuilder() {
     return RDFConnectionFuseki.create().destination(tripleStoreUrl);
+  }
+
+  @Bean
+  public JenaService getJenaService() {
+    return new FusekiService();
   }
 
 }
