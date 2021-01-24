@@ -5,9 +5,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 
 /**
- * The Core RDF vocabulary.
+ * The NAMPI Core RDF vocabulary.
  */
-
 public class Core {
 
   /**
