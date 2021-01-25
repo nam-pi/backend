@@ -24,13 +24,19 @@ public abstract class AbstractRdfRepository {
   protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
       WhereBuilder whereClause, String memberVar, String orderBy) {
     try {
+      ConstructBuilder builder = new ConstructBuilder();
+      ExprFactory exprF = builder.getExprFactory();
       SelectBuilder countSelect =
           new SelectBuilder().addVar("COUNT(*)", "?count").addWhere(whereClause);
       SelectBuilder dataSelect = new SelectBuilder().addVar("*").addWhere(whereClause)
           .addOrderBy(orderBy).setLimit(meta.getLimit()).setOffset(meta.getOffset());
-      WhereBuilder combinedWhere = new WhereBuilder().addUnion(countSelect).addUnion(dataSelect);
-      ConstructBuilder builder = new ConstructBuilder();
-      ExprFactory exprF = builder.getExprFactory();
+      SelectBuilder searchSelect = new SelectBuilder().addVar("*").addBind("bnode()", "?search")
+
+          .addBind(exprF.concat(meta.getRelativePath(), "(pageIndex, limit, offset)"), "?template")
+          .addBind("bnode()", "?pageIndexMapping").addBind("bnode()", "?limitMapping")
+          .addBind("bnode()", "?offsetMapping");
+      WhereBuilder combinedWhere =
+          new WhereBuilder().addUnion(countSelect).addUnion(dataSelect).addUnion(searchSelect);
       builder.addPrefix("core", Core.getURI()).addPrefix("rdfs", RDFS.getURI())
           .addPrefix("rdf", RDF.getURI()).addPrefix("hydra", Hydra.getURI())
           .addPrefix("xsd", XSD.getURI()).addConstruct("?col", RDF.type, Hydra.Collection)
@@ -39,10 +45,30 @@ public abstract class AbstractRdfRepository {
           .addConstruct("?view", RDF.type, Hydra.PartialCollectionView)
           .addConstruct("?view", Hydra.first, "?first")
           .addConstruct("?view", Hydra.previous, "?prev").addConstruct("?view", Hydra.next, "?next")
-          .addConstruct("?view", Hydra.last, "?last").addWhere(combinedWhere)
+          .addConstruct("?view", Hydra.last, "?last")
+          .addConstruct("?search", RDF.type, Hydra.IriTemplate)
+          .addConstruct("?pageIndexMapping", RDF.type, Hydra.IriTemplateMapping)
+          .addConstruct("?pageIndexMapping", Hydra.property, Hydra.pageIndex)
+          .addConstruct("?pageIndexMapping", Hydra.required, "false")
+          .addConstruct("?pageIndexMapping", Hydra.variable, "pageIndex")
+          .addConstruct("?search", Hydra.mapping, "?pageIndexMapping")
+          .addConstruct("?limitMapping", RDF.type, Hydra.IriTemplateMapping)
+          .addConstruct("?limitMapping", Hydra.property, Hydra.limit)
+          .addConstruct("?limitMapping", Hydra.required, "false")
+          .addConstruct("?limitMapping", Hydra.variable, "limit")
+          .addConstruct("?search", Hydra.mapping, "?limitMapping")
+          .addConstruct("?offsetMapping", RDF.type, Hydra.IriTemplateMapping)
+          .addConstruct("?offsetMapping", Hydra.property, Hydra.offset)
+          .addConstruct("?offsetMapping", Hydra.required, "false")
+          .addConstruct("?offsetMapping", Hydra.variable, "offset")
+          .addConstruct("?search", Hydra.mapping, "?offsetMapping")
+          .addConstruct("?col", Hydra.search, "?search").addWhere(combinedWhere)
+          .addConstruct("?search", Hydra.template, "?template")
+          .addConstruct("?search", Hydra.variableRepresentation, Hydra.BasicRepresentation)
           .addBind(exprF.asExpr(meta.getLimit()), "?limit")
           .addBind(exprF.asExpr(meta.getOffset()), "?offset")
           .addBind(exprF.asExpr(meta.getBaseUrl()), "?baseUrl")
+          .addBind(exprF.asExpr(meta.getRelativePath()), "?path")
           .addBind(exprF.asExpr(meta.isCustomLimit()), "?customMeta")
           .addBind(exprF.iri("?baseUrl"), "?col")
           .addBind(builder.makeExpr("if(?customMeta, concat('&limit=', xsd:string(?limit)), '')"),
@@ -55,17 +81,17 @@ public abstract class AbstractRdfRepository {
               builder.makeExpr(
                   "iri(concat(?baseUrl, ?limitQuery, '?page=', xsd:string(?currentNumber)))"),
               "?view")
-          .addBind(builder.makeExpr("iri(concat(?baseUrl, ?limitQuery, '?page=1' ))"), "?first")
+          .addBind(builder.makeExpr("concat(?path, ?limitQuery, '?page=1')"), "?first")
           .addBind(builder.makeExpr(
-              "iri(if(?prevNumber > 0, concat(?baseUrl, ?limitQuery, '?page=', xsd:string(?prevNumber)), 1+''))"),
+              "if(?prevNumber > 0, concat(?path, ?limitQuery, '?page=', xsd:string(?prevNumber)), 1+'')"),
               "?prev")
           .addBind(builder.makeExpr(
-              "iri(if(?nextNumber < ?lastNumber, concat(?baseUrl, ?limitQuery, '?page=', xsd:string(?nextNumber)), 1+''))"),
+              "if(?nextNumber < ?lastNumber, concat(?path, ?limitQuery, '?page=', xsd:string(?nextNumber)), 1+'')"),
               "?next")
           .addBind(
-              builder.makeExpr(
-                  "iri(concat(?baseUrl, ?limitQuery, '?page=', xsd:string(?lastNumber)))"),
+              builder.makeExpr("concat(?path, ?limitQuery, '?page=', xsd:string(?lastNumber))"),
               "?last");
+
       return builder;
     } catch (ParseException e) {
       log.error(e.getMessage());

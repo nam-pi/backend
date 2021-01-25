@@ -37,8 +37,6 @@ public class Hydra {
 
   public static final Property totalItems = property("totalItems");
 
-  public static final Property offset = property("offset");
-
   public static final Property first = property("first");
 
   public static final Property last = property("last");
@@ -50,4 +48,30 @@ public class Hydra {
   public static final Property PartialCollectionView = property("PartialCollectionView");
 
   public static final Property view = property("view");
+
+  public static final Property search = property("search");
+
+  public static final Property IriTemplate = property("IriTemplate");
+
+  public static final Property template = property("template");
+
+  public static final Property IriTemplateMapping = property("IriTemplateMapping");
+
+  public static final Property mapping = property("mapping");
+
+  public static final Property property = property("property");
+
+  public static final Property required = property("required");
+
+  public static final Property variable = property("variable");
+
+  public static final Property pageIndex = property("pageIndex");
+
+  public static final Property limit = property("limit");
+
+  public static final Property offset = property("offset");
+
+  public static final Property variableRepresentation = property("variableRepresentation");
+
+  public static final Property BasicRepresentation = property("BasicRepresentation");
 }

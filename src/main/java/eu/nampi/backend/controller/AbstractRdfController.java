@@ -46,7 +46,7 @@ public abstract class AbstractRdfController {
     int effectiveOffset = Optional.ofNullable(page.orElseGet(() -> pageIndex.orElse(null)))
         .map(p -> (p * effectiveLimit) - effectiveLimit).orElse(offset.orElse(DEFAULT_OFFSET));
     return new CollectionMeta(request.getRequestURL().toString(), limit.isPresent(), effectiveLimit,
-        effectiveOffset);
+        effectiveOffset, request.getRequestURI());
   }
 
 }

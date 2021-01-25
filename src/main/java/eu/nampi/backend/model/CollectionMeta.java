@@ -15,4 +15,6 @@ public class CollectionMeta {
 
   private int offset;
 
+  private String relativePath;
+
 }
