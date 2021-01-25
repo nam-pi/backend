@@ -10,10 +10,12 @@ import lombok.Setter;
 @ConfigurationProperties(prefix = "nampi")
 public class ConfigProperties {
 
-  String tripleStoreUrl;
-
   String coreOwlUrl;
 
+  int defaultLimit;
+
   List<String> otherOwlUrls;
+
+  String tripleStoreUrl;
 
 }

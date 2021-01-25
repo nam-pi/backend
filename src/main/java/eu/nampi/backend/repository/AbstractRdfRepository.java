@@ -1,6 +1,5 @@
 package eu.nampi.backend.repository;
 
-import javax.servlet.http.HttpServletRequest;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -10,8 +9,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
+import eu.nampi.backend.model.CollectionMeta;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
@@ -23,17 +21,13 @@ public abstract class AbstractRdfRepository {
   @Autowired
   JenaService jenaService;
 
-  private static HttpServletRequest getRequest() {
-    return ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-  }
-
-  protected static ConstructBuilder getHydraCollectionBuilder(WhereBuilder whereClause,
-      String memberVar, String orderBy, int limit, int offset) {
+  protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
+      WhereBuilder whereClause, String memberVar, String orderBy) {
     try {
       SelectBuilder countSelect =
           new SelectBuilder().addVar("COUNT(*)", "?count").addWhere(whereClause);
       SelectBuilder dataSelect = new SelectBuilder().addVar("*").addWhere(whereClause)
-          .addOrderBy(orderBy).setLimit(limit).setOffset(offset);
+          .addOrderBy(orderBy).setLimit(meta.getLimit()).setOffset(meta.getOffset());
       WhereBuilder combinedWhere = new WhereBuilder().addUnion(countSelect).addUnion(dataSelect);
       ConstructBuilder builder = new ConstructBuilder();
       ExprFactory exprF = builder.getExprFactory();
@@ -46,23 +40,31 @@ public abstract class AbstractRdfRepository {
           .addConstruct("?view", Hydra.first, "?first")
           .addConstruct("?view", Hydra.previous, "?prev").addConstruct("?view", Hydra.next, "?next")
           .addConstruct("?view", Hydra.last, "?last").addWhere(combinedWhere)
-          .addBind(exprF.asExpr(offset), "?offset").addBind(exprF.asExpr(limit), "?limit")
-          .addBind(exprF.asExpr(getRequest().getRequestURL().toString()), "?baseUrl")
+          .addBind(exprF.asExpr(meta.getLimit()), "?limit")
+          .addBind(exprF.asExpr(meta.getOffset()), "?offset")
+          .addBind(exprF.asExpr(meta.getBaseUrl()), "?baseUrl")
+          .addBind(exprF.asExpr(meta.isCustomLimit()), "?customMeta")
           .addBind(exprF.iri("?baseUrl"), "?col")
+          .addBind(builder.makeExpr("if(?customMeta, concat('&limit=', xsd:string(?limit)), '')"),
+              "?limitQuery")
           .addBind(builder.makeExpr("xsd:integer(floor(?offset / ?limit + 1))"), "?currentNumber")
           .addBind(builder.makeExpr("xsd:integer(floor(?count / ?limit))"), "?lastNumber")
           .addBind(builder.makeExpr("?currentNumber - 1"), "?prevNumber")
           .addBind(builder.makeExpr("?currentNumber + 1"), "?nextNumber")
-          .addBind(builder.makeExpr("iri(concat(?baseUrl, '?page=', xsd:string(?currentNumber)))"),
+          .addBind(
+              builder.makeExpr(
+                  "iri(concat(?baseUrl, ?limitQuery, '?page=', xsd:string(?currentNumber)))"),
               "?view")
-          .addBind(builder.makeExpr("iri(concat(?baseUrl, '?page=1'))"), "?first")
+          .addBind(builder.makeExpr("iri(concat(?baseUrl, ?limitQuery, '?page=1' ))"), "?first")
           .addBind(builder.makeExpr(
-              "iri(if(?prevNumber > 0, concat(?baseUrl, '?page=', xsd:string(?prevNumber)), 1+''))"),
+              "iri(if(?prevNumber > 0, concat(?baseUrl, ?limitQuery, '?page=', xsd:string(?prevNumber)), 1+''))"),
               "?prev")
           .addBind(builder.makeExpr(
-              "iri(if(?nextNumber < ?lastNumber, concat(?baseUrl, '?page=', xsd:string(?nextNumber)), 1+''))"),
+              "iri(if(?nextNumber < ?lastNumber, concat(?baseUrl, ?limitQuery, '?page=', xsd:string(?nextNumber)), 1+''))"),
               "?next")
-          .addBind(builder.makeExpr("iri(concat(?baseUrl, '?page=', xsd:string(?lastNumber)))"),
+          .addBind(
+              builder.makeExpr(
+                  "iri(concat(?baseUrl, ?limitQuery, '?page=', xsd:string(?lastNumber)))"),
               "?last");
       return builder;
     } catch (ParseException e) {

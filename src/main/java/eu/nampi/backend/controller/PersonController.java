@@ -6,7 +6,6 @@ import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.repository.PersonRepository;
 
@@ -17,10 +16,8 @@ public class PersonController extends AbstractRdfController {
   PersonRepository personRepository;
 
   @GetMapping("/persons")
-  public void getPersons(@RequestHeader("accept") Lang lang,
-      @RequestParam(defaultValue = "25") int limit, @RequestParam(defaultValue = "0") int offset,
-      HttpServletResponse response) {
-    Model model = personRepository.findAll(limit, offset);
+  public void getPersons(@RequestHeader("accept") Lang lang, HttpServletResponse response) {
+    Model model = personRepository.findAll(getCollectionMeta());
     writeToOutStream(model, lang, response);
   }
 }
