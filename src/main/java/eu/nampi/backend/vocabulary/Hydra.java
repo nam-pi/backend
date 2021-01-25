@@ -35,4 +35,19 @@ public class Hydra {
 
   public static final Property member = property("member");
 
+  public static final Property totalItems = property("totalItems");
+
+  public static final Property offset = property("offset");
+
+  public static final Property first = property("first");
+
+  public static final Property last = property("last");
+
+  public static final Property next = property("next");
+
+  public static final Property previous = property("previous");
+
+  public static final Property PartialCollectionView = property("PartialCollectionView");
+
+  public static final Property view = property("view");
 }
