@@ -35,4 +35,11 @@ public class Core {
 
   public static final Property person = property("person");
 
+  public static final Property takesPlaceOn = property("takes_place_on");
+
+  public static final Property takesPlaceNotEarlierThan = property("takes_place_not_earlier_than");
+
+  public static final Property takesPlaceNotLaterThan = property("takes_place_not_later_than");
+
+  public static final Property hasXsdDateTime = property("has_xsd_date_time");
 }
