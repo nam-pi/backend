@@ -17,4 +17,6 @@ public class CollectionMeta {
 
   private String relativePath;
 
+  private OrderByClauses orderByClauses;
+
 }

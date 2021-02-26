@@ -5,6 +5,7 @@ import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -23,27 +24,35 @@ public abstract class AbstractRdfRepository {
   @Autowired
   JenaService jenaService;
 
-  protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
-      WhereBuilder whereClause, String memberVar) {
-    return getHydraCollectionBuilder(meta, whereClause, memberVar, new OrderByClauses());
+  private void addHydraVariable(ConstructBuilder builder, String parent, String self,
+      Property property, boolean required, String variable) {
+    builder.addConstruct(self, RDF.type, Hydra.IriTemplateMapping)
+        .addConstruct(self, Hydra.property, property)
+        .addConstruct(self, Hydra.required, required ? "true" : "false")
+        .addConstruct(self, Hydra.variable, variable).addConstruct(parent, Hydra.mapping, self);
   }
 
   protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
-      WhereBuilder whereClause, String memberVar, Object orderBy) {
+      WhereBuilder whereClause, String memberVar, Object orderBy,
+      Property orderByTemplateMappingProperty) {
     OrderByClauses clauses = new OrderByClauses();
     clauses.add(orderBy);
-    return getHydraCollectionBuilder(meta, whereClause, memberVar, clauses);
+    return getHydraCollectionBuilder(meta, whereClause, memberVar, clauses,
+        orderByTemplateMappingProperty);
   }
 
   protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
-      WhereBuilder whereClause, String memberVar, Object orderBy, Order order) {
+      WhereBuilder whereClause, String memberVar, Object orderBy, Order order,
+      Property orderByTemplateMappingProperty) {
     OrderByClauses clauses = new OrderByClauses();
     clauses.add(orderBy, order);
-    return getHydraCollectionBuilder(meta, whereClause, memberVar, clauses);
+    return getHydraCollectionBuilder(meta, whereClause, memberVar, clauses,
+        orderByTemplateMappingProperty);
   }
 
   protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
-      WhereBuilder whereClause, String memberVar, OrderByClauses orderBy) {
+      WhereBuilder whereClause, String memberVar, OrderByClauses orderBy,
+      Property orderByTemplateMappingProperty) {
     try {
       ConstructBuilder builder = new ConstructBuilder();
       ExprFactory exprF = builder.getExprFactory();
@@ -53,9 +62,10 @@ public abstract class AbstractRdfRepository {
       orderBy.appendAllTo(dataSelect);
       dataSelect.addOrderBy(memberVar).setLimit(meta.getLimit()).setOffset(meta.getOffset());
       SelectBuilder searchSelect = new SelectBuilder().addVar("*").addBind("bnode()", "?search")
-          .addBind(exprF.concat(meta.getRelativePath(), "{?pageIndex,limit,offset}"), "?template")
+          .addBind(exprF.concat(meta.getRelativePath(), "{?pageIndex,limit,offset,orderBy}"),
+              "?template")
           .addBind("bnode()", "?pageIndexMapping").addBind("bnode()", "?limitMapping")
-          .addBind("bnode()", "?offsetMapping");
+          .addBind("bnode()", "?offsetMapping").addBind("bnode()", "?orderByMapping");
       WhereBuilder combinedWhere =
           new WhereBuilder().addUnion(countSelect).addUnion(dataSelect).addUnion(searchSelect);
       builder.addPrefix("core", Core.getURI()).addPrefix("rdfs", RDFS.getURI())
@@ -68,21 +78,6 @@ public abstract class AbstractRdfRepository {
           .addConstruct("?view", Hydra.previous, "?prev").addConstruct("?view", Hydra.next, "?next")
           .addConstruct("?view", Hydra.last, "?last")
           .addConstruct("?search", RDF.type, Hydra.IriTemplate)
-          .addConstruct("?pageIndexMapping", RDF.type, Hydra.IriTemplateMapping)
-          .addConstruct("?pageIndexMapping", Hydra.property, Hydra.pageIndex)
-          .addConstruct("?pageIndexMapping", Hydra.required, "false")
-          .addConstruct("?pageIndexMapping", Hydra.variable, "pageIndex")
-          .addConstruct("?search", Hydra.mapping, "?pageIndexMapping")
-          .addConstruct("?limitMapping", RDF.type, Hydra.IriTemplateMapping)
-          .addConstruct("?limitMapping", Hydra.property, Hydra.limit)
-          .addConstruct("?limitMapping", Hydra.required, "false")
-          .addConstruct("?limitMapping", Hydra.variable, "limit")
-          .addConstruct("?search", Hydra.mapping, "?limitMapping")
-          .addConstruct("?offsetMapping", RDF.type, Hydra.IriTemplateMapping)
-          .addConstruct("?offsetMapping", Hydra.property, Hydra.offset)
-          .addConstruct("?offsetMapping", Hydra.required, "false")
-          .addConstruct("?offsetMapping", Hydra.variable, "offset")
-          .addConstruct("?search", Hydra.mapping, "?offsetMapping")
           .addConstruct("?col", Hydra.search, "?search").addWhere(combinedWhere)
           .addConstruct("?search", Hydra.template, "?template")
           .addConstruct("?search", Hydra.variableRepresentation, Hydra.BasicRepresentation)
@@ -112,6 +107,12 @@ public abstract class AbstractRdfRepository {
           .addBind(
               builder.makeExpr("concat(?path, ?limitQuery, '?page=', xsd:string(?lastNumber))"),
               "?last");
+
+      addHydraVariable(builder, "?search", "?pageIndexMapping", Hydra.pageIndex, false,
+          "pageIndex");
+      addHydraVariable(builder, "?search", "?limitMapping", Hydra.limit, false, "limit");
+      addHydraVariable(builder, "?search", "?offsetMapping", Hydra.offset, false, "offset");
+      addHydraVariable(builder, "?search", "?orderByMapping", orderByTemplateMappingProperty, false, "orderBy");
 
       return builder;
     } catch (ParseException e) {
