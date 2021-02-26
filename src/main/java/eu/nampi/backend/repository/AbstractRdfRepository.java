@@ -2,6 +2,7 @@ package eu.nampi.backend.repository;
 
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
@@ -10,6 +11,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import org.springframework.beans.factory.annotation.Autowired;
 import eu.nampi.backend.model.CollectionMeta;
+import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
@@ -22,17 +24,36 @@ public abstract class AbstractRdfRepository {
   JenaService jenaService;
 
   protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
-      WhereBuilder whereClause, String memberVar, String orderBy) {
+      WhereBuilder whereClause, String memberVar) {
+    return getHydraCollectionBuilder(meta, whereClause, memberVar, new OrderByClauses());
+  }
+
+  protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
+      WhereBuilder whereClause, String memberVar, Object orderBy) {
+    OrderByClauses clauses = new OrderByClauses();
+    clauses.add(orderBy);
+    return getHydraCollectionBuilder(meta, whereClause, memberVar, clauses);
+  }
+
+  protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
+      WhereBuilder whereClause, String memberVar, Object orderBy, Order order) {
+    OrderByClauses clauses = new OrderByClauses();
+    clauses.add(orderBy, order);
+    return getHydraCollectionBuilder(meta, whereClause, memberVar, clauses);
+  }
+
+  protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
+      WhereBuilder whereClause, String memberVar, OrderByClauses orderBy) {
     try {
       ConstructBuilder builder = new ConstructBuilder();
       ExprFactory exprF = builder.getExprFactory();
       SelectBuilder countSelect =
           new SelectBuilder().addVar("COUNT(*)", "?count").addWhere(whereClause);
-      SelectBuilder dataSelect = new SelectBuilder().addVar("*").addWhere(whereClause)
-          .addOrderBy(orderBy).setLimit(meta.getLimit()).setOffset(meta.getOffset());
+      SelectBuilder dataSelect = new SelectBuilder().addVar("*").addWhere(whereClause);
+      orderBy.appendAllTo(dataSelect);
+      dataSelect.addOrderBy(memberVar).setLimit(meta.getLimit()).setOffset(meta.getOffset());
       SelectBuilder searchSelect = new SelectBuilder().addVar("*").addBind("bnode()", "?search")
-
-          .addBind(exprF.concat(meta.getRelativePath(), "(pageIndex, limit, offset)"), "?template")
+          .addBind(exprF.concat(meta.getRelativePath(), "{?pageIndex,limit,offset}"), "?template")
           .addBind("bnode()", "?pageIndexMapping").addBind("bnode()", "?limitMapping")
           .addBind("bnode()", "?offsetMapping");
       WhereBuilder combinedWhere =

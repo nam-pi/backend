@@ -35,6 +35,8 @@ public class Core {
 
   public static final Property person = property("person");
 
+  public static final Property hasSortingDate = property("has_sorting_date");
+
   public static final Property takesPlaceOn = property("takes_place_on");
 
   public static final Property takesPlaceNotEarlierThan = property("takes_place_not_earlier_than");

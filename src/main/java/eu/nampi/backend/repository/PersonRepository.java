@@ -1,5 +1,6 @@
 package eu.nampi.backend.repository;
 
+import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
@@ -14,7 +15,7 @@ public class PersonRepository extends AbstractRdfRepository {
   public Model findAll(CollectionMeta meta) {
     WhereBuilder where = new WhereBuilder().addWhere("?person", RDF.type, Core.person)
         .addWhere("?person", RDFS.label, "?label");
-    String query = getHydraCollectionBuilder(meta, where, "?person", "label")
+    String query = getHydraCollectionBuilder(meta, where, "?person", "label", Order.DESCENDING)
         .addConstruct("?person", RDF.type, "core:person")
         .addConstruct("?person", RDFS.label, "?label").buildString();
     return jenaService.construct(query, true);
