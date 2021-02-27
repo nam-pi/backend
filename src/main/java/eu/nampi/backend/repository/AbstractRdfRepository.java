@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import eu.nampi.backend.model.CollectionMeta;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.service.JenaService;
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
 import lombok.extern.slf4j.Slf4j;
@@ -23,14 +24,6 @@ public abstract class AbstractRdfRepository {
 
   @Autowired
   JenaService jenaService;
-
-  private void addHydraVariable(ConstructBuilder builder, String parent, String self,
-      Property property, boolean required, String variable) {
-    builder.addConstruct(self, RDF.type, Hydra.IriTemplateMapping)
-        .addConstruct(self, Hydra.property, property)
-        .addConstruct(self, Hydra.required, required ? "true" : "false")
-        .addConstruct(self, Hydra.variable, variable).addConstruct(parent, Hydra.mapping, self);
-  }
 
   protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta,
       WhereBuilder whereClause, String memberVar, Object orderBy,
@@ -56,6 +49,8 @@ public abstract class AbstractRdfRepository {
     try {
       ConstructBuilder builder = new ConstructBuilder();
       ExprFactory exprF = builder.getExprFactory();
+      addPrefixes(builder);
+      addHydraMetadata(builder, memberVar, orderByTemplateMappingProperty);
       SelectBuilder countSelect =
           new SelectBuilder().addVar("COUNT(*)", "?count").addWhere(whereClause);
       SelectBuilder dataSelect = new SelectBuilder().addVar("*").addWhere(whereClause);
@@ -66,22 +61,9 @@ public abstract class AbstractRdfRepository {
               "?template")
           .addBind("bnode()", "?pageIndexMapping").addBind("bnode()", "?limitMapping")
           .addBind("bnode()", "?offsetMapping").addBind("bnode()", "?orderByMapping");
-      WhereBuilder combinedWhere =
-          new WhereBuilder().addUnion(countSelect).addUnion(dataSelect).addUnion(searchSelect);
-      builder.addPrefix("core", Core.getURI()).addPrefix("rdfs", RDFS.getURI())
-          .addPrefix("rdf", RDF.getURI()).addPrefix("hydra", Hydra.getURI())
-          .addPrefix("xsd", XSD.getURI()).addConstruct("?col", RDF.type, Hydra.Collection)
-          .addConstruct("?col", Hydra.totalItems, "?count")
-          .addConstruct("?col", Hydra.member, memberVar).addConstruct("?col", Hydra.view, "?view")
-          .addConstruct("?view", RDF.type, Hydra.PartialCollectionView)
-          .addConstruct("?view", Hydra.first, "?first")
-          .addConstruct("?view", Hydra.previous, "?prev").addConstruct("?view", Hydra.next, "?next")
-          .addConstruct("?view", Hydra.last, "?last")
-          .addConstruct("?search", RDF.type, Hydra.IriTemplate)
-          .addConstruct("?col", Hydra.search, "?search").addWhere(combinedWhere)
-          .addConstruct("?search", Hydra.template, "?template")
-          .addConstruct("?search", Hydra.variableRepresentation, Hydra.BasicRepresentation)
-          .addBind(exprF.asExpr(meta.getLimit()), "?limit")
+      builder.addWhere(
+          new WhereBuilder().addUnion(countSelect).addUnion(dataSelect).addUnion(searchSelect));
+      builder.addBind(exprF.asExpr(meta.getLimit()), "?limit")
           .addBind(exprF.asExpr(meta.getOffset()), "?offset")
           .addBind(exprF.asExpr(meta.getBaseUrl()), "?baseUrl")
           .addBind(exprF.asExpr(meta.getRelativePath()), "?path")
@@ -108,17 +90,45 @@ public abstract class AbstractRdfRepository {
               builder.makeExpr("concat(?path, ?limitQuery, '?page=', xsd:string(?lastNumber))"),
               "?last");
 
-      addHydraVariable(builder, "?search", "?pageIndexMapping", Hydra.pageIndex, false,
-          "pageIndex");
-      addHydraVariable(builder, "?search", "?limitMapping", Hydra.limit, false, "limit");
-      addHydraVariable(builder, "?search", "?offsetMapping", Hydra.offset, false, "offset");
-      addHydraVariable(builder, "?search", "?orderByMapping", orderByTemplateMappingProperty, false, "orderBy");
-
       return builder;
     } catch (ParseException e) {
       log.error(e.getMessage());
       return null;
     }
+  }
+
+  private void addHydraVariable(ConstructBuilder builder, String parent, String self,
+      Property property, boolean required, String variable) {
+    builder.addConstruct(self, RDF.type, Hydra.IriTemplateMapping)
+        .addConstruct(self, Hydra.property, property)
+        .addConstruct(self, Hydra.required, required ? "true" : "false")
+        .addConstruct(self, Hydra.variable, variable).addConstruct(parent, Hydra.mapping, self);
+  }
+
+  private void addHydraMetadata(ConstructBuilder builder, String memberVar,
+      Property orderByTemplateMappingProperty) {
+    builder.addConstruct("?col", Hydra.totalItems, "?count")
+        .addConstruct("?col", Hydra.member, memberVar).addConstruct("?col", Hydra.view, "?view")
+        .addConstruct("?view", RDF.type, Hydra.PartialCollectionView)
+        .addConstruct("?view", Hydra.first, "?first").addConstruct("?view", Hydra.previous, "?prev")
+        .addConstruct("?view", Hydra.next, "?next").addConstruct("?view", Hydra.last, "?last")
+        .addConstruct("?search", RDF.type, Hydra.IriTemplate)
+        .addConstruct("?col", Hydra.search, "?search")
+        .addConstruct("?search", Hydra.template, "?template")
+        .addConstruct("?search", Hydra.variableRepresentation, Hydra.BasicRepresentation);
+    addHydraVariable(builder, "?search", "?pageIndexMapping", Hydra.pageIndex, false, "pageIndex");
+    addHydraVariable(builder, "?search", "?limitMapping", Hydra.limit, false, "limit");
+    addHydraVariable(builder, "?search", "?offsetMapping", Hydra.offset, false, "offset");
+    addHydraVariable(builder, "?search", "?orderByMapping", orderByTemplateMappingProperty, false,
+        "orderBy");
+
+  }
+
+  private void addPrefixes(ConstructBuilder builder) {
+    builder.addPrefix("core", Core.getURI()).addPrefix("rdfs", RDFS.getURI())
+        .addPrefix("rdf", RDF.getURI()).addPrefix("hydra", Hydra.getURI())
+        .addPrefix("xsd", XSD.getURI()).addConstruct("?col", RDF.type, Hydra.Collection)
+        .addPrefix("api", Api.getURI());
   }
 
 }
