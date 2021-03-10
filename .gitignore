@@ -33,3 +33,6 @@ build/
 
 ### VIM ###
 .vim/
+
+.env
+docker-compose.override.yml
