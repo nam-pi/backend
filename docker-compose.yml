@@ -14,18 +14,20 @@ services:
   fuseki:
     build:
       context: .
-      dockerfile: Dockerfile.jena
+      dockerfile: Dockerfile.fuseki
+      args:
+        FUSEKI_VERSION: 3.14.0
     restart: always
     volumes:
       - fuseki_data:/fuseki
       - ./config.ttl:/fuseki/config.ttl:ro
     environment:
-      - ADMIN_PASSWORD=${FUSEKI_ADMIN_PASSWORD}
-      - JVM_ARGS=${JVM_ARGS:--Xmx4g}
-      - TDB=2
+      ADMIN_PASSWORD: ${FUSEKI_ADMIN_PASSWORD}
+      JVM_ARGS: ${JVM_ARGS:--Xmx4g}
+      TDB: 2
 
   keycloak:
-    image: quay.io/keycloak/keycloak:12.0.1
+    image: quay.io/keycloak/keycloak:12.0.4
     restart: always
     environment:
       DB_VENDOR: POSTGRES
@@ -44,19 +46,13 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - KEYCLOAK_REALM=${KEYCLOAK_REALM}
-        - KEYCLOAK_RESOURCE=${KEYCLOAK_RESOURCE}
-        - KEYCLOAK_URL=http://keycloak:8080/auth
-        - LOGGING_LEVEL=${LOGGING_LEVEL:-DEBUG}
-        - OTHER_OWL_URLS=${OTHER_OWL_URLS}
-        - TRIPLE_STORE_URL=http://fuseki:3030/${DATASET_NAME:-data}
-    environment:
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
-      - KEYCLOAK_RESOURCE=${KEYCLOAK_RESOURCE}
-      - KEYCLOAK_URL=http://keycloak:8080/auth
-      - LOGGING_LEVEL=${LOGGING_LEVEL:-DEBUG}
-      - OTHER_OWL_URLS=${OTHER_OWL_URLS}
-      - TRIPLE_STORE_URL=http://fuseki:3030/${DATASET_NAME:-data}
+        JAVA_VERSION: 11
+        KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+        KEYCLOAK_RESOURCE: ${KEYCLOAK_RESOURCE}
+        KEYCLOAK_URL: http://keycloak:8080/auth
+        LOGGING_LEVEL: ${LOGGING_LEVEL:-DEBUG}
+        OTHER_OWL_URLS: ${OTHER_OWL_URLS}
+        TRIPLE_STORE_URL: http://fuseki:3030/${DATASET_NAME:-data}
     restart: always
     depends_on:
       - keycloak
