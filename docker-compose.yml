@@ -20,11 +20,12 @@ services:
     restart: always
     volumes:
       - fuseki_data:/fuseki
-      - ./config.ttl:/fuseki/config.ttl:ro
+      - ./data.ttl:/fuseki/configuration/data.ttl:ro
     environment:
       ADMIN_PASSWORD: ${FUSEKI_ADMIN_PASSWORD}
       JVM_ARGS: ${JVM_ARGS:--Xmx4g}
       TDB: 2
+      FUSEKI_DATASET: ${DATASET_NAME:-data}
 
   keycloak:
     image: quay.io/keycloak/keycloak:12.0.4
