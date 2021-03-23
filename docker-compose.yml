@@ -11,6 +11,14 @@ services:
       POSTGRES_USER: ${KEYCLOAK_PG_USER:-keycloak}
       POSTGRES_DB: ${KEYCLOAK_PG_DB:-keycloak}
 
+  redis:
+    image: redis
+    restart: always
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
   fuseki:
     build:
       context: .
@@ -54,11 +62,14 @@ services:
         LOGGING_LEVEL: ${LOGGING_LEVEL:-DEBUG}
         OTHER_OWL_URLS: ${OTHER_OWL_URLS}
         TRIPLE_STORE_URL: http://fuseki:3030/${DATASET_NAME:-data}
+        REDIS_URL: redis
     restart: always
     depends_on:
       - keycloak
       - fuseki
+      - redis
 
 volumes:
   keycloak_data: {}
   fuseki_data: {}
+  redis_data: {}

@@ -4,7 +4,7 @@ This is the server backend and API for NAMPI.
 
 ## Prerequisite
 
-The NAMPI backend is a [Spring Boot](https://spring.io/projects/spring-boot) app, the data is stored in [Apache Fuseki](https://jena.apache.org/documentation/fuseki2/) and the identity management is handled by [Keycloak](https://www.keycloak.org/).
+The NAMPI backend is a [Spring Boot](https://spring.io/projects/spring-boot) app, the data is stored in [Apache Fuseki](https://jena.apache.org/documentation/fuseki2/) and cached by [Redis](https://redis.io/) and the identity management is handled by [Keycloak](https://www.keycloak.org/).
 
 *Note: Currently the server only runs on Java <14 because Java 14 doesn't work yet with Keycloak, see this [issue](https://issues.redhat.com/browse/KEYCLOAK-13633).*
 
@@ -17,6 +17,10 @@ The NAMPI backend is a [Spring Boot](https://spring.io/projects/spring-boot) app
 #### Optional
 
 Some users can be created for a development environment. They need to get at least the role `user` and a password assigned.
+
+### Redis
+
+A Redis instance has to be pre-configured and made available to the Spring Boot application.
 
 ### Fuseki
 
@@ -38,6 +42,8 @@ A number of command line parameters are available to configure the application.
 | KEYCLOAK_RESOURCE | *         |                                 | nampi-client                                      | The name of the Keycloak client                                                                                                              |
 | LOGGING_LEVEL     |           | INFO                            | DEBUG                                             | The Spring Boot [logging level](https://docs.spring.io/spring-boot/docs/1.2.1.RELEASE/reference/htmlsingle/#boot-features-custom-log-levels) |
 | OTHER_OWL_URLS    |           |                                 | http://example.com/owl/1,http://example.com/owl/2 | A comma separated list of ontologies that will be used for inference                                                                         |
+| REDIS_PORT        |           | 6379                            |                                                   | The port on which the Redis instance is available                                                                                            |
+| REDIS_URL         | *         |                                 | http://example.com/redis                          | The url under which the Redis instance is available                                                                                          |
 | TRIPLE_STORE_URL  | *         |                                 | http://localhost:3030/nampi-data                  | The Fuseki URL including the path to the dataset                                                                                             |
 
 ## Deploying as a standalone Spring Boot application
@@ -46,11 +52,11 @@ The application can be run from the command line using Maven, the environment pa
 
 ### Example
 
-`mvn spring-boot:run "'-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://localhost:8081/auth,--KEYCLOAK_REALM=nampi,--KEYCLOAK_RESOURCE=nampi-client,--LOGGING_LEVEL=DEBUG,--TRIPLE_STORE_URL=http://localhost:3030/nampi-data'"`
+`mvn spring-boot:run "'-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://localhost:8081/auth,--KEYCLOAK_REALM=nampi,--KEYCLOAK_RESOURCE=nampi-client,--LOGGING_LEVEL=DEBUG,--REDIS_URL=http://localhost,--TRIPLE_STORE_URL=http://localhost:3030/nampi-data'"`
 
 #### Windows
 
-`mvn spring-boot:run "-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://keycloak.dev.local:8080/auth --KEYCLOAK_REALM=nampi --KEYCLOAK_RESOURCE=nampi-client --LOGGING_LEVEL=DEBUG --TRIPLE_STORE_URL=http://localhost:3030/nampi-data"`
+`mvn spring-boot:run "-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://keycloak.dev.local:8080/auth --KEYCLOAK_REALM=nampi --KEYCLOAK_RESOURCE=nampi-client --LOGGING_LEVEL=DEBUG --REDIS_URL=http://localhost --TRIPLE_STORE_URL=http://localhost:3030/nampi-data"`
 
 Note: To work on Windows, Keycloak must be reachable with a domain, this can be configured in the hosts file:
 
@@ -64,7 +70,7 @@ The application can be run as a standalone Docker container connected to pre-exi
 Example:
 
 ```
-docker build --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life --build-arg TRIPLE_STORE_URL=http://example.com/fuseki/data .
+docker build --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life --build-arg REDIS_URL=http://example.com/redis --build-arg TRIPLE_STORE_URL=http://example.com/fuseki/data .
 ```
 
 ## Deploying with `docker-compose`
@@ -83,9 +89,10 @@ KEYCLOAK_PG_PASSWORD=[keycloak pg password]
 KEYCLOAK_REALM=nampi
 KEYCLOAK_RESOURCE=nampi-client
 OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life
+REDIS_URL=http://example.com/redis
 ```
 
-To directly expose the containers (including the Fuseki and Keycloak admin interfaces) to the web, the following docker-compose.override.yml file can be used as a starting point:
+To directly expose the containers (for example to use the Fuseki and Keycloak admin interfaces) to the web, the following docker-compose.override.yml file can be used as a starting point:
 
 `docker-compose.override.yml`
 
