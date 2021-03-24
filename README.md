@@ -44,7 +44,7 @@ A number of command line parameters are available to configure the application.
 | OTHER_OWL_URLS    |           |                                 | http://example.com/owl/1,http://example.com/owl/2 | A comma separated list of ontologies that will be used for inference                                                                         |
 | REDIS_PORT        |           | 6379                            |                                                   | The port on which the Redis instance is available                                                                                            |
 | REDIS_URL         | *         |                                 | http://example.com/redis                          | The url under which the Redis instance is available                                                                                          |
-| TRIPLE_STORE_URL  | *         |                                 | http://localhost:3030/nampi-data                  | The Fuseki URL including the path to the dataset                                                                                             |
+| TRIPLE_STORE_URL  | *         |                                 | http://localhost:3030/nampi                       | The Fuseki URL including the path to the dataset                                                                                             |
 
 ## Deploying as a standalone Spring Boot application
 
@@ -52,11 +52,11 @@ The application can be run from the command line using Maven, the environment pa
 
 ### Example
 
-`mvn spring-boot:run "'-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://localhost:8081/auth,--KEYCLOAK_REALM=nampi,--KEYCLOAK_RESOURCE=nampi-client,--LOGGING_LEVEL=DEBUG,--REDIS_URL=http://localhost,--TRIPLE_STORE_URL=http://localhost:3030/nampi-data'"`
+`mvn spring-boot:run "'-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://localhost:8081/auth,--KEYCLOAK_REALM=nampi,--KEYCLOAK_RESOURCE=nampi-client,--LOGGING_LEVEL=DEBUG,--REDIS_URL=http://localhost,--TRIPLE_STORE_URL=http://localhost:3030/nampi'"`
 
 #### Windows
 
-`mvn spring-boot:run "-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://keycloak.dev.local:8080/auth --KEYCLOAK_REALM=nampi --KEYCLOAK_RESOURCE=nampi-client --LOGGING_LEVEL=DEBUG --REDIS_URL=http://localhost --TRIPLE_STORE_URL=http://localhost:3030/nampi-data"`
+`mvn spring-boot:run "-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://keycloak.dev.local:8080/auth --KEYCLOAK_REALM=nampi --KEYCLOAK_RESOURCE=nampi-client --LOGGING_LEVEL=DEBUG --REDIS_URL=http://localhost --TRIPLE_STORE_URL=http://localhost:3030/nampi"`
 
 Note: To work on Windows, Keycloak must be reachable with a domain, this can be configured in the hosts file:
 
@@ -70,7 +70,7 @@ The application can be run as a standalone Docker container connected to pre-exi
 Example:
 
 ```
-docker build --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life --build-arg REDIS_URL=http://example.com/redis --build-arg TRIPLE_STORE_URL=http://example.com/fuseki/data .
+docker build --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life --build-arg REDIS_URL=http://example.com/redis --build-arg TRIPLE_STORE_URL=http://example.com/fuseki/nampi .
 ```
 
 ## Deploying with `docker-compose`
@@ -82,7 +82,7 @@ If used as-is it will start containers for Fuseki and Keycloak, including a Post
 `.env`
 
 ```
-DATASET_NAME=data
+DATASET_NAME=nampi
 FUSEKI_ADMIN_PASSWORD=[fuseki admin password]
 KEYCLOAK_PASSWORD=[keycloak password]
 KEYCLOAK_PG_PASSWORD=[keycloak pg password]

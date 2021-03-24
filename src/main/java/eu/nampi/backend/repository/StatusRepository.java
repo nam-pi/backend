@@ -11,13 +11,13 @@ import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
 @Repository
-public class PersonRepository extends AbstractRdfRepository {
+public class StatusRepository extends AbstractRdfRepository {
 
   public Model findAll(CollectionMeta meta) {
-    WhereBuilder where = new WhereBuilder().addWhere("?person", RDF.type, Core.person).addWhere("?person", RDFS.label,
+    WhereBuilder where = new WhereBuilder().addWhere("?status", RDF.type, Core.status).addWhere("?status", RDFS.label,
         "?label");
-    String query = getHydraCollectionBuilder(meta, where, "?person", meta.getOrderByClauses(), Api.orderBy)
-        .addConstruct("?person", RDF.type, Core.person).addConstruct("?person", RDFS.label, "?label").buildString();
+    String query = getHydraCollectionBuilder(meta, where, "?status", meta.getOrderByClauses(), Api.orderBy)
+        .addConstruct("?person", RDF.type, Core.status).addConstruct("?status", RDFS.label, "?label").buildString();
     return jenaService.construct(query);
   }
 }

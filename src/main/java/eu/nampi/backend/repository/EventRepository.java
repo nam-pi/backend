@@ -48,6 +48,6 @@ public class EventRepository extends AbstractRdfRepository {
         .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
         .addConstruct("?event", Core.takesPlaceNotLaterThan, "?latestDate")
         .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime").buildString();
-    return jenaService.construct(query, true);
+    return jenaService.construct(query);
   }
 }

@@ -28,10 +28,10 @@ services:
     restart: always
     volumes:
       - fuseki_data:/fuseki
-      - ./data.ttl:/fuseki/configuration/data.ttl:ro
+      - ./nampi.ttl:/fuseki/configuration/nampi.ttl:ro
     environment:
       ADMIN_PASSWORD: ${FUSEKI_ADMIN_PASSWORD}
-      JVM_ARGS: ${JVM_ARGS:--Xmx4g}
+      JVM_ARGS: ${JVM_ARGS:-Xmx2g}
       TDB: 2
       FUSEKI_DATASET: ${DATASET_NAME:-data}
 
@@ -61,7 +61,7 @@ services:
         KEYCLOAK_URL: http://keycloak:8080/auth
         LOGGING_LEVEL: ${LOGGING_LEVEL:-DEBUG}
         OTHER_OWL_URLS: ${OTHER_OWL_URLS}
-        TRIPLE_STORE_URL: http://fuseki:3030/${DATASET_NAME:-data}
+        TRIPLE_STORE_URL: http://fuseki:3030/${DATASET_NAME:-nampi}
         REDIS_URL: redis
     restart: always
     depends_on:
