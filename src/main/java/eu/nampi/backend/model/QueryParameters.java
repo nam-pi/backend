@@ -1,11 +1,16 @@
 package eu.nampi.backend.model;
 
+import java.io.Serializable;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString
 @AllArgsConstructor
-public class CollectionMeta {
+public class QueryParameters implements Serializable {
+  private static final long serialVersionUID = 12327123L;
 
   private String baseUrl;
 

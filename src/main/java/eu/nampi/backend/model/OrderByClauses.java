@@ -1,8 +1,10 @@
 package eu.nampi.backend.model;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -10,7 +12,9 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class OrderByClauses {
+public class OrderByClauses implements Serializable {
+
+  private static final long serialVersionUID = 98734561L;
 
   public static final Order DEFAULT_ORDER = Order.ASCENDING;
 
@@ -57,6 +61,12 @@ public class OrderByClauses {
       Order value = clause.getValue();
       this.add(padKey(originalLabel).equals(key) ? newLabel : key, value);
     }
+  }
+
+  public String toString() {
+    return "OrderBy[" + clauses.entrySet().stream().map((Map.Entry<String, Order> entry) -> {
+      return entry.getKey() + "=" + entry.getValue();
+    }).collect(Collectors.joining(";")) + "]";
   }
 
   private static String padKey(String key) {

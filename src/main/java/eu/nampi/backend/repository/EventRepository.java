@@ -7,18 +7,16 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.stereotype.Repository;
 
-import eu.nampi.backend.model.CollectionMeta;
-import eu.nampi.backend.model.OrderByClauses;
+import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
 @Repository
-public class EventRepository extends AbstractRdfRepository {
+public class EventRepository extends AbstractHydraRepository {
 
-  public Model findAll(CollectionMeta meta) {
+  public Model findAll(QueryParameters params) {
     WhereBuilder where = new WhereBuilder();
-    OrderByClauses clauses = meta.getOrderByClauses();
-    clauses.replaceLabel("date", "realSortingDateTime");
+    params.getOrderByClauses().replaceLabel("date", "realSortingDateTime");
     where.addWhere("?event", RDF.type, Core.event).addWhere("?event", RDFS.label, "?label")
         .addOptional(new WhereBuilder().addWhere("?event", Core.takesPlaceOn, "?exactDate").addWhere("?exactDate",
             Core.hasXsdDateTime, "?exactDateTime"))
@@ -33,12 +31,12 @@ public class EventRepository extends AbstractRdfRepository {
             "?realSortingDate")
         .addBind(where.makeExpr(
             "IF ( BOUND ( ?sortingDateTime ), ?sortingDateTime, IF ( BOUND ( ?exactDateTime ), ?exactDateTime, IF ( BOUND ( ?earliestDateTime ), ?earliestDateTime, IF ( BOUND ( ?latestDateTime ), ?latestDateTime, '"
-                + (clauses.getOrderFor("?realSortingDateTime").orElse(Order.ASCENDING) == Order.ASCENDING
+                + (params.getOrderByClauses().getOrderFor("?realSortingDateTime").orElse(Order.ASCENDING) == Order.ASCENDING
                     ? "9999-12-31T23:59:59"
                     : "-9999-01-01:00:00:00")
                 + "' ) ) ) )"),
             "?realSortingDateTime");
-    String query = getHydraCollectionBuilder(meta, where, "?event", clauses, Api.orderBy)
+    String query = getHydraCollectionBuilder(params, where, "?event", Api.orderBy)
         .addConstruct("?event", RDF.type, Core.event).addConstruct("?event", RDFS.label, "?label")
         .addConstruct("?event", Core.hasSortingDate, "?realSortingDate")
         .addConstruct("?realSortingDate", Core.hasXsdDateTime, "?realSortingDateTime")

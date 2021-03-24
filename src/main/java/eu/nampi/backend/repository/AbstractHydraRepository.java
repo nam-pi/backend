@@ -1,8 +1,9 @@
 package eu.nampi.backend.repository;
 
+import java.util.Optional;
+
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Property;
@@ -11,9 +12,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
-import eu.nampi.backend.model.CollectionMeta;
-import eu.nampi.backend.model.OrderByClauses;
+import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
@@ -21,27 +22,28 @@ import eu.nampi.backend.vocabulary.Hydra;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class AbstractRdfRepository {
+public abstract class AbstractHydraRepository {
+
+  @Value("${nampi.default-limit}")
+  int defaultLimit;
+
+  private static final int NO_OFFSET = 0;
 
   @Autowired
   JenaService jenaService;
 
-  protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta, WhereBuilder whereClause, String memberVar,
-      String orderBy, Property orderByTemplateMappingProperty) {
-    OrderByClauses clauses = new OrderByClauses();
-    clauses.add(orderBy);
-    return getHydraCollectionBuilder(meta, whereClause, memberVar, clauses, orderByTemplateMappingProperty);
+  protected int calculateOffset(Optional<Integer> limit, Optional<Integer> page, Optional<Integer> pageIndex) {
+    int effectiveLimit = calculateLimit(limit);
+    return Optional.ofNullable(page.orElseGet(() -> pageIndex.orElse(null)))
+        .map(p -> p * effectiveLimit - effectiveLimit).orElse(NO_OFFSET);
   }
 
-  protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta, WhereBuilder whereClause, String memberVar,
-      String orderBy, Order order, Property orderByTemplateMappingProperty) {
-    OrderByClauses clauses = new OrderByClauses();
-    clauses.add(orderBy, order);
-    return getHydraCollectionBuilder(meta, whereClause, memberVar, clauses, orderByTemplateMappingProperty);
+  protected int calculateLimit(Optional<Integer> limit) {
+    return limit.orElse(defaultLimit);
   }
 
-  protected ConstructBuilder getHydraCollectionBuilder(CollectionMeta meta, WhereBuilder whereClause, String memberVar,
-      OrderByClauses orderBy, Property orderByTemplateMappingProperty) {
+  protected ConstructBuilder getHydraCollectionBuilder(QueryParameters params, WhereBuilder whereClause,
+      String memberVar,Property orderByTemplateMappingProperty) {
     try {
       ConstructBuilder builder = new ConstructBuilder();
       ExprFactory exprF = builder.getExprFactory();
@@ -49,16 +51,16 @@ public abstract class AbstractRdfRepository {
       addHydraMetadata(builder, memberVar, orderByTemplateMappingProperty);
       SelectBuilder countSelect = new SelectBuilder().addVar("COUNT(*)", "?count").addWhere(whereClause);
       SelectBuilder dataSelect = new SelectBuilder().addVar("*").addWhere(whereClause);
-      orderBy.appendAllTo(dataSelect);
-      dataSelect.addOrderBy(memberVar).setLimit(meta.getLimit()).setOffset(meta.getOffset());
+      params.getOrderByClauses().appendAllTo(dataSelect);
+      dataSelect.addOrderBy(memberVar).setLimit(params.getLimit()).setOffset(params.getOffset());
       SelectBuilder searchSelect = new SelectBuilder().addVar("*").addBind("bnode()", "?search")
-          .addBind(exprF.concat(meta.getRelativePath(), "{?pageIndex,limit,offset,orderBy}"), "?template")
+          .addBind(exprF.concat(params.getRelativePath(), "{?pageIndex,limit,offset,orderBy}"), "?template")
           .addBind("bnode()", "?pageIndexMapping").addBind("bnode()", "?limitMapping")
           .addBind("bnode()", "?offsetMapping").addBind("bnode()", "?orderByMapping");
       builder.addWhere(new WhereBuilder().addUnion(countSelect).addUnion(dataSelect).addUnion(searchSelect));
-      builder.addBind(exprF.asExpr(meta.getLimit()), "?limit").addBind(exprF.asExpr(meta.getOffset()), "?offset")
-          .addBind(exprF.asExpr(meta.getBaseUrl()), "?baseUrl").addBind(exprF.asExpr(meta.getRelativePath()), "?path")
-          .addBind(exprF.asExpr(meta.isCustomLimit()), "?customMeta").addBind(exprF.iri("?baseUrl"), "?col")
+      builder.addBind(exprF.asExpr(params.getLimit()), "?limit").addBind(exprF.asExpr(params.getOffset()), "?offset")
+          .addBind(exprF.asExpr(params.getBaseUrl()), "?baseUrl").addBind(exprF.asExpr(params.getRelativePath()), "?path")
+          .addBind(exprF.asExpr(params.isCustomLimit()), "?customMeta").addBind(exprF.iri("?baseUrl"), "?col")
           .addBind(builder.makeExpr("if(?customMeta, concat('&limit=', xsd:string(?limit)), '')"), "?limitQuery")
           .addBind(builder.makeExpr("xsd:integer(floor(?offset / ?limit + 1))"), "?currentNumber")
           .addBind(builder.makeExpr("xsd:integer(floor(?count / ?limit))"), "?lastNumber")
