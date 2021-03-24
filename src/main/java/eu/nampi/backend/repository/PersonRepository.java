@@ -2,8 +2,10 @@ package eu.nampi.backend.repository;
 
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.model.QueryParameters;
@@ -21,4 +23,11 @@ public class PersonRepository extends AbstractHydraRepository {
     System.out.println(query);
     return jenaService.construct(query);
   }
+
+  @Cacheable(value = "persons-find-all", key = "{#lang, #params.limit, #params.offset, #params.orderByClauses}")
+  public String findAll(QueryParameters params, Lang lang) {
+    Model model = findAll(params);
+    return serialize(model, lang);
+  }
+
 }

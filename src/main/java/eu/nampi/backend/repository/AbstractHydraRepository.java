@@ -1,12 +1,16 @@
 package eu.nampi.backend.repository;
 
+import java.io.StringWriter;
 import java.util.Optional;
 
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -32,6 +36,12 @@ public abstract class AbstractHydraRepository {
   @Autowired
   JenaService jenaService;
 
+  protected String serialize(Model model, Lang lang) {
+    StringWriter writer = new StringWriter();
+    RDFDataMgr.write(writer, model, lang);
+    return writer.toString();
+  }
+
   protected int calculateOffset(Optional<Integer> limit, Optional<Integer> page, Optional<Integer> pageIndex) {
     int effectiveLimit = calculateLimit(limit);
     return Optional.ofNullable(page.orElseGet(() -> pageIndex.orElse(null)))
@@ -43,7 +53,7 @@ public abstract class AbstractHydraRepository {
   }
 
   protected ConstructBuilder getHydraCollectionBuilder(QueryParameters params, WhereBuilder whereClause,
-      String memberVar,Property orderByTemplateMappingProperty) {
+      String memberVar, Property orderByTemplateMappingProperty) {
     try {
       ConstructBuilder builder = new ConstructBuilder();
       ExprFactory exprF = builder.getExprFactory();
@@ -59,7 +69,8 @@ public abstract class AbstractHydraRepository {
           .addBind("bnode()", "?offsetMapping").addBind("bnode()", "?orderByMapping");
       builder.addWhere(new WhereBuilder().addUnion(countSelect).addUnion(dataSelect).addUnion(searchSelect));
       builder.addBind(exprF.asExpr(params.getLimit()), "?limit").addBind(exprF.asExpr(params.getOffset()), "?offset")
-          .addBind(exprF.asExpr(params.getBaseUrl()), "?baseUrl").addBind(exprF.asExpr(params.getRelativePath()), "?path")
+          .addBind(exprF.asExpr(params.getBaseUrl()), "?baseUrl")
+          .addBind(exprF.asExpr(params.getRelativePath()), "?path")
           .addBind(exprF.asExpr(params.isCustomLimit()), "?customMeta").addBind(exprF.iri("?baseUrl"), "?col")
           .addBind(builder.makeExpr("if(?customMeta, concat('&limit=', xsd:string(?limit)), '')"), "?limitQuery")
           .addBind(builder.makeExpr("xsd:integer(floor(?offset / ?limit + 1))"), "?currentNumber")

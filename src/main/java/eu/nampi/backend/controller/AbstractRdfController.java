@@ -1,39 +1,22 @@
 package eu.nampi.backend.controller;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpStatus;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public abstract class AbstractRdfController {
 
   @Value("${nampi.default-limit}")
   int defaultLimit;
 
   private static final int NO_OFFSET = 0;
-
-  protected void writeToOutStream(Model model, Lang lang, HttpServletResponse response) {
-    try {
-      RDFDataMgr.write(response.getOutputStream(), model, lang);
-    } catch (IOException e) {
-      response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-      log.error(e.getMessage());
-    }
-  }
 
   protected QueryParameters getParameters(Optional<Integer> page, Optional<Integer> pageIndex, Optional<Integer> limit,
       Optional<Integer> offset, Optional<OrderByClauses> orderBy) {
