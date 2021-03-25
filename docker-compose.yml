@@ -61,6 +61,7 @@ services:
         KEYCLOAK_URL: http://keycloak:8080/auth
         LOGGING_LEVEL: ${LOGGING_LEVEL:-DEBUG}
         OTHER_OWL_URLS: ${OTHER_OWL_URLS}
+        PROFILE: ${PROFILE:-prod}
         TRIPLE_STORE_URL: http://fuseki:3030/${DATASET_NAME:-nampi}
         REDIS_URL: redis
     restart: always

@@ -24,6 +24,8 @@ server:
 spring:
   main:
     allow-bean-definition-overriding: true
+  profiles: 
+    active: ${PROFILE:prod}
   redis:
     host: ${REDIS_URL}
     port: ${REDIS_PORT:6379}

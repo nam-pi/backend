@@ -20,7 +20,7 @@ Some users can be created for a development environment. They need to get at lea
 
 ### Redis
 
-A Redis instance has to be pre-configured and made available to the Spring Boot application.
+A Redis instance has to be pre-configured and made available to the Spring Boot application. It will be used to cache database queries as long as the `PROFILE` environment variable isn't set to `dev`.
 
 ### Fuseki
 
@@ -42,6 +42,7 @@ A number of command line parameters are available to configure the application.
 | KEYCLOAK_RESOURCE | *         |                                 | nampi-client                                      | The name of the Keycloak client                                                                                                              |
 | LOGGING_LEVEL     |           | INFO                            | DEBUG                                             | The Spring Boot [logging level](https://docs.spring.io/spring-boot/docs/1.2.1.RELEASE/reference/htmlsingle/#boot-features-custom-log-levels) |
 | OTHER_OWL_URLS    |           |                                 | http://example.com/owl/1,http://example.com/owl/2 | A comma separated list of ontologies that will be used for inference                                                                         |
+| PROFILE           |           | prod                            |                                                   | The app profile to use, can be either "prod" or "dev". Dev disables the response caching                                                                        |
 | REDIS_PORT        |           | 6379                            |                                                   | The port on which the Redis instance is available                                                                                            |
 | REDIS_URL         | *         |                                 | http://example.com/redis                          | The url under which the Redis instance is available                                                                                          |
 | TRIPLE_STORE_URL  | *         |                                 | http://localhost:3030/nampi                       | The Fuseki URL including the path to the dataset                                                                                             |
