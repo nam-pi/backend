@@ -1,5 +1,6 @@
 package eu.nampi.backend.repository;
 
+import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
@@ -18,9 +19,9 @@ public class StatusRepository extends AbstractHydraRepository {
   public Model findAll(QueryParameters params) {
     WhereBuilder where = new WhereBuilder().addWhere("?status", RDF.type, Core.status).addWhere("?status", RDFS.label,
         "?label");
-    String query = getHydraCollectionBuilder(params, where, "?status", Api.orderBy)
-        .addConstruct("?person", RDF.type, Core.status).addConstruct("?status", RDFS.label, "?label").buildString();
-    return jenaService.construct(query);
+    ConstructBuilder construct = getHydraCollectionBuilder(params, where, "?status", Api.orderBy)
+        .addConstruct("?person", RDF.type, Core.status).addConstruct("?status", RDFS.label, "?label");
+    return jenaService.construct(construct);
   }
 
   @Cacheable(value = "status-find-all", key = "{#lang, #params.limit, #params.offset, #params.orderByClauses}")

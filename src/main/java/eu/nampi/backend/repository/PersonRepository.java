@@ -1,5 +1,6 @@
 package eu.nampi.backend.repository;
 
+import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
@@ -18,10 +19,9 @@ public class PersonRepository extends AbstractHydraRepository {
   public Model findAll(QueryParameters params) {
     WhereBuilder where = new WhereBuilder().addWhere("?person", RDF.type, Core.person).addWhere("?person", RDFS.label,
         "?label");
-    String query = getHydraCollectionBuilder(params, where, "?person", Api.orderBy)
-        .addConstruct("?person", RDF.type, Core.person).addConstruct("?person", RDFS.label, "?label").buildString();
-    System.out.println(query);
-    return jenaService.construct(query);
+    ConstructBuilder construct = getHydraCollectionBuilder(params, where, "?person", Api.orderBy)
+        .addConstruct("?person", RDF.type, Core.person).addConstruct("?person", RDFS.label, "?label");
+    return jenaService.construct(construct);
   }
 
   @Cacheable(value = "persons-find-all", key = "{#lang, #params.limit, #params.offset, #params.orderByClauses}")

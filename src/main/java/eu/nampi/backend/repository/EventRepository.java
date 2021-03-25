@@ -1,5 +1,6 @@
 package eu.nampi.backend.repository;
 
+import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
@@ -37,7 +38,7 @@ public class EventRepository extends AbstractHydraRepository {
                     : "-9999-01-01:00:00:00")
                 + "' ) ) ) )"),
             "?date");
-    String query = getHydraCollectionBuilder(params, where, "?event", Api.orderBy)
+    ConstructBuilder construct = getHydraCollectionBuilder(params, where, "?event", Api.orderBy)
         .addConstruct("?event", RDF.type, Core.event).addConstruct("?event", RDFS.label, "?label")
         .addConstruct("?event", Core.hasSortingDate, "?realSortingDate")
         .addConstruct("?realSortingDate", Core.hasXsdDateTime, "?date")
@@ -46,8 +47,8 @@ public class EventRepository extends AbstractHydraRepository {
         .addConstruct("?event", Core.takesPlaceNotEarlierThan, "?earliestDate")
         .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
         .addConstruct("?event", Core.takesPlaceNotLaterThan, "?latestDate")
-        .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime").buildString();
-    return jenaService.construct(query);
+        .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime");
+    return jenaService.construct(construct);
   }
 
   @Cacheable(value = "events-find-all", key = "{#lang, #params.limit, #params.offset, #params.orderByClauses}")
