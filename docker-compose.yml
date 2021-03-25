@@ -28,12 +28,12 @@ services:
     restart: always
     volumes:
       - fuseki_data:/fuseki
-      - ./nampi.ttl:/fuseki/configuration/nampi.ttl:ro
+      - ./data.ttl:/fuseki/configuration/data.ttl:ro
+      - ./inf_cache.ttl:/fuseki/configuration/inf_cache.ttl:ro
     environment:
       ADMIN_PASSWORD: ${FUSEKI_ADMIN_PASSWORD}
       JVM_ARGS: ${JVM_ARGS:-Xmx2g}
       TDB: 2
-      FUSEKI_DATASET: ${DATASET_NAME:-data}
 
   keycloak:
     image: quay.io/keycloak/keycloak:12.0.4
@@ -62,7 +62,8 @@ services:
         LOGGING_LEVEL: ${LOGGING_LEVEL:-DEBUG}
         OTHER_OWL_URLS: ${OTHER_OWL_URLS}
         PROFILE: ${PROFILE:-prod}
-        TRIPLE_STORE_URL: http://fuseki:3030/${DATASET_NAME:-nampi}
+        DATA_URL: http://fuseki:3030/data
+        INF_CACHE_URL: http://fuseki:3030/inf_cache
         REDIS_URL: redis
     restart: always
     depends_on:

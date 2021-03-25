@@ -7,8 +7,6 @@ public interface JenaService {
 
   public Model construct(ConstructBuilder constructBuilder);
 
-  public void clearGraph(String uri);
-
-  public void replaceGraph(String graphUri, Model model);
+  public void initInfCache();
 
 }
