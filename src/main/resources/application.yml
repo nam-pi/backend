@@ -8,9 +8,11 @@ keycloak:
 
 logging:
   level:
+    root: ${LOGGING_LEVEL:INFO} 
     org:
-      springframework:
-        web: ${LOGGING_LEVEL:INFO} 
+      apache:
+        http:
+          wire: WARN
 
 nampi:
   default-limit: ${DEFAULT_LIMIT:25}

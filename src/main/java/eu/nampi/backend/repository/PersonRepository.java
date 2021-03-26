@@ -19,10 +19,14 @@ import eu.nampi.backend.vocabulary.Core;
 public class PersonRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
-    WhereBuilder where = new WhereBuilder().addWhere("?person", RDF.type, Core.person).addWhere("?person", RDFS.label,
-        "?label");
+    // @formatter:off
+    WhereBuilder where = new WhereBuilder()
+      .addWhere("?person", RDF.type, Core.person)
+      .addWhere("?person", RDFS.label, "?label");
     ConstructBuilder construct = getHydraCollectionBuilder(params, where, "?person", Api.orderBy)
-        .addConstruct("?person", RDF.type, Core.person).addConstruct("?person", RDFS.label, "?label");
+      .addConstruct("?person", RDF.type, Core.person)
+      .addConstruct("?person", RDFS.label, "?label");
+    // @formatter:on
     return jenaService.construct(construct);
   }
 

@@ -21,35 +21,36 @@ public class EventRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     WhereBuilder where = new WhereBuilder();
-    where.addWhere("?event", RDF.type, Core.event).addWhere("?event", RDFS.label, "?label")
-        .addOptional(new WhereBuilder().addWhere("?event", Core.takesPlaceOn, "?exactDate").addWhere("?exactDate",
-            Core.hasXsdDateTime, "?exactDateTime"))
-        .addOptional(new WhereBuilder().addWhere("?event", Core.takesPlaceNotEarlierThan, "?earliestDate")
-            .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime"))
-        .addOptional(new WhereBuilder().addWhere("?event", Core.takesPlaceNotLaterThan, "?latestDate")
-            .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime"))
-        .addOptional(new WhereBuilder().addWhere("?event", Core.hasSortingDate, "?sortingDate").addWhere("?sortingDate",
-            Core.hasXsdDateTime, "?sortingDateTime"))
-        .addBind(where.makeExpr(
-            "IF ( BOUND ( ?sortingDate ), ?sortingDate, IF ( BOUND ( ?exactDate ), ?exactDate, IF ( BOUND ( ?earliestDate ), ?earliestDate, IF ( BOUND ( ?latestDate ), ?latestDate, bnode() ) ) ) )"),
-            "?realSortingDate")
-        .addBind(where.makeExpr(
-            "IF ( BOUND ( ?sortingDateTime ), ?sortingDateTime, IF ( BOUND ( ?exactDateTime ), ?exactDateTime, IF ( BOUND ( ?earliestDateTime ), ?earliestDateTime, IF ( BOUND ( ?latestDateTime ), ?latestDateTime, '"
-                + (params.getOrderByClauses().getOrderFor("?date").orElse(Order.ASCENDING) == Order.ASCENDING
-                    ? "9999-12-31T23:59:59"
-                    : "-9999-01-01:00:00:00")
-                + "' ) ) ) )"),
-            "?date");
+    // @formatter:off
+    where
+      .addWhere("?event", RDF.type, Core.event)
+      .addWhere("?event", RDFS.label, "?label")
+      .addOptional(new WhereBuilder()
+        .addWhere("?event", Core.takesPlaceOn, "?exactDate")
+        .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime"))
+      .addOptional(new WhereBuilder()
+        .addWhere("?event", Core.takesPlaceNotEarlierThan, "?earliestDate")
+        .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime"))
+      .addOptional(new WhereBuilder()
+        .addWhere("?event", Core.takesPlaceNotLaterThan, "?latestDate")
+        .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime"))
+      .addOptional(new WhereBuilder()
+        .addWhere("?event", Core.hasSortingDate, "?sortingDate")
+        .addWhere("?sortingDate", Core.hasXsdDateTime, "?sortingDateTime"))
+      .addBind(where.makeExpr("IF ( BOUND ( ?sortingDate ), ?sortingDate, IF ( BOUND ( ?exactDate ), ?exactDate, IF ( BOUND ( ?earliestDate ), ?earliestDate, IF ( BOUND ( ?latestDate ), ?latestDate, bnode() ) ) ) )"), "?realSortingDate")
+      .addBind(where.makeExpr("IF ( BOUND ( ?sortingDateTime ), ?sortingDateTime, IF ( BOUND ( ?exactDateTime ), ?exactDateTime, IF ( BOUND ( ?earliestDateTime ), ?earliestDateTime, IF ( BOUND ( ?latestDateTime ), ?latestDateTime, '" + (params.getOrderByClauses().getOrderFor("?date").orElse(Order.ASCENDING) == Order.ASCENDING ? "9999-12-31T23:59:59" : "-9999-01-01:00:00:00") + "' ) ) ) )"), "?date");
     ConstructBuilder construct = getHydraCollectionBuilder(params, where, "?event", Api.orderBy)
-        .addConstruct("?event", RDF.type, Core.event).addConstruct("?event", RDFS.label, "?label")
-        .addConstruct("?event", Core.hasSortingDate, "?realSortingDate")
-        .addConstruct("?realSortingDate", Core.hasXsdDateTime, "?date")
-        .addConstruct("?event", Core.takesPlaceOn, "?exactDate")
-        .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
-        .addConstruct("?event", Core.takesPlaceNotEarlierThan, "?earliestDate")
-        .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
-        .addConstruct("?event", Core.takesPlaceNotLaterThan, "?latestDate")
-        .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime");
+      .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
+      .addConstruct("?event", Core.hasSortingDate, "?realSortingDate")
+      .addConstruct("?event", Core.takesPlaceNotEarlierThan, "?earliestDate")
+      .addConstruct("?event", Core.takesPlaceNotLaterThan, "?latestDate")
+      .addConstruct("?event", Core.takesPlaceOn, "?exactDate")
+      .addConstruct("?event", RDF.type, Core.event)
+      .addConstruct("?event", RDFS.label, "?label")
+      .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
+      .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
+      .addConstruct("?realSortingDate", Core.hasXsdDateTime, "?date");
+    // @formatter:on
     return jenaService.construct(construct);
   }
 
