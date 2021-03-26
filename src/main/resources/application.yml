@@ -23,6 +23,12 @@ server:
   port: ${APPLICATION_PORT:8080}
 
 spring:
+  cache:
+    type: redis
+    cache-names:
+      - events
+      - persons
+      - status
   main:
     allow-bean-definition-overriding: true
   profiles: 

@@ -6,6 +6,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +15,7 @@ import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
 @Repository
+@CacheConfig(cacheNames = "persons")
 public class PersonRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
@@ -24,7 +26,7 @@ public class PersonRepository extends AbstractHydraRepository {
     return jenaService.construct(construct);
   }
 
-  @Cacheable(value = "persons-find-all", key = "{#lang, #params.limit, #params.offset, #params.orderByClauses}")
+  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses}")
   public String findAll(QueryParameters params, Lang lang) {
     Model model = findAll(params);
     return serialize(model, lang);

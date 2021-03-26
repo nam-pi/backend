@@ -20,12 +20,12 @@ Some users can be created for a development environment. They need to get at lea
 
 ### Redis
 
-A Redis instance has to be pre-configured and made available to the Spring Boot application. It will be used to cache database queries as long as the `PROFILE` environment variable isn't set to `dev`.
+A Redis instance has to be pre-configured and made available to the Spring Boot application. It will be used to cache database queries as long as the `PROFILE` environment variable isn't set to `dev`. The cache will be cleared on each app restart automatically to make sure that no stale cache is served in case the code or the used ontologies change.
 
 ### Fuseki
 
 * A stand alone fuseki instance has to be created.
-* Two datasets have to be created, one that will be filled with the original data and another one where the live inference data is stored. Both should be configured according to the two provided configuration files, [data.ttl](./data.ttl) and [inf_cache](./inf_cache.ttl).
+* Two datasets (`data` and `inf_cache`) have to be created, one that will be filled with the original data and another one where the live inference data is stored. Both should be configured according to the two provided configuration files, [data.ttl](./data.ttl) and [inf_cache.ttl](./inf_cache.ttl). On application start the `inf_cache` dataset will be populated as a combined inference graph of both the contents of the `data` dataset and the configured ontologies. Update processes are synchronized between both datasets to make sure both the stored data and the inference graph are always up-to-date.
 
 ## Configuring the application
 
@@ -43,7 +43,7 @@ A number of command line parameters are available to configure the application.
 | KEYCLOAK_URL      | *         |                                 | http://localhost:8080/auth/                       | The URL  of the Keycloak authentication endpoint                                                                                             |
 | LOGGING_LEVEL     |           | INFO                            | DEBUG                                             | The Spring Boot [logging level](https://docs.spring.io/spring-boot/docs/1.2.1.RELEASE/reference/htmlsingle/#boot-features-custom-log-levels) |
 | OTHER_OWL_URLS    |           |                                 | http://example.com/owl/1,http://example.com/owl/2 | A comma separated list of ontologies that will be used for inference                                                                         |
-| PROFILE           |           | prod                            |                                                   | The app profile to use, can be either "prod" or "dev". Dev disables the response caching                                                                        |
+| PROFILE           |           | prod                            |                                                   | The app profile to use, can be either "prod" or "dev"                                                                                        |
 | REDIS_PORT        |           | 6379                            |                                                   | The port on which the Redis instance is available                                                                                            |
 | REDIS_URL         | *         |                                 | http://example.com/redis                          | The url under which the Redis instance is available                                                                                          |
 
