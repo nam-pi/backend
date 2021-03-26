@@ -2,8 +2,6 @@ package eu.nampi.backend.controller;
 
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,8 +25,8 @@ public class EventController extends AbstractRdfController {
   public ResponseEntity<String> getEvents(@RequestHeader("accept") Lang lang,
       @RequestParam("page") Optional<Integer> page, @RequestParam("pageIndex") Optional<Integer> pageIndex,
       @RequestParam("limit") Optional<Integer> limit, @RequestParam("offset") Optional<Integer> offset,
-      @RequestParam("orderBy") Optional<OrderByClauses> orderBy, HttpServletResponse response) {
-    QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy);
+      @RequestParam("orderBy") Optional<OrderByClauses> orderBy, Optional<String> type) {
+    QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type);
     String result = eventRepository.findAll(params, lang);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }

@@ -1,6 +1,7 @@
 package eu.nampi.backend.model;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,5 +24,7 @@ public class QueryParameters implements Serializable {
   private String relativePath;
 
   private OrderByClauses orderByClauses;
+
+  private Optional<String> type;
 
 }

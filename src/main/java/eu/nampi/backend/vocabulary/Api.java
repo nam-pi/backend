@@ -33,4 +33,6 @@ public class Api {
 
   public static final Property orderBy = property("orderBy");
 
+  public static final Property type = property("type");
+
 }

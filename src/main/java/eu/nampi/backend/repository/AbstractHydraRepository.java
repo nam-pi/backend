@@ -55,6 +55,11 @@ public abstract class AbstractHydraRepository {
   protected ConstructBuilder getHydraCollectionBuilder(QueryParameters params, WhereBuilder whereClause,
       String memberVar, Property orderByTemplateMappingProperty) {
     ConstructBuilder builder = new ConstructBuilder();
+    params.getType().ifPresent(t -> {
+      String iri = "<" + t + ">";
+      whereClause.addWhere(memberVar, RDF.type, iri);
+      builder.addConstruct(memberVar, RDF.type, iri);
+    });
     ExprFactory exprF = builder.getExprFactory();
     try {
       // @formatter:off
@@ -74,11 +79,12 @@ public abstract class AbstractHydraRepository {
       SelectBuilder searchSelect = new SelectBuilder()
         .addVar("*")
         .addBind("bnode()", "?search")
-        .addBind(exprF.concat(params.getRelativePath(), "{?pageIndex,limit,offset,orderBy}"), "?template")
+        .addBind(exprF.concat(params.getRelativePath(), "{?pageIndex,limit,offset,orderBy,type}"), "?template")
         .addBind("bnode()", "?pageIndexMapping")
         .addBind("bnode()", "?limitMapping")
         .addBind("bnode()", "?offsetMapping")
-        .addBind("bnode()", "?orderByMapping");
+        .addBind("bnode()", "?orderByMapping")
+        .addBind("bnode()", "?typeMapping");
       builder
         .addWhere(new WhereBuilder().addUnion(countSelect).addUnion(dataSelect).addUnion(searchSelect))
         .addPrefix("api", Api.getURI())
@@ -120,6 +126,7 @@ public abstract class AbstractHydraRepository {
       addHydraTemplateVariable(builder, "?search", "?offsetMapping", Hydra.offset, false, "offset");
       addHydraTemplateVariable(builder, "?search", "?orderByMapping", orderByTemplateMappingProperty, false, "orderBy");
       addHydraTemplateVariable(builder, "?search", "?pageIndexMapping", Hydra.pageIndex, false, "pageIndex");
+      addHydraTemplateVariable(builder, "?search", "?typeMapping", Api.type, false, "type");
       // @formatter:off
     } catch (ParseException e) {
       log.error(e.getMessage());

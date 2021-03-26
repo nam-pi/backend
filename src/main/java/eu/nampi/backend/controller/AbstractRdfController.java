@@ -19,7 +19,7 @@ public abstract class AbstractRdfController {
   private static final int NO_OFFSET = 0;
 
   protected QueryParameters getParameters(Optional<Integer> page, Optional<Integer> pageIndex, Optional<Integer> limit,
-      Optional<Integer> offset, Optional<OrderByClauses> orderBy) {
+      Optional<Integer> offset, Optional<OrderByClauses> orderBy, Optional<String> type) {
     HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
     String baseUrl = request.getRequestURL().toString();
     String relativePath = request.getRequestURI();
@@ -28,7 +28,7 @@ public abstract class AbstractRdfController {
         .map(p -> p * realLimit - realLimit).orElse(NO_OFFSET);
     boolean hasLimit = limit.isPresent();
     OrderByClauses clauses = orderBy.orElse(new OrderByClauses());
-    return new QueryParameters(baseUrl, hasLimit, realLimit, realOffset, relativePath, clauses);
+    return new QueryParameters(baseUrl, hasLimit, realLimit, realOffset, relativePath, clauses, type);
   }
 
 }

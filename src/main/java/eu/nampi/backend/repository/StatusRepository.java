@@ -30,7 +30,7 @@ public class StatusRepository extends AbstractHydraRepository {
     return jenaService.construct(construct);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses}")
+  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type}")
   public String findAll(QueryParameters params, Lang lang) {
     Model model = findAll(params);
     return serialize(model, lang);
