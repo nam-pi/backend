@@ -1,8 +1,11 @@
 package eu.nampi.backend.model;
 
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -31,7 +34,7 @@ public class HydraCollectionBuilder {
 
   private ConstructBuilder builder = new ConstructBuilder();
 
-  private ExprFactory exprF;
+  private ExprFactory ef;
 
   private WhereBuilder mainWhere = new WhereBuilder();
 
@@ -49,20 +52,23 @@ public class HydraCollectionBuilder {
 
   public HydraCollectionBuilder(QueryParameters params, Property mainType, Property orderByTemplateMappingProperty,
       boolean disableTypeFilter) {
-    this.exprF = this.builder.getExprFactory();
+    this.ef = this.builder.getExprFactory();
     this.mainType = mainType;
     this.orderByTemplateMappingProperty = orderByTemplateMappingProperty;
     this.params = params;
-
     this.mainWhere.addWhere(MAIN_SUBJ, RDF.type, this.mainType).addWhere(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
-    this.builder.addConstruct(MAIN_SUBJ, RDF.type, this.mainType).addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
-
-    addSearchVariable("limit", Hydra.limit, false);
-    addSearchVariable("offset", Hydra.offset, false);
+    this.builder.addPrefix("api", Api.getURI()).addPrefix("core", Core.getURI()).addPrefix("hydra", Hydra.getURI())
+        .addPrefix("rdf", RDF.getURI()).addPrefix("rdfs", RDFS.getURI()).addPrefix("xsd", XSD.getURI())
+        .addConstruct(MAIN_SUBJ, RDF.type, this.mainType).addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
+    addSearchVariable("limit", Hydra.limit, false, params.getLimit());
+    addSearchVariable("offset", Hydra.offset, false, params.getOffset());
     addSearchVariable("pageIndex", Hydra.pageIndex, false);
-    addSearchVariable("orderBy", this.orderByTemplateMappingProperty, false);
+    addSearchVariable("orderBy", this.orderByTemplateMappingProperty, false,
+        params.getOrderByClauses().empty() ? null : "'" + params.getOrderByClauses().toQueryString() + "'");
     if (!disableTypeFilter) {
-      addSearchVariable("type", Api.typeVar, false);
+      addSearchVariable("type", Api.typeVar, false,
+          params.getType().isPresent() ? "'" + URLEncoder.encode(params.getType().get(), Charset.defaultCharset()) + "'"
+              : null);
     }
   }
 
@@ -100,9 +106,12 @@ public class HydraCollectionBuilder {
   }
 
   public HydraCollectionBuilder addSearchVariable(String name, Property property, boolean required) {
+    return addSearchVariable(name, property, required, null);
+  }
+
+  public HydraCollectionBuilder addSearchVariable(String name, Property property, boolean required, Object value) {
     this.templateVariables.add(name);
     String templateMapping = mappingVar(name);
-    System.out.println(name);
     // @formatter:off
     this.builder
       .addConstruct(templateMapping, RDF.type, Hydra.IriTemplateMapping)
@@ -111,6 +120,9 @@ public class HydraCollectionBuilder {
       .addConstruct(templateMapping, Hydra.variable, name)
       .addConstruct("?search", Hydra.mapping, templateMapping);
     // @formatter:on
+    if (value != null) {
+      this.builder.addBind(this.builder.makeExpr(String.valueOf(value)), pad(name));
+    }
     return this;
   }
 
@@ -147,17 +159,11 @@ public class HydraCollectionBuilder {
       SelectBuilder searchSelect = new SelectBuilder()
         .addVar("*")
         .addBind("bnode()", "?search")
-        .addBind(this.exprF.concat(this.params.getRelativePath(), "{?" + this.templateVariables.stream().collect(Collectors.joining(",")) + "}"), "?template");
+        .addBind(this.ef.concat(this.params.getRelativePath(), "{?" + this.templateVariables.stream().collect(Collectors.joining(",")) + "}"), "?template");
       for (String string : templateVariables) {
         searchSelect.addBind("bnode()", mappingVar(string));
       }
       this.builder
-        .addPrefix("api", Api.getURI())
-        .addPrefix("core", Core.getURI())
-        .addPrefix("hydra", Hydra.getURI())
-        .addPrefix("rdf", RDF.getURI())
-        .addPrefix("rdfs", RDFS.getURI())
-        .addPrefix("xsd", XSD.getURI())
         .addWhere(new WhereBuilder()
           .addUnion(countSelect)
           .addUnion(dataSelect)
@@ -175,23 +181,21 @@ public class HydraCollectionBuilder {
         .addConstruct("?view", Hydra.next, "?next")
         .addConstruct("?view", Hydra.previous, "?prev")
         .addConstruct("?view", RDF.type, Hydra.PartialCollectionView)
-        .addBind(exprF.asExpr(this.params.getBaseUrl()), "?baseUrl")
-        .addBind(exprF.asExpr(this.params.getLimit()), "?limit")
-        .addBind(exprF.asExpr(this.params.getOffset()), "?offset")
-        .addBind(exprF.asExpr(this.params.getRelativePath()), "?path")
-        .addBind(exprF.asExpr(this.params.isCustomLimit()), "?customMeta")
-        .addBind(exprF.iri("?baseUrl"), "?col")
-        .addBind(builder.makeExpr("xsd:integer(ceil(?offset / ?limit + 1))"), "?currentNumber")
-        .addBind(builder.makeExpr("?currentNumber + 1"), "?nextNumber")
-        .addBind(builder.makeExpr("?currentNumber - 1"), "?prevNumber")
-        .addBind(builder.makeExpr("xsd:integer(ceil(?count / ?limit))"), "?lastNumber")
-        .addBind(builder.makeExpr("if(?customMeta, concat('&limit=', xsd:string(?limit)), '')"), "?limitQuery")
-        .addBind(builder.makeExpr("concat(?path, ?limitQuery, '?page=1')"), "?first")
-        .addBind(builder.makeExpr("concat(?path, ?limitQuery, '?page=', xsd:string(?lastNumber))"), "?last")
-        .addBind(builder.makeExpr("if(?nextNumber <= ?lastNumber, concat(?path, ?limitQuery, '?page=', xsd:string(?nextNumber)), 1+'')"), "?next")
-        .addBind(builder.makeExpr("if(?prevNumber > 0, concat(?path, ?limitQuery, '?page=', xsd:string(?prevNumber)), 1+'')"), "?prev")
-        .addBind(builder.makeExpr("iri(concat(?baseUrl, ?limitQuery, '?page=', xsd:string(?currentNumber)))"), "?view")
-        ;
+        .addBind(ef.asExpr(this.params.getBaseUrl()), "?baseUrl")
+        .addBind(ef.asExpr(this.params.getRelativePath()), "?path")
+        .addBind(ef.asExpr(this.params.isCustomLimit()), "?customMeta")
+        .addBind(ef.iri("?baseUrl"), "?col")
+        .addBind("concat(?baseUrl, " + IntStream.range(0, templateVariables.size()).mapToObj(idx -> {
+          String val = templateVariables.get(idx);
+          return "if(bound(?" + val + "), concat('" + (idx == 0 ? "?" : "&") + val + "=', xsd:string(" + pad(val) + ")), '')";
+        }).collect(Collectors.joining(", ")) + ")", "?viewUri")
+        .addBind("iri(?viewUri)", "?view")
+        .addBind("iri(replace(?viewUri, 'offset=\\\\d*', 'offset=0'))", "?first")
+        .addBind("iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', if(?count = 0, xsd:string(0), xsd:string(?count - ?limit)))))", "?last")
+        .addBind("?offset - ?limit", "?prevOffset")
+        .addBind("if(?prevOffset >= 0, iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', xsd:string(?prevOffset)))), 1+'')", "?prev")
+        .addBind("?offset + ?limit", "?nextOffset")
+        .addBind("if(?nextOffset < ?count, iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', xsd:string(?nextOffset)))), 1+'')", "?next");
       // @formatter:on
       return this.builder.build();
     } catch (ParseException e) {

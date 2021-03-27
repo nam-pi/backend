@@ -24,8 +24,8 @@ public abstract class AbstractRdfController {
     String baseUrl = request.getRequestURL().toString();
     String relativePath = request.getRequestURI();
     int realLimit = limit.orElse(defaultLimit);
-    int realOffset = Optional.ofNullable(page.orElseGet(() -> pageIndex.orElse(null)))
-        .map(p -> p * realLimit - realLimit).orElse(NO_OFFSET);
+    int realOffset = offset.orElse(Optional.ofNullable(page.orElseGet(() -> pageIndex.orElse(null)))
+        .map(p -> p * realLimit - realLimit).orElse(NO_OFFSET));
     boolean hasLimit = limit.isPresent();
     OrderByClauses clauses = orderBy.orElse(new OrderByClauses());
     return new QueryParameters(baseUrl, hasLimit, realLimit, realOffset, relativePath, clauses, type);

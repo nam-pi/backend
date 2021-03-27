@@ -25,13 +25,13 @@ public class OrderByClauses implements Serializable {
       String key = param.getKey();
       if (!key.isEmpty()) {
         String value = param.getValue().orElse("ASC").toUpperCase();
-        this.clauses.put(padKey(key), value.equals("DESC") ? Order.DESCENDING : Order.ASCENDING);
+        this.clauses.put(key, value.equals("DESC") ? Order.DESCENDING : Order.ASCENDING);
       }
     }
   }
 
   public void add(String orderBy, Order order) {
-    this.clauses.put(padKey(orderBy), order);
+    this.clauses.put(orderBy, order);
   }
 
   public void add(String orderBy) {
@@ -44,13 +44,25 @@ public class OrderByClauses implements Serializable {
     }
   }
 
+  public boolean containsKey(String name) {
+    return this.clauses.containsKey(name.startsWith("?") ? name.substring(1) : name);
+  }
+
+  public boolean empty() {
+    return this.clauses.size() == 0;
+  }
+
+  public Optional<Order> getOrderFor(String name) {
+    return containsKey(name) ? Optional.of(this.clauses.get(name)) : Optional.empty();
+  }
+
   public Map<String, Order> toMap() {
     return clauses;
   }
 
-  public Optional<Order> getOrderFor(String name) {
-    String key = padKey(name);
-    return this.clauses.containsKey(key) ? Optional.of(this.clauses.get(key)) : Optional.empty();
+  public String toQueryString() {
+    return clauses.entrySet().stream().map(e -> e.getKey() + (e.getValue() == Order.ASCENDING ? "" : "=DESC"))
+        .collect(Collectors.joining(","));
   }
 
   public String toString() {

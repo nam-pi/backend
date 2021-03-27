@@ -10,7 +10,7 @@ import org.apache.jena.rdfconnection.RDFConnectionFuseki;
 import org.apache.jena.rdfconnection.RDFConnectionRemoteBuilder;
 import org.springframework.beans.factory.annotation.Value;
 
-import eu.nampi.backend.model.HydraBuilder;
+import eu.nampi.backend.model.HydraCollectionBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,7 +41,7 @@ public class FusekiService implements JenaService {
   }
 
   @Override
-  public Model construct(HydraBuilder hydraBuilder) {
+  public Model construct(HydraCollectionBuilder hydraBuilder) {
     try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {
       String query = hydraBuilder.buildString();
       log.debug(query);

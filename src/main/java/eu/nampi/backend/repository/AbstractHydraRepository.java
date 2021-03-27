@@ -7,7 +7,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import eu.nampi.backend.model.HydraBuilder;
+import eu.nampi.backend.model.HydraCollectionBuilder;
 import eu.nampi.backend.service.JenaService;
 
 public abstract class AbstractHydraRepository {
@@ -21,7 +21,7 @@ public abstract class AbstractHydraRepository {
     return writer.toString();
   }
 
-  protected Model construct(HydraBuilder builder) {
+  protected Model construct(HydraCollectionBuilder builder) {
     return jenaService.construct(builder);
   }
 

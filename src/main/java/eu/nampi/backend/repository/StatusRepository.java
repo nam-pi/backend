@@ -6,7 +6,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
-import eu.nampi.backend.model.HydraBuilder;
+import eu.nampi.backend.model.HydraCollectionBuilder;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
@@ -17,7 +17,7 @@ public class StatusRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     // @formatter:off
-    HydraBuilder hydra = new HydraBuilder(params, Core.status, Api.orderBy);
+    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.status, Api.statusOrderByVar);
     // @formatter:on
     return construct(hydra);
   }
