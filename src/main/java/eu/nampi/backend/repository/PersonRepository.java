@@ -2,8 +2,6 @@ package eu.nampi.backend.repository;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -19,11 +17,7 @@ public class PersonRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     // @formatter:off
-    HydraBuilder hydra = new HydraBuilder(params, "?person", Api.orderBy)
-      .addWhere(RDF.type, Core.person)
-      .addWhere(RDFS.label, "?label")
-      .addConstruct(RDF.type, Core.person)
-      .addConstruct(RDFS.label, "?label");
+    HydraBuilder hydra = new HydraBuilder(params, Core.person, Api.orderBy);
     // @formatter:on
     return construct(hydra);
   }

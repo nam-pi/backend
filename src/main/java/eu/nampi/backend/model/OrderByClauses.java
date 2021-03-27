@@ -53,16 +53,6 @@ public class OrderByClauses implements Serializable {
     return this.clauses.containsKey(key) ? Optional.of(this.clauses.get(key)) : Optional.empty();
   }
 
-  public void replaceLabel(String originalLabel, String newLabel) {
-    Map<String, Order> originalClauses = this.clauses;
-    this.clauses = new LinkedHashMap<>();
-    for (Map.Entry<String, Order> clause : originalClauses.entrySet()) {
-      String key = clause.getKey();
-      Order value = clause.getValue();
-      this.add(padKey(originalLabel).equals(key) ? newLabel : key, value);
-    }
-  }
-
   public String toString() {
     return "OrderBy[" + clauses.entrySet().stream().map((Map.Entry<String, Order> entry) -> {
       return entry.getKey() + "=" + entry.getValue();

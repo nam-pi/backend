@@ -20,18 +20,29 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HydraBuilder {
+
+  public static final String MAIN_LABEL = "?label";
+  public static final String MAIN_SUBJ = "?main";
+
   private ExprFactory exprF;
+
   private QueryParameters params;
+
   private WhereBuilder mainWhere = new WhereBuilder();
-  private String memberVar;
+
   private ConstructBuilder builder = new ConstructBuilder();
+
   private Property orderByTemplateMappingProperty;
 
-  public HydraBuilder(QueryParameters params, String memberVar, Property orderByTemplateMappingProperty) {
+  private Property mainType;
+
+  public HydraBuilder(QueryParameters params, Property mainType, Property orderByTemplateMappingProperty) {
     this.exprF = this.builder.getExprFactory();
     this.params = params;
-    this.memberVar = memberVar;
+    this.mainType = mainType;
     this.orderByTemplateMappingProperty = orderByTemplateMappingProperty;
+    this.mainWhere.addWhere(MAIN_SUBJ, RDF.type, this.mainType).addWhere(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
+    this.builder.addConstruct(MAIN_SUBJ, RDF.type, this.mainType).addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
   }
 
   public HydraBuilder addBind(String expression, Object var) {
@@ -54,8 +65,12 @@ public class HydraBuilder {
     return this;
   }
 
-  public HydraBuilder addConstruct(Object p, Object o) {
-    return addConstruct(this.memberVar, p, o);
+  public HydraBuilder addMainConstruct(Object p, Object o) {
+    return addConstruct(MAIN_SUBJ, p, o);
+  }
+
+  public HydraBuilder addMainWhere(Object p, Object o) {
+    return addWhere(MAIN_SUBJ, p, o);
   }
 
   public HydraBuilder addOptional(WhereBuilder whereClause) {
@@ -73,15 +88,11 @@ public class HydraBuilder {
     return this;
   }
 
-  public HydraBuilder addWhere(Object p, Object o) {
-    return addWhere(this.memberVar, p, o);
-  }
-
   public Query build() {
     params.getType().ifPresent(t -> {
       String iri = "<" + t + ">";
-      this.mainWhere.addWhere(this.memberVar, RDF.type, iri);
-      this.builder.addConstruct(this.memberVar, RDF.type, iri);
+      this.mainWhere.addWhere(MAIN_SUBJ, RDF.type, iri);
+      this.builder.addConstruct(MAIN_SUBJ, RDF.type, iri);
     });
     try {
       // @formatter:off
@@ -94,7 +105,7 @@ public class HydraBuilder {
       params
         .getOrderByClauses()
         .appendAllTo(dataSelect);
-      dataSelect.addOrderBy(this.memberVar)
+      dataSelect.addOrderBy(MAIN_SUBJ)
         .setLimit(this.params.getLimit())
         .setOffset(this.params.getOffset());
       SelectBuilder searchSelect = new SelectBuilder()
@@ -117,7 +128,7 @@ public class HydraBuilder {
           .addUnion(countSelect)
           .addUnion(dataSelect)
           .addUnion(searchSelect))
-        .addConstruct("?col", Hydra.member, memberVar)
+        .addConstruct("?col", Hydra.member, MAIN_SUBJ)
         .addConstruct("?col", Hydra.search, "?search")
         .addConstruct("?col", Hydra.totalItems, "?count")
         .addConstruct("?col", Hydra.view, "?view")
