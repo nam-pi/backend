@@ -47,11 +47,6 @@ public class HydraCollectionBuilder {
   private List<String> templateVariables = new ArrayList<>();
 
   public HydraCollectionBuilder(QueryParameters params, Property mainType, Property orderByTemplateMappingProperty) {
-    this(params, mainType, orderByTemplateMappingProperty, false);
-  }
-
-  public HydraCollectionBuilder(QueryParameters params, Property mainType, Property orderByTemplateMappingProperty,
-      boolean disableTypeFilter) {
     this.ef = this.builder.getExprFactory();
     this.mainType = mainType;
     this.orderByTemplateMappingProperty = orderByTemplateMappingProperty;
@@ -65,11 +60,11 @@ public class HydraCollectionBuilder {
     addSearchVariable("pageIndex", Hydra.pageIndex, false);
     addSearchVariable("orderBy", this.orderByTemplateMappingProperty, false,
         params.getOrderByClauses().empty() ? null : "'" + params.getOrderByClauses().toQueryString() + "'");
-    if (!disableTypeFilter) {
-      addSearchVariable("type", Api.typeVar, false,
-          params.getType().isPresent() ? "'" + URLEncoder.encode(params.getType().get(), Charset.defaultCharset()) + "'"
-              : null);
-    }
+    addSearchVariable("type", Api.typeVar, false,
+        params.getType().isPresent() ? "'" + URLEncoder.encode(params.getType().get(), Charset.defaultCharset()) + "'"
+            : null);
+    addSearchVariable("text", Api.textVar, false,
+        params.getText().isPresent() ? "'" + params.getText().get() + "'" : null);
   }
 
   public HydraCollectionBuilder addBind(String expression, Object var) {
@@ -141,6 +136,9 @@ public class HydraCollectionBuilder {
       String iri = "<" + t + ">";
       this.mainWhere.addWhere(MAIN_SUBJ, RDF.type, iri);
       this.builder.addConstruct(MAIN_SUBJ, RDF.type, iri);
+    });
+    params.getText().ifPresent(t -> {
+      this.mainWhere.addFilter(ef.asExpr("regex(" + MAIN_LABEL + ", '" + t + "', 'i')"));
     });
     try {
       // @formatter:off

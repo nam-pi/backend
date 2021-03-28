@@ -27,4 +27,6 @@ public class QueryParameters implements Serializable {
 
   private Optional<String> type;
 
+  private Optional<String> text;
+
 }

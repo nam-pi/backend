@@ -37,6 +37,8 @@ public class Api {
 
   public static final Property statusOrderByVar = property("status_order_by_variable");
 
+  public static final Property textVar = property("text_variable");
+
   public static final Property typeVar = property("type_variable");
 
 }
