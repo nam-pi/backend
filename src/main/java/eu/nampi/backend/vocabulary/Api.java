@@ -33,6 +33,8 @@ public class Api {
 
   public static final Property eventOrderByVar = property("event_order_by_variable");
 
+  public static final Property eventDatesVar = property("event_dates_variable");
+
   public static final Property personOrderByVar = property("person_order_by_variable");
 
   public static final Property statusOrderByVar = property("status_order_by_variable");

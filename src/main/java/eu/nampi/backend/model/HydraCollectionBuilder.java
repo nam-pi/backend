@@ -51,7 +51,8 @@ public class HydraCollectionBuilder {
     this.mainType = mainType;
     this.orderByTemplateMappingProperty = orderByTemplateMappingProperty;
     this.params = params;
-    this.mainWhere.addWhere(MAIN_SUBJ, RDF.type, this.mainType).addWhere(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
+    this.mainWhere.addWhere(MAIN_SUBJ, RDF.type, this.mainType).addWhere(MAIN_SUBJ, RDFS.label, MAIN_LABEL)
+        .addPrefix("xsd", XSD.getURI());
     this.builder.addPrefix("api", Api.getURI()).addPrefix("core", Core.getURI()).addPrefix("hydra", Hydra.getURI())
         .addPrefix("rdf", RDF.getURI()).addPrefix("rdfs", RDFS.getURI()).addPrefix("xsd", XSD.getURI())
         .addConstruct(MAIN_SUBJ, RDF.type, this.mainType).addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
@@ -89,6 +90,15 @@ public class HydraCollectionBuilder {
 
   public HydraCollectionBuilder addMainConstruct(Object p, Object o) {
     return addConstruct(MAIN_SUBJ, p, o);
+  }
+
+  public HydraCollectionBuilder addFilter(String filter) {
+    try {
+      this.mainWhere.addFilter(filter);
+    } catch (ParseException e) {
+      log.error(e.getMessage());
+    }
+    return this;
   }
 
   public HydraCollectionBuilder addMainWhere(Object p, Object o) {
