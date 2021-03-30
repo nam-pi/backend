@@ -37,6 +37,8 @@ public class Core {
 
   public static final Property status = property("status");
 
+  public static final Property usesStatus = property("uses_status");
+
   public static final Property hasSortingDate = property("has_sorting_date");
 
   public static final Property takesPlaceOn = property("takes_place_on");

@@ -10,6 +10,8 @@ import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.sparql.path.PathFactory;
+import org.apache.jena.vocabulary.RDF;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -26,7 +28,7 @@ public class EventRepository extends AbstractHydraRepository {
 
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
-  public Model findAll(QueryParameters params, Optional<String> dates) {
+  public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> statusType) {
     // @formatter:off
     HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.event, Api.eventOrderByVar)
       .addOptional(new WhereBuilder()
@@ -75,12 +77,20 @@ public class EventRepository extends AbstractHydraRepository {
     }, () -> {
       hydra.addSearchVariable("dates", Api.eventDatesVar, false);
     });
+    statusType.ifPresentOrElse(st -> {
+      hydra
+          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesStatus.asNode()),
+              PathFactory.pathLink(RDF.type.asNode())), "<" + st + ">")
+          .addSearchVariable("statusType", Api.eventStatusTypeVar, false, "'" + st + "'");
+    }, () -> {
+      hydra.addSearchVariable("statusType", Api.eventStatusTypeVar, false);
+    });
     return construct(hydra);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates}")
-  public String findAll(QueryParameters params, Lang lang, Optional<String> dates) {
-    Model model = findAll(params, dates);
+  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType}")
+  public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> statusType) {
+    Model model = findAll(params, dates, statusType);
     return serialize(model, lang);
   }
 
