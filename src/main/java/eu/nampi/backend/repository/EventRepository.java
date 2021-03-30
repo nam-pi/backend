@@ -28,7 +28,8 @@ public class EventRepository extends AbstractHydraRepository {
 
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
-  public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> statusType) {
+  public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> statusType,
+      Optional<String> occupationType) {
     // @formatter:off
     HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.event, Api.eventOrderByVar)
       .addOptional(new WhereBuilder()
@@ -85,12 +86,21 @@ public class EventRepository extends AbstractHydraRepository {
     }, () -> {
       hydra.addSearchVariable("statusType", Api.eventStatusTypeVar, false);
     });
+    occupationType.ifPresentOrElse(ot -> {
+      hydra
+          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesOccupation.asNode()),
+              PathFactory.pathLink(RDF.type.asNode())), "<" + ot + ">")
+          .addSearchVariable("occupationType", Api.eventOccupationTypeVar, false, "'" + ot + "'");
+    }, () -> {
+      hydra.addSearchVariable("statusType", Api.eventOccupationTypeVar, false);
+    });
     return construct(hydra);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType}")
-  public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> statusType) {
-    Model model = findAll(params, dates, statusType);
+  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType, #occupationType}")
+  public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> statusType,
+      Optional<String> occupationType) {
+    Model model = findAll(params, dates, statusType, occupationType);
     return serialize(model, lang);
   }
 
