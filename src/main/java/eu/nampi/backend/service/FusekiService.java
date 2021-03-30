@@ -54,13 +54,13 @@ public class FusekiService implements JenaService {
     List<String> owls = new ArrayList<>();
     owls.add(coreOwlUrl);
     owls.addAll(otherOwlUrls);
-    Model dataModel = ModelFactory.createDefaultModel();
-    try (RDFConnectionFuseki conn = (RDFConnectionFuseki) dataBuilder.build()) {
-      dataModel = conn.queryConstruct("CONSTRUCT {?s ?p ?o} WHERE {?s ?p ?o}");
-    }
     Model infCacheModel = ModelFactory.createDefaultModel();
     for (String url : owls) {
       infCacheModel.read(url);
+    }
+    Model dataModel = ModelFactory.createDefaultModel();
+    try (RDFConnectionFuseki conn = (RDFConnectionFuseki) dataBuilder.build()) {
+      dataModel = conn.queryConstruct("CONSTRUCT {?s ?p ?o} WHERE {?s ?p ?o}");
     }
     infCacheModel.add(dataModel);
     try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {

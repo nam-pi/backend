@@ -60,6 +60,7 @@ services:
         KEYCLOAK_RESOURCE: ${KEYCLOAK_RESOURCE}
         KEYCLOAK_URL: http://keycloak:8080/auth
         LOGGING_LEVEL: ${LOGGING_LEVEL:-DEBUG}
+        CORE_OWL_URL: ${CORE_OWL_URL}
         OTHER_OWL_URLS: ${OTHER_OWL_URLS}
         PROFILE: ${PROFILE:-prod}
         DATA_URL: http://fuseki:3030/data
