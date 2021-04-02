@@ -105,6 +105,15 @@ public class HydraCollectionBuilder {
     return addWhere(MAIN_SUBJ, p, o);
   }
 
+  public HydraCollectionBuilder addUnions(WhereBuilder... builder) {
+    WhereBuilder nw = new WhereBuilder();
+    for (WhereBuilder whereBuilder : builder) {
+      nw.addUnion(whereBuilder);
+    }
+    this.mainWhere.addWhere(nw);
+    return this;
+  }
+
   public HydraCollectionBuilder addOptional(WhereBuilder whereClause) {
     this.mainWhere.addOptional(whereClause);
     return this;

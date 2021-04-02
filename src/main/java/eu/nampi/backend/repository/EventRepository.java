@@ -34,9 +34,9 @@ public class EventRepository extends AbstractHydraRepository {
     // @formatter:off
     interactionType.ifPresentOrElse(it -> hydra
         .addMainWhere("<" + it + ">", "?p")
-        .addWhere("?p", RDF.type, "?pt")
-        // .addWhere("?pt", RDF.type, Core.person)
-        .addValues("pt", Core.person, Core.group)
+        .addUnions(
+          new WhereBuilder().addWhere("?p", RDF.type, Core.person), 
+          new WhereBuilder().addWhere("?p", RDF.type, Core.group))
         .addSearchVariable("interactionType", Api.eventInteractionTypeVar, false, "'" + it + "'")
       , () -> hydra
         .addSearchVariable("interactionType", Api.eventInteractionTypeVar, false));
