@@ -29,7 +29,7 @@ public class EventRepository extends AbstractHydraRepository {
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
   public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> statusType,
-      Optional<String> occupationType, Optional<String> interactionType) {
+      Optional<String> occupationType, Optional<String> interactionType, Optional<String> participant) {
     HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.event, Api.eventOrderByVar);
     // @formatter:off
     interactionType.ifPresentOrElse(it -> hydra
@@ -40,6 +40,28 @@ public class EventRepository extends AbstractHydraRepository {
         .addSearchVariable("interactionType", Api.eventInteractionTypeVar, false, "'" + it + "'")
       , () -> hydra
         .addSearchVariable("interactionType", Api.eventInteractionTypeVar, false));
+    participant.ifPresentOrElse(p -> {
+      hydra.addMainWhere(Core.hasParticipant, "<" + p + ">").addSearchVariable("participant", Api.eventParticipantVar,
+          false, "'" + p + "'");
+    }, () -> {
+      hydra.addSearchVariable("participant", Api.eventParticipantVar, false);
+    });
+    statusType.ifPresentOrElse(st -> {
+      hydra
+          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesStatus.asNode()),
+              PathFactory.pathLink(RDF.type.asNode())), "<" + st + ">")
+          .addSearchVariable("statusType", Api.eventStatusTypeVar, false, "'" + st + "'");
+    }, () -> {
+      hydra.addSearchVariable("statusType", Api.eventStatusTypeVar, false);
+    });
+    occupationType.ifPresentOrElse(ot -> {
+      hydra
+          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesOccupation.asNode()),
+              PathFactory.pathLink(RDF.type.asNode())), "<" + ot + ">")
+          .addSearchVariable("occupationType", Api.eventOccupationTypeVar, false, "'" + ot + "'");
+    }, () -> {
+      hydra.addSearchVariable("occupationType", Api.eventOccupationTypeVar, false);
+    });
     hydra.addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
         .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime"))
@@ -86,29 +108,13 @@ public class EventRepository extends AbstractHydraRepository {
     }, () -> {
       hydra.addSearchVariable("dates", Api.eventDatesVar, false);
     });
-    statusType.ifPresentOrElse(st -> {
-      hydra
-          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesStatus.asNode()),
-              PathFactory.pathLink(RDF.type.asNode())), "<" + st + ">")
-          .addSearchVariable("statusType", Api.eventStatusTypeVar, false, "'" + st + "'");
-    }, () -> {
-      hydra.addSearchVariable("statusType", Api.eventStatusTypeVar, false);
-    });
-    occupationType.ifPresentOrElse(ot -> {
-      hydra
-          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesOccupation.asNode()),
-              PathFactory.pathLink(RDF.type.asNode())), "<" + ot + ">")
-          .addSearchVariable("occupationType", Api.eventOccupationTypeVar, false, "'" + ot + "'");
-    }, () -> {
-      hydra.addSearchVariable("occupationType", Api.eventOccupationTypeVar, false);
-    });
     return construct(hydra);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType, #occupationType, #interactionType}")
+  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType, #occupationType, #interactionType, #participant}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> statusType,
-      Optional<String> occupationType, Optional<String> interactionType) {
-    Model model = findAll(params, dates, statusType, occupationType, interactionType);
+      Optional<String> occupationType, Optional<String> interactionType, Optional<String> participant) {
+    Model model = findAll(params, dates, statusType, occupationType, interactionType, participant);
     return serialize(model, lang);
   }
 

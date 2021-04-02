@@ -41,6 +41,8 @@ public class Api {
 
   public static final Property eventInteractionTypeVar = property("event_interaction_type_variable");
 
+  public static final Property eventParticipantVar = property("event_participant_variable");
+
   public static final Property personOrderByVar = property("person_order_by_variable");
 
   public static final Property statusOrderByVar = property("status_order_by_variable");
