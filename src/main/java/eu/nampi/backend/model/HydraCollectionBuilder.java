@@ -131,6 +131,11 @@ public class HydraCollectionBuilder {
     return this;
   }
 
+  public HydraCollectionBuilder addValues(Object var, Object... values) {
+    this.mainWhere.addWhereValueVar(var, values);
+    return this;
+  }
+
   public HydraCollectionBuilder addWhere(WhereBuilder whereClause) {
     this.mainWhere.addWhere(whereClause);
     return this;

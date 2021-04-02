@@ -35,11 +35,15 @@ public class Core {
 
   public static final Property person = property("person");
 
+  public static final Property group = property("group");
+
   public static final Property status = property("status");
 
   public static final Property usesStatus = property("uses_status");
 
   public static final Property usesOccupation = property("uses_occupation");
+
+  public static final Property hasParticipant = property("has_participant");
 
   public static final Property hasSortingDate = property("has_sorting_date");
 

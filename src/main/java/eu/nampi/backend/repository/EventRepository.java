@@ -29,10 +29,18 @@ public class EventRepository extends AbstractHydraRepository {
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
   public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> statusType,
-      Optional<String> occupationType) {
+      Optional<String> occupationType, Optional<String> interactionType) {
+    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.event, Api.eventOrderByVar);
     // @formatter:off
-    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.event, Api.eventOrderByVar)
-      .addOptional(new WhereBuilder()
+    interactionType.ifPresentOrElse(it -> hydra
+        .addMainWhere("<" + it + ">", "?p")
+        .addWhere("?p", RDF.type, "?pt")
+        // .addWhere("?pt", RDF.type, Core.person)
+        .addValues("pt", Core.person, Core.group)
+        .addSearchVariable("interactionType", Api.eventInteractionTypeVar, false, "'" + it + "'")
+      , () -> hydra
+        .addSearchVariable("interactionType", Api.eventInteractionTypeVar, false));
+    hydra.addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
         .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime"))
       .addOptional(new WhereBuilder()
@@ -92,15 +100,15 @@ public class EventRepository extends AbstractHydraRepository {
               PathFactory.pathLink(RDF.type.asNode())), "<" + ot + ">")
           .addSearchVariable("occupationType", Api.eventOccupationTypeVar, false, "'" + ot + "'");
     }, () -> {
-      hydra.addSearchVariable("statusType", Api.eventOccupationTypeVar, false);
+      hydra.addSearchVariable("occupationType", Api.eventOccupationTypeVar, false);
     });
     return construct(hydra);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType, #occupationType}")
+  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType, #occupationType, #interactionType}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> statusType,
-      Optional<String> occupationType) {
-    Model model = findAll(params, dates, statusType, occupationType);
+      Optional<String> occupationType, Optional<String> interactionType) {
+    Model model = findAll(params, dates, statusType, occupationType, interactionType);
     return serialize(model, lang);
   }
 
