@@ -1,10 +1,11 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.HydraCollectionBuilder.MAIN_SUBJ;
+import static eu.nampi.backend.sparql.HydraCollectionBuilder.MAIN_SUBJ;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -12,13 +13,15 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.converter.StringToDateRangeConverter;
-import eu.nampi.backend.model.HydraCollectionBuilder;
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.sparql.HydraCollectionBuilder;
+import eu.nampi.backend.sparql.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
@@ -115,6 +118,13 @@ public class EventRepository extends AbstractHydraRepository {
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> statusType,
       Optional<String> occupationType, Optional<String> interactionType, Optional<String> participant) {
     Model model = findAll(params, dates, statusType, occupationType, interactionType, participant);
+    return serialize(model, lang);
+  }
+
+  public String findOne(Lang lang, UUID id) {
+    HydraSingleBuilder builder = new HydraSingleBuilder("https://purl.org/nampi/persons/" + id, Core.person)
+        .addData("?e", Core.hasParticipant, MAIN_SUBJ).addData("?e", RDFS.label, "?el");
+    Model model = construct(builder);
     return serialize(model, lang);
   }
 

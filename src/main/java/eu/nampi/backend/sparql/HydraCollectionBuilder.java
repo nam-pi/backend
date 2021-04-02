@@ -1,4 +1,4 @@
-package eu.nampi.backend.model;
+package eu.nampi.backend.sparql;
 
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -20,13 +20,14 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 
+import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HydraCollectionBuilder {
+public class HydraCollectionBuilder implements InterfaceHydraBuilder {
 
   public static final String MAIN_LABEL = "?label";
 
@@ -155,6 +156,7 @@ public class HydraCollectionBuilder {
     return this;
   }
 
+  @Override
   public Query build() {
     params.getType().ifPresent(t -> {
       String iri = "<" + t + ">";
@@ -226,6 +228,7 @@ public class HydraCollectionBuilder {
     }
   }
 
+  @Override
   public String buildString() {
     return build().toString();
   }
