@@ -31,6 +31,10 @@ public class Hydra {
     return ResourceFactory.createProperty(uri, local);
   }
 
+  public static final Property Resource = property("Resource");
+
+  public static final Property collection = property("collection");
+
   public static final Property Collection = property("Collection");
 
   public static final Property member = property("member");
@@ -74,4 +78,19 @@ public class Hydra {
   public static final Property variableRepresentation = property("variableRepresentation");
 
   public static final Property BasicRepresentation = property("BasicRepresentation");
+
+  public static final Property title = property("title");
+
+  public static final Property description = property("description");
+
+  public static final Property supportedClass = property("supportedClass");
+
+  public static final Property Class = property("Class");
+
+  public static final Property ApiDocumentation = property("ApiDocumentation");
+
+  public static final Property entrypoint = property("entrypoint");
+
+  public static final Property memberAssertion = property("memberAssertion");
+
 }

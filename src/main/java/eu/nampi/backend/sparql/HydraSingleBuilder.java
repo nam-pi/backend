@@ -9,9 +9,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 
-import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
+import eu.nampi.backend.vocabulary.Vocab;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -26,7 +26,7 @@ public class HydraSingleBuilder implements InterfaceHydraBuilder {
   private WhereBuilder mainWhere = new WhereBuilder();
 
   public HydraSingleBuilder(String uri, Property mainType) {
-    this.builder.addPrefix("api", Api.getURI()).addPrefix("core", Core.getURI()).addPrefix("hydra", Hydra.getURI())
+    this.builder.addPrefix("api", Vocab.getURI()).addPrefix("core", Core.getURI()).addPrefix("hydra", Hydra.getURI())
         .addPrefix("rdf", RDF.getURI()).addPrefix("rdfs", RDFS.getURI()).addPrefix("xsd", XSD.getURI())
         .addConstruct(MAIN_SUBJ, RDF.type, mainType).addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
     try {

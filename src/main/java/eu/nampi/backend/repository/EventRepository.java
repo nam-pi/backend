@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.RDF;
@@ -22,8 +23,8 @@ import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.sparql.HydraCollectionBuilder;
 import eu.nampi.backend.sparql.HydraSingleBuilder;
-import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
+import eu.nampi.backend.vocabulary.Vocab;
 
 @Repository
 @CacheConfig(cacheNames = "events")
@@ -33,37 +34,37 @@ public class EventRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> statusType,
       Optional<String> occupationType, Optional<String> interactionType, Optional<String> participant) {
-    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.event, Api.eventOrderByVar);
+    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.event, Vocab.eventOrderByVar);
     // @formatter:off
     interactionType.ifPresentOrElse(it -> hydra
         .addMainWhere("<" + it + ">", "?p")
         .addUnions(
           new WhereBuilder().addWhere("?p", RDF.type, Core.person), 
           new WhereBuilder().addWhere("?p", RDF.type, Core.group))
-        .addSearchVariable("interactionType", Api.eventInteractionTypeVar, false, "'" + it + "'")
+        .addSearchVariable("interactionType", Vocab.eventInteractionTypeVar, false, "'" + it + "'")
       , () -> hydra
-        .addSearchVariable("interactionType", Api.eventInteractionTypeVar, false));
+        .addSearchVariable("interactionType", Vocab.eventInteractionTypeVar, false));
     participant.ifPresentOrElse(p -> {
-      hydra.addMainWhere(Core.hasParticipant, "<" + p + ">").addSearchVariable("participant", Api.eventParticipantVar,
+      hydra.addMainWhere(Core.hasParticipant, "<" + p + ">").addSearchVariable("participant", Vocab.eventParticipantVar,
           false, "'" + p + "'");
     }, () -> {
-      hydra.addSearchVariable("participant", Api.eventParticipantVar, false);
+      hydra.addSearchVariable("participant", Vocab.eventParticipantVar, false);
     });
     statusType.ifPresentOrElse(st -> {
       hydra
           .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesStatus.asNode()),
               PathFactory.pathLink(RDF.type.asNode())), "<" + st + ">")
-          .addSearchVariable("statusType", Api.eventStatusTypeVar, false, "'" + st + "'");
+          .addSearchVariable("statusType", Vocab.eventStatusTypeVar, false, "'" + st + "'");
     }, () -> {
-      hydra.addSearchVariable("statusType", Api.eventStatusTypeVar, false);
+      hydra.addSearchVariable("statusType", Vocab.eventStatusTypeVar, false);
     });
     occupationType.ifPresentOrElse(ot -> {
       hydra
           .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesOccupation.asNode()),
               PathFactory.pathLink(RDF.type.asNode())), "<" + ot + ">")
-          .addSearchVariable("occupationType", Api.eventOccupationTypeVar, false, "'" + ot + "'");
+          .addSearchVariable("occupationType", Vocab.eventOccupationTypeVar, false, "'" + ot + "'");
     }, () -> {
-      hydra.addSearchVariable("occupationType", Api.eventOccupationTypeVar, false);
+      hydra.addSearchVariable("occupationType", Vocab.eventOccupationTypeVar, false);
     });
     hydra.addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
@@ -89,7 +90,7 @@ public class EventRepository extends AbstractHydraRepository {
       .addConstruct("?realSortingDate", Core.hasXsdDateTime, "?date");
     // @formatter:on
     dates.map(s -> CONVERTER.convert(dates.get())).ifPresentOrElse(dr -> {
-      hydra.addSearchVariable("dates", Api.eventDatesVar, false, "'" + dates.get() + "'");
+      hydra.addSearchVariable("dates", Vocab.eventDatesVar, false, "'" + dates.get() + "'");
       Optional<LocalDateTime> start = dr.getStart();
       if (start.isPresent()) {
         hydra.addBind("'" + start.get().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "'^^xsd:dateTime",
@@ -109,7 +110,7 @@ public class EventRepository extends AbstractHydraRepository {
         hydra.addFilter("?date <= ?filterEnd");
       }
     }, () -> {
-      hydra.addSearchVariable("dates", Api.eventDatesVar, false);
+      hydra.addSearchVariable("dates", Vocab.eventDatesVar, false);
     });
     return construct(hydra);
   }
@@ -118,7 +119,7 @@ public class EventRepository extends AbstractHydraRepository {
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> statusType,
       Optional<String> occupationType, Optional<String> interactionType, Optional<String> participant) {
     Model model = findAll(params, dates, statusType, occupationType, interactionType, participant);
-    return serialize(model, lang);
+    return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
 
   public String findOne(Lang lang, UUID id) {

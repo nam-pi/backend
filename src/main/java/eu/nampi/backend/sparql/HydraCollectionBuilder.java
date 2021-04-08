@@ -21,9 +21,9 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
+import eu.nampi.backend.vocabulary.Vocab;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -54,7 +54,7 @@ public class HydraCollectionBuilder implements InterfaceHydraBuilder {
     this.params = params;
     this.mainWhere.addWhere(MAIN_SUBJ, RDF.type, this.mainType).addWhere(MAIN_SUBJ, RDFS.label, MAIN_LABEL)
         .addPrefix("xsd", XSD.getURI());
-    this.builder.addPrefix("api", Api.getURI()).addPrefix("core", Core.getURI()).addPrefix("hydra", Hydra.getURI())
+    this.builder.addPrefix("api", Vocab.getURI()).addPrefix("core", Core.getURI()).addPrefix("hydra", Hydra.getURI())
         .addPrefix("rdf", RDF.getURI()).addPrefix("rdfs", RDFS.getURI()).addPrefix("xsd", XSD.getURI())
         .addConstruct(MAIN_SUBJ, RDF.type, this.mainType).addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
     addSearchVariable("limit", Hydra.limit, false, params.getLimit());
@@ -62,10 +62,10 @@ public class HydraCollectionBuilder implements InterfaceHydraBuilder {
     addSearchVariable("pageIndex", Hydra.pageIndex, false);
     addSearchVariable("orderBy", this.orderByTemplateMappingProperty, false,
         params.getOrderByClauses().empty() ? null : "'" + params.getOrderByClauses().toQueryString() + "'");
-    addSearchVariable("type", Api.typeVar, false,
+    addSearchVariable("type", Vocab.typeVar, false,
         params.getType().isPresent() ? "'" + URLEncoder.encode(params.getType().get(), Charset.defaultCharset()) + "'"
             : null);
-    addSearchVariable("text", Api.textVar, false,
+    addSearchVariable("text", Vocab.textVar, false,
         params.getText().isPresent() ? "'" + params.getText().get() + "'" : null);
   }
 
@@ -164,7 +164,7 @@ public class HydraCollectionBuilder implements InterfaceHydraBuilder {
       this.builder.addConstruct(MAIN_SUBJ, RDF.type, iri);
     });
     params.getText().ifPresent(t -> {
-      this.mainWhere.addFilter(ef.asExpr("regex(" + MAIN_LABEL + ", '" + t + "', 'i')"));
+      this.mainWhere.addFilter(ef.regex(MAIN_LABEL, t, "i"));
     });
     try {
       // @formatter:off
@@ -183,7 +183,7 @@ public class HydraCollectionBuilder implements InterfaceHydraBuilder {
       SelectBuilder searchSelect = new SelectBuilder()
         .addVar("*")
         .addBind("bnode()", "?search")
-        .addBind(this.ef.concat(this.params.getRelativePath(), "{?" + this.templateVariables.stream().collect(Collectors.joining(",")) + "}"), "?template");
+        .addBind(this.ef.concat(this.params.getBaseUrl(), "{?" + this.templateVariables.stream().collect(Collectors.joining(",")) + "}"), "?template");
       for (String string : templateVariables) {
         searchSelect.addBind("bnode()", mappingVar(string));
       }
@@ -221,7 +221,9 @@ public class HydraCollectionBuilder implements InterfaceHydraBuilder {
         .addBind("?offset + ?limit", "?nextOffset")
         .addBind("if(?nextOffset < ?count, iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', xsd:string(?nextOffset)))), 1+'')", "?next");
       // @formatter:on
-      return this.builder.build();
+      Query query = this.builder.build();
+      log.debug(query.toString());
+      return query;
     } catch (ParseException e) {
       log.error(e.getMessage());
       return null;
