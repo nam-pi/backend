@@ -20,6 +20,8 @@ public class ConfigProperties {
 
   int defaultLimit;
 
+  String individualsBaseUrl;
+
   List<String> otherOwlUrls;
 
 }

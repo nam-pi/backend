@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Map;
+import java.util.UUID;
 
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.jayway.jsonpath.Configuration;
@@ -18,6 +19,7 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import eu.nampi.backend.service.JenaService;
@@ -30,6 +32,52 @@ public abstract class AbstractHydraRepository {
 
   @Autowired
   private JenaService jenaService;
+
+  @Value("${nampi.individuals-base-url}")
+  String individualsBaseUrl;
+
+  protected Model construct(InterfaceHydraBuilder builder) {
+    return jenaService.construct(builder);
+  }
+
+  protected String createFrame(Model model, Resource startId) {
+    return "{\"@context\": " + extractContext(model) + ", \"@id\": \"" + startId.toString() + "\"}";
+  }
+
+  protected String endpointUri() {
+    return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+  }
+
+  protected String endpointUri(String... path) {
+    StringBuilder builder = new StringBuilder(endpointUri());
+    for (String string : path) {
+      builder.append("/").append(string);
+    }
+    return builder.toString();
+  }
+
+  protected String extractContext(Model model) {
+    Configuration conf = Configuration.builder().jsonProvider(new JacksonJsonProvider()).build();
+
+    StringWriter writer = new StringWriter();
+    RDFDataMgr.write(writer, model, RDFFormat.JSONLD);
+    String serialized = writer.toString().replace("@context", "context");
+
+    Map<String, String> res = JsonPath.using(conf).parse(serialized).read("$.context");
+    return new JSONObject(res).toJSONString();
+  }
+
+  protected String individualsUri(String type) {
+    return individualsBaseUrl.endsWith("/") ? individualsBaseUrl + type : individualsBaseUrl + "/" + type;
+  }
+
+  protected String individualsUri(String type, UUID id) {
+    return individualsUri(type) + "/" + id;
+  }
+
+  protected String newIndividualUri(String type) {
+    return individualsUri(type, UUID.randomUUID());
+  }
 
   protected String serialize(Model model, Lang lang) {
     StringWriter writer = new StringWriter();
@@ -56,36 +104,4 @@ public abstract class AbstractHydraRepository {
       return "";
     }
   }
-
-  protected Model construct(InterfaceHydraBuilder builder) {
-    return jenaService.construct(builder);
-  }
-
-  protected String endpointUri() {
-    return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-  }
-
-  protected String endpointUri(String... path) {
-    StringBuilder builder = new StringBuilder(endpointUri());
-    for (String string : path) {
-      builder.append("/").append(string);
-    }
-    return builder.toString();
-  }
-
-  protected String extractContext(Model model) {
-    Configuration conf = Configuration.builder().jsonProvider(new JacksonJsonProvider()).build();
-
-    StringWriter writer = new StringWriter();
-    RDFDataMgr.write(writer, model, RDFFormat.JSONLD);
-    String serialized = writer.toString().replace("@context", "context");
-
-    Map<String, String> res = JsonPath.using(conf).parse(serialized).read("$.context");
-    return new JSONObject(res).toJSONString();
-  }
-
-  protected String createFrame(Model model, Resource startId) {
-    return "{\"@context\": " + extractContext(model) + ", \"@id\": \"" + startId.toString() + "\"}";
-  }
-
 }

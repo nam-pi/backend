@@ -55,16 +55,17 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
+        CORE_OWL_URL: ${CORE_OWL_URL}
+        DATA_URL: http://fuseki:3030/data
+        INDIVIDUALS_BASE_URL: ${INDIVIDUALS_BASE_URL}
+        INF_CACHE_URL: http://fuseki:3030/inf_cache
         JAVA_VERSION: 11
         KEYCLOAK_REALM: ${KEYCLOAK_REALM}
         KEYCLOAK_RESOURCE: ${KEYCLOAK_RESOURCE}
         KEYCLOAK_URL: http://keycloak:8080/auth
         LOGGING_LEVEL: ${LOGGING_LEVEL:-DEBUG}
-        CORE_OWL_URL: ${CORE_OWL_URL}
         OTHER_OWL_URLS: ${OTHER_OWL_URLS}
         PROFILE: ${PROFILE:-prod}
-        DATA_URL: http://fuseki:3030/data
-        INF_CACHE_URL: http://fuseki:3030/inf_cache
         REDIS_URL: redis
     restart: always
     depends_on:

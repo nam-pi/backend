@@ -15,10 +15,11 @@ logging:
           wire: WARN
 
 nampi:
-  default-limit: ${DEFAULT_LIMIT:25}
+  core-owl-url: ${CORE_OWL_URL:https://purl.org/nampi/owl/core}
   dataset-url-data: ${DATA_URL}
   dataset-url-inf-cache: ${INF_CACHE_URL}
-  core-owl-url: ${CORE_OWL_URL:https://purl.org/nampi/owl/core}
+  default-limit: ${DEFAULT_LIMIT:25}
+  individuals-base-url: ${INDIVIDUALS_BASE_URL}
   other-owl-urls: ${OTHER_OWL_URLS:}
 
 server:

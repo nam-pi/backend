@@ -122,8 +122,9 @@ public class EventRepository extends AbstractHydraRepository {
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
 
+  @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder("https://purl.org/nampi/persons/" + id, Core.person)
+    HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.event.getLocalName(), id), Core.event)
         .addData("?e", Core.hasParticipant, MAIN_SUBJ).addData("?e", RDFS.label, "?el");
     Model model = construct(builder);
     return serialize(model, lang);
