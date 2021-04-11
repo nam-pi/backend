@@ -221,9 +221,7 @@ public class HydraCollectionBuilder implements InterfaceHydraBuilder {
         .addBind("?offset + ?limit", "?nextOffset")
         .addBind("if(?nextOffset < ?count, iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', xsd:string(?nextOffset)))), 1+'')", "?next");
       // @formatter:on
-      Query query = this.builder.build();
-      log.debug(query.toString());
-      return query;
+      return this.builder.build();
     } catch (ParseException e) {
       log.error(e.getMessage());
       return null;
