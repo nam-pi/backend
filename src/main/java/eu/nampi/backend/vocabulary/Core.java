@@ -31,6 +31,10 @@ public class Core {
     return ResourceFactory.createProperty(uri, local);
   }
 
+  public static final Property date = property("date");
+
+  public static final Property agent = property("agent");
+
   public static final Property event = property("event");
 
   public static final Property person = property("person");

@@ -183,7 +183,8 @@ public class HydraCollectionBuilder implements InterfaceHydraBuilder {
       SelectBuilder searchSelect = new SelectBuilder()
         .addVar("*")
         .addBind("bnode()", "?search")
-        .addBind(this.ef.concat(this.params.getBaseUrl(), "{?" + this.templateVariables.stream().collect(Collectors.joining(",")) + "}"), "?template");
+        .addBind(this.ef.concat(this.params.getBaseUrl(), "{?" + this.templateVariables.stream().collect(Collectors.joining(",")) + "}"), "?template")
+        .addBind("bnode()", "?manages");
       for (String string : templateVariables) {
         searchSelect.addBind("bnode()", mappingVar(string));
       }
@@ -197,6 +198,8 @@ public class HydraCollectionBuilder implements InterfaceHydraBuilder {
         .addConstruct("?col", Hydra.totalItems, "?count")
         .addConstruct("?col", Hydra.view, "?view")
         .addConstruct("?col", RDF.type, Hydra.Collection)
+        .addConstruct("?col", Hydra.manages, "?manages")
+        .addConstruct("?manages", Hydra.object, mainType)
         .addConstruct("?search", Hydra.template, "?template")
         .addConstruct("?search", Hydra.variableRepresentation, Hydra.BasicRepresentation)
         .addConstruct("?search", RDF.type, Hydra.IriTemplate)

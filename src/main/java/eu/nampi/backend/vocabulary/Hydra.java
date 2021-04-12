@@ -65,6 +65,10 @@ public class Hydra {
 
   public static final Property property = property("property");
 
+  public static final Property readable = property("readable");
+
+  public static final Property writeable = property("writeable");
+
   public static final Property required = property("required");
 
   public static final Property variable = property("variable");
@@ -92,5 +96,15 @@ public class Hydra {
   public static final Property entrypoint = property("entrypoint");
 
   public static final Property memberAssertion = property("memberAssertion");
+
+  public static final Property manages = property("manages");
+
+  public static final Property object = property("object");
+
+  public static final Property supportedProperty = property("supportedProperty");
+
+  public static final Property SupportedProperty = property("SupportedProperty");
+
+  public static final Property Link = property("Link");
 
 }
