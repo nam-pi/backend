@@ -23,13 +23,14 @@ public class EventController extends AbstractRdfController {
   @Autowired
   EventRepository eventRepository;
 
-  @GetMapping("/events")
-  public ResponseEntity<String> getEvents(@RequestHeader("accept") Lang lang,
-      @RequestParam("page") Optional<Integer> page, @RequestParam("pageIndex") Optional<Integer> pageIndex,
-      @RequestParam("limit") Optional<Integer> limit, @RequestParam("offset") Optional<Integer> offset,
-      @RequestParam("orderBy") Optional<OrderByClauses> orderBy, @RequestParam("type") Optional<String> type,
-      @RequestParam("text") Optional<String> text, @RequestParam("dates") Optional<String> dates,
-      @RequestParam("statusType") Optional<String> statusType,
+  @GetMapping(value = "/events", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+      "application/n-triples" })
+  public ResponseEntity<String> getEvents(
+      @RequestHeader("accept") Lang lang, @RequestParam("page") Optional<Integer> page,
+      @RequestParam("pageIndex") Optional<Integer> pageIndex, @RequestParam("limit") Optional<Integer> limit,
+      @RequestParam("offset") Optional<Integer> offset, @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
+      @RequestParam("type") Optional<String> type, @RequestParam("text") Optional<String> text,
+      @RequestParam("dates") Optional<String> dates, @RequestParam("statusType") Optional<String> statusType,
       @RequestParam("occupationType") Optional<String> occupationType,
       @RequestParam("interactionType") Optional<String> interactionType,
       @RequestParam("participant") Optional<String> participant) {

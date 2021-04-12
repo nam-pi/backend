@@ -16,7 +16,8 @@ public class DocumentationController extends AbstractRdfController {
   @Autowired
   DocumentationRepository documentationRepository;
 
-  @GetMapping("/vocab")
+  @GetMapping(value = "/vocab", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+      "application/n-triples" })
   public ResponseEntity<String> getDocumentation(@RequestHeader("accept") Lang lang) {
     return new ResponseEntity<String>(documentationRepository.get(lang), HttpStatus.OK);
   }

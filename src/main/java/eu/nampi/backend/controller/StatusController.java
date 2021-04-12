@@ -21,7 +21,8 @@ public class StatusController extends AbstractRdfController {
   @Autowired
   StatusRepository statusRepository;
 
-  @GetMapping("/status")
+  @GetMapping(value = "/status", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+      "application/n-triples" })
   public ResponseEntity<String> getStatus(@RequestHeader("accept") Lang lang,
       @RequestParam("page") Optional<Integer> page, @RequestParam("pageIndex") Optional<Integer> pageIndex,
       @RequestParam("limit") Optional<Integer> limit, @RequestParam("offset") Optional<Integer> offset,

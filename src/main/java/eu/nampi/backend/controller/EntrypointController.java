@@ -16,7 +16,8 @@ public class EntrypointController extends AbstractRdfController {
   @Autowired
   EntrypointRepository entrypointRepository;
 
-  @GetMapping("/")
+  @GetMapping(value = "/", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+      "application/n-triples" })
   public ResponseEntity<String> getEntryPoint(@RequestHeader("accept") Lang lang) {
     return new ResponseEntity<String>(entrypointRepository.get(lang), HttpStatus.OK);
   }
