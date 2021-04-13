@@ -107,4 +107,10 @@ public class Hydra {
 
   public static final Property Link = property("Link");
 
+  public static final Property method = property("method");
+
+  public static final Property supportedOperation = property("supportedOperation");
+
+  public static final Property Operation = property("Operation");
+
 }

@@ -1,50 +1,31 @@
 package eu.nampi.backend.sparql;
 
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
-import org.apache.jena.vocabulary.XSD;
 
-import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Hydra;
-import eu.nampi.backend.vocabulary.Vocab;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HydraSingleBuilder implements InterfaceHydraBuilder {
-
-  public static final String MAIN_LABEL = "?label";
-
-  public static final String MAIN_SUBJ = "?main";
-
-  private ConstructBuilder builder = new ConstructBuilder();
-
-  private WhereBuilder mainWhere = new WhereBuilder();
+public class HydraSingleBuilder extends AbstractHydraBuilder<HydraSingleBuilder> {
 
   public HydraSingleBuilder(String uri, Property mainType) {
-    this.builder.addPrefix("api", Vocab.getURI()).addPrefix("core", Core.getURI()).addPrefix("hydra", Hydra.getURI())
-        .addPrefix("rdf", RDF.getURI()).addPrefix("rdfs", RDFS.getURI()).addPrefix("xsd", XSD.getURI())
-        .addConstruct(MAIN_SUBJ, RDF.type, mainType).addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
+    super(mainType);
     try {
-      this.mainWhere.addWhere(MAIN_SUBJ, RDF.type, mainType).addWhere(MAIN_SUBJ, RDFS.label, MAIN_LABEL)
-          .addFilter(MAIN_SUBJ + " = <" + uri + ">");
+      this.mainWhere.addFilter(MAIN_SUBJ + " = <" + uri + ">");
     } catch (ParseException e) {
       log.error(e.getMessage());
     }
   }
 
   public HydraSingleBuilder addData(Object s, Object p, Object o) {
-    this.builder.addConstruct(s, p, o);
-    this.mainWhere.addWhere(s, p, o);
-    return this;
+    addConstruct(s, p, o);
+    addWhere(s, p, o);
+    return getThis();
   }
 
   public HydraSingleBuilder addMainData(Object p, Object o) {
-    return this.addData(MAIN_SUBJ, p, o);
+    return addData(MAIN_SUBJ, p, o);
   }
 
   @Override
@@ -53,8 +34,8 @@ public class HydraSingleBuilder implements InterfaceHydraBuilder {
   }
 
   @Override
-  public String buildString() {
-    return build().toString();
+  protected HydraSingleBuilder getThis() {
+    return this;
   }
 
 }

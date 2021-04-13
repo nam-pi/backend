@@ -19,7 +19,6 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFWriter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import eu.nampi.backend.service.JenaService;
@@ -32,9 +31,6 @@ public abstract class AbstractHydraRepository {
 
   @Autowired
   private JenaService jenaService;
-
-  @Value("${nampi.individuals-base-url}")
-  String individualsBaseUrl;
 
   protected Model construct(InterfaceHydraBuilder builder) {
     return jenaService.construct(builder);
@@ -67,15 +63,15 @@ public abstract class AbstractHydraRepository {
     return new JSONObject(res).toJSONString();
   }
 
-  protected String individualsUri(String type) {
-    return individualsBaseUrl.endsWith("/") ? individualsBaseUrl + type : individualsBaseUrl + "/" + type;
+  protected String individualsUri(Resource type) {
+    return endpointUri(type.getLocalName());
   }
 
-  protected String individualsUri(String type, UUID id) {
+  protected String individualsUri(Resource type, UUID id) {
     return individualsUri(type) + "/" + id;
   }
 
-  protected String newIndividualUri(String type) {
+  protected String newIndividualUri(Resource type) {
     return individualsUri(type, UUID.randomUUID());
   }
 

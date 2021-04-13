@@ -1,6 +1,6 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.sparql.HydraCollectionBuilder.MAIN_SUBJ;
+import static eu.nampi.backend.sparql.AbstractHydraBuilder.MAIN_SUBJ;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,7 +14,6 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -124,10 +123,22 @@ public class EventRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.event.getLocalName(), id), Core.event)
-        .addData("?e", Core.hasParticipant, MAIN_SUBJ).addData("?e", RDFS.label, "?el");
+    String uri = individualsUri(Core.event, id);
+    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.event);
+    builder
+        .addOptional(new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate").addWhere("?exactDate",
+            Core.hasXsdDateTime, "?exactDateTime"))
+        .addOptional(new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotEarlierThan, "?earliestDate")
+            .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime"))
+        .addOptional(new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotLaterThan, "?latestDate")
+            .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime"))
+        .addMainConstruct(Core.takesPlaceNotEarlierThan, "?earliestDate")
+        .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate").addMainConstruct(Core.takesPlaceOn, "?exactDate")
+        .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
+        .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
+        .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime");
     Model model = construct(builder);
-    return serialize(model, lang);
+    return serialize(model, lang, ResourceFactory.createResource(uri));
   }
 
 }

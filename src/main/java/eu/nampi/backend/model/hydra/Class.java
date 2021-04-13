@@ -24,4 +24,10 @@ public class Class extends AbstractHydraNode {
     return this;
   }
 
+  public Class addSupportedOperation(SupportedOperation operation) {
+    add(Hydra.supportedOperation, operation.base());
+    add(operation);
+    return this;
+  }
+
 }

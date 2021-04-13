@@ -39,8 +39,8 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
   protected void configure(final HttpSecurity http) throws Exception {
     super.configure(http);
     http.addFilter(corsFilter().getFilter()).authorizeRequests()
-        .antMatchers("/", "/vocab", "/events/**", "/persons/**", "/status/**").permitAll().antMatchers("/users/**")
-        .hasRole("USER").anyRequest().authenticated();
+        .antMatchers("/", "/vocab", "/event/**", "/events/**", "/person/**", "/persons/**", "/status/**").permitAll()
+        .antMatchers("/users/**").hasRole("USER").anyRequest().authenticated();
   }
 
   @Override

@@ -2,13 +2,16 @@ package eu.nampi.backend.repository;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.model.hydra.Class;
 import eu.nampi.backend.model.hydra.Collection;
+import eu.nampi.backend.model.hydra.SupportedOperation;
 import eu.nampi.backend.model.hydra.SupportedProperty;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
@@ -26,16 +29,22 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Class doc = new Class(Vocab.baseUri, "The NAMPI API documentation", Hydra.ApiDocumentation);
     doc.addDescription(
         "The documentation for NAMPI, an API for the prosopographical data of the project 'Nuns and Monks - Prosopograpical Interfaces'");
-    doc.add(Hydra.entrypoint, endpointUri());
-    addSupportedClasses(doc);
+    addEntryPoint(doc);
+    addEventClass(doc);
+    addPersonClass(doc);
     addSupportedCollections(doc);
     model.add(doc);
     return serialize(model, lang, doc.base());
   }
 
-  private void addSupportedClasses(Class doc) {
-    // Classes
+  private void addEntryPoint(Class doc) {
+    doc.add(Hydra.entrypoint, ResourceFactory.createProperty(endpointUri()));
     Class entrypoint = new Class(Vocab.entrypoint, Vocab.entrypoint.getLocalName());
+    entrypoint.addSupportedOperation(new SupportedOperation("Gets the API entrypoint", HttpMethod.GET));
+    doc.add(Hydra.supportedClass, entrypoint);
+  }
+
+  private void addEventClass(Class doc) {
     Class event = new Class(Core.event, Core.event.getLocalName());
     event.addSupportedProperty(new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
     event.addSupportedProperty(
@@ -46,9 +55,13 @@ public class DocumentationRepository extends AbstractHydraRepository {
         Core.takesPlaceNotLaterThan.getLocalName(), true, false, false));
     event.addSupportedProperty(
         new SupportedProperty(Core.takesPlaceOn, Core.date, Core.takesPlaceOn.getLocalName(), true, false, false));
+    doc.add(Hydra.supportedClass, event);
+  }
+
+  private void addPersonClass(Class doc) {
     Class person = new Class(Core.person, Core.person.getLocalName());
     person.addSupportedProperty(new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
-    doc.add(Hydra.supportedClass, entrypoint, event, person);
+    doc.add(Hydra.supportedClass, person);
   }
 
   private void addSupportedCollections(Class doc) {

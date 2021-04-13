@@ -8,11 +8,7 @@ import eu.nampi.backend.vocabulary.Hydra;
 public class Collection extends Class {
 
   public Collection(Property type, Property itemType) {
-    this(type.toString(), itemType);
-  }
-
-  public Collection(String id, Property itemType) {
-    super(id, itemType.getLocalName() + "Collection");
+    super(type.getURI(), type.getLocalName());
     add(RDFS.subClassOf, Hydra.Collection);
     SupportedProperty manages = new SupportedProperty(Hydra.manages, true, false, false);
     manages.addDescription("The content the collection manages");
