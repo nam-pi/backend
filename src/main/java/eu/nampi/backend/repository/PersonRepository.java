@@ -1,5 +1,7 @@
 package eu.nampi.backend.repository;
 
+import java.util.UUID;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.sparql.HydraCollectionBuilder;
+import eu.nampi.backend.sparql.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Vocab;
 
@@ -27,4 +30,11 @@ public class PersonRepository extends AbstractHydraRepository {
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
 
+  @Cacheable(key = "{#lang, #id}")
+  public String findOne(Lang lang, UUID id) {
+    String uri = individualsUri(Core.person, id);
+    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.person);
+    Model model = construct(builder);
+    return serialize(model, lang, ResourceFactory.createResource(uri));
+  }
 }
