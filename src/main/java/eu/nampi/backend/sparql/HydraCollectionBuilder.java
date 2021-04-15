@@ -127,7 +127,7 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder<HydraCollection
         }).collect(Collectors.joining(", ")) + ")", "?viewUri")
         .addBind("iri(?viewUri)", "?view")
         .addBind("iri(replace(?viewUri, 'offset=\\\\d*', 'offset=0'))", "?first")
-        .addBind("iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', if(?count = 0, xsd:string(0), xsd:string(?count - ?limit)))))", "?last")
+        .addBind("if(?count > ?limit, iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', if(?count = 0, xsd:string(0), xsd:string(?count - ?limit))))), 1+'')", "?last")
         .addBind("?offset - ?limit", "?prevOffset")
         .addBind("if(?prevOffset >= 0, iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', xsd:string(?prevOffset)))), 1+'')", "?prev")
         .addBind("?offset + ?limit", "?nextOffset")
