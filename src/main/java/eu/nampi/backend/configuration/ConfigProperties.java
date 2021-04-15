@@ -1,9 +1,7 @@
 package eu.nampi.backend.configuration;
 
 import java.util.List;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,8 +17,6 @@ public class ConfigProperties {
   String datasetUrlInfCache;
 
   int defaultLimit;
-
-  String individualsBaseUrl;
 
   List<String> otherOwlUrls;
 

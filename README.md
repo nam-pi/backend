@@ -38,7 +38,6 @@ A number of command line parameters are available to configure the application.
 | DATA_URL             | *         |                                 |  http://localhost:3030/data                       | The URL to the data dataset where the original data will be stored                                                                           |
 | DEFAULT_LIMIT        |           | 25                              |                                                   | The default result number to return when requesting from a collection endpoint like '/persons                                                |
 | INF_CACHE_URL        | *         |                                 |  http://localhost:3030/inf_cache                  | The URL to the joint inference dataset where the cached inference data will be stored                                                        |
-| INDIVIDUALS_BASE_URL | *         |                                 |  https://purl.org/nampi                           | The base url to use when constructing URLs for new individual data objects like persons or events                                            |
 | KEYCLOAK_REALM       | *         |                                 | nampi                                             | The name of the Keycloak realm                                                                                                               |
 | KEYCLOAK_RESOURCE    | *         |                                 | nampi-client                                      | The name of the Keycloak client                                                                                                              |
 | KEYCLOAK_URL         | *         |                                 | http://localhost:8080/auth/                       | The URL  of the Keycloak authentication endpoint                                                                                             |
@@ -54,11 +53,11 @@ The application can be run from the command line using Maven, the environment pa
 
 ### Example
 
-`mvn spring-boot:run "'-Dspring-boot.run.arguments=--INDIVIDUALS_BASE_URL=https://purl.org/nampi,--KEYCLOAK_URL=http://localhost:8081/auth,--KEYCLOAK_REALM=nampi,--KEYCLOAK_RESOURCE=nampi-client,--LOGGING_LEVEL=DEBUG,--REDIS_URL=http://localhost,--INF_CACHE_URL=http://localhost:3030/inf-cache,--DATA_URL=http://localhost:3030/data'"`
+`mvn spring-boot:run "'-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://localhost:8081/auth,--KEYCLOAK_REALM=nampi,--KEYCLOAK_RESOURCE=nampi-client,--LOGGING_LEVEL=DEBUG,--REDIS_PORT=6379,--REDIS_URL=http://localhost,--INF_CACHE_URL=http://localhost:3030/inf-cache,--DATA_URL=http://localhost:3030/data'"`
 
 #### Windows
 
-`mvn spring-boot:run "-Dspring-boot.run.arguments=--INDIVIDUALS_BASE_URL=https://purl.org/nampi --KEYCLOAK_URL=http://keycloak.dev.local:8080/auth --KEYCLOAK_REALM=nampi --KEYCLOAK_RESOURCE=nampi-client --LOGGING_LEVEL=DEBUG --REDIS_URL=http://localhost --INF_CACHE_URL=http://localhost:3030/inf-cache --DATA_URL=http://localhost:3030/data"`
+`mvn spring-boot:run "-Dspring-boot.run.arguments=--KEYCLOAK_URL=http://keycloak.dev.local:8080/auth --KEYCLOAK_REALM=nampi --KEYCLOAK_RESOURCE=nampi-client --LOGGING_LEVEL=DEBUG --REDIS_PORT=6379 --REDIS_URL=http://localhost --INF_CACHE_URL=http://localhost:3030/inf-cache --DATA_URL=http://localhost:3030/data"`
 
 Note: To work on Windows, Keycloak must be reachable with a domain, this can be configured in the hosts file:
 
@@ -72,7 +71,7 @@ The application can be run as a standalone Docker container connected to pre-exi
 Example:
 
 ```
-docker build --build-arg INDIVIDUALS_BASE_URL=https://purl.org/nampi --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life --build-arg REDIS_URL=http://example.com/redis --build-arg INF_CACHE_URL=http://example.com/fuseki/inf-cache --build-arg DATA_URL=http://example.com/fuseki/data .
+docker build --build-arg --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life --build-arg REDIS_PORT=6379 --build-arg REDIS_URL=http://example.com/redis --build-arg INF_CACHE_URL=http://example.com/fuseki/inf-cache --build-arg DATA_URL=http://example.com/fuseki/data .
 ```
 
 ## Deploying with `docker-compose`
@@ -84,7 +83,6 @@ If used as-is it will start containers for Fuseki, Redis and Keycloak, including
 `.env`
 ```
 FUSEKI_ADMIN_PASSWORD=[fuseki admin password]
-INDIVIDUALS_BASE_URL=https://purl.org/nampi
 KEYCLOAK_PASSWORD=[keycloak password]
 KEYCLOAK_PG_PASSWORD=[keycloak pg password]
 KEYCLOAK_REALM=nampi

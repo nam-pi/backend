@@ -42,4 +42,4 @@ spring:
     active: ${PROFILE:prod}
   redis:
     host: ${REDIS_URL}
-    port: ${REDIS_PORT:6379}
+    port: ${REDIS_PORT}
