@@ -1,4 +1,4 @@
-package eu.nampi.backend.sparql;
+package eu.nampi.backend.model.hydra;
 
 import org.apache.jena.query.Query;
 

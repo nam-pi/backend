@@ -1,12 +1,10 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.sparql.AbstractHydraBuilder.MAIN_SUBJ;
-
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.MAIN_SUBJ;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
@@ -17,11 +15,10 @@ import org.apache.jena.vocabulary.RDF;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.sparql.HydraCollectionBuilder;
-import eu.nampi.backend.sparql.HydraSingleBuilder;
+import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
+import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Vocab;
 
@@ -32,8 +29,10 @@ public class EventRepository extends AbstractHydraRepository {
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
   public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> statusType,
-      Optional<String> occupationType, Optional<String> interactionType, Optional<String> participant) {
-    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.event, Vocab.eventOrderByVar);
+      Optional<String> occupationType, Optional<String> interactionType,
+      Optional<String> participant) {
+    HydraCollectionBuilder hydra =
+        new HydraCollectionBuilder(params, Core.event, Vocab.eventOrderByVar);
     // @formatter:off
     interactionType.ifPresentOrElse(it -> hydra
         .addMainWhere("<" + it + ">", "?p")
@@ -92,12 +91,15 @@ public class EventRepository extends AbstractHydraRepository {
       hydra.addSearchVariable("dates", Vocab.eventDatesVar, false, "'" + dates.get() + "'");
       Optional<LocalDateTime> start = dr.getStart();
       if (start.isPresent()) {
-        hydra.addBind("'" + start.get().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "'^^xsd:dateTime",
+        hydra.addBind(
+            "'" + start.get().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "'^^xsd:dateTime",
             "?filterStart");
       }
       Optional<LocalDateTime> end = dr.getEnd();
       if (end.isPresent()) {
-        hydra.addBind("'" + end.get().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "'^^xsd:dateTime", "?filterEnd");
+        hydra.addBind(
+            "'" + end.get().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "'^^xsd:dateTime",
+            "?filterEnd");
       }
       if (start.isPresent() && end.isPresent()) {
         hydra.addFilter("?date >= ?filterStart && ?date <= ?filterEnd");
@@ -114,9 +116,11 @@ public class EventRepository extends AbstractHydraRepository {
     return construct(hydra);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType, #occupationType, #interactionType, #participant}")
-  public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> statusType,
-      Optional<String> occupationType, Optional<String> interactionType, Optional<String> participant) {
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType, #occupationType, #interactionType, #participant}")
+  public String findAll(QueryParameters params, Lang lang, Optional<String> dates,
+      Optional<String> statusType, Optional<String> occupationType,
+      Optional<String> interactionType, Optional<String> participant) {
     Model model = findAll(params, dates, statusType, occupationType, interactionType, participant);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
@@ -126,14 +130,17 @@ public class EventRepository extends AbstractHydraRepository {
     String uri = individualsUri(Core.event, id);
     HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.event);
     builder
-        .addOptional(new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate").addWhere("?exactDate",
-            Core.hasXsdDateTime, "?exactDateTime"))
-        .addOptional(new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotEarlierThan, "?earliestDate")
-            .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime"))
-        .addOptional(new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotLaterThan, "?latestDate")
-            .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime"))
+        .addOptional(new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
+            .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime"))
+        .addOptional(
+            new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotEarlierThan, "?earliestDate")
+                .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime"))
+        .addOptional(
+            new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotLaterThan, "?latestDate")
+                .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime"))
         .addMainConstruct(Core.takesPlaceNotEarlierThan, "?earliestDate")
-        .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate").addMainConstruct(Core.takesPlaceOn, "?exactDate")
+        .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate")
+        .addMainConstruct(Core.takesPlaceOn, "?exactDate")
         .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
         .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
         .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime");

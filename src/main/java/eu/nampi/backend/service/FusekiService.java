@@ -2,15 +2,13 @@ package eu.nampi.backend.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdfconnection.RDFConnectionFuseki;
 import org.apache.jena.rdfconnection.RDFConnectionRemoteBuilder;
 import org.springframework.beans.factory.annotation.Value;
-
-import eu.nampi.backend.sparql.InterfaceHydraBuilder;
+import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -26,7 +24,8 @@ public class FusekiService implements JenaService {
   @Value("${nampi.other-owl-urls}")
   private List<String> otherOwlUrls;
 
-  public FusekiService(RDFConnectionRemoteBuilder dataBuilder, RDFConnectionRemoteBuilder infCacheBuilder) {
+  public FusekiService(RDFConnectionRemoteBuilder dataBuilder,
+      RDFConnectionRemoteBuilder infCacheBuilder) {
     this.dataBuilder = dataBuilder;
     this.infCacheBuilder = infCacheBuilder;
   }

@@ -1,9 +1,8 @@
-package eu.nampi.backend.sparql;
+package eu.nampi.backend.model.hydra;
 
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

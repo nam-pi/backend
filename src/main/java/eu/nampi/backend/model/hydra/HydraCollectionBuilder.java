@@ -1,4 +1,4 @@
-package eu.nampi.backend.sparql;
+package eu.nampi.backend.model.hydra;
 
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -6,14 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
-
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.vocabulary.Hydra;
 import eu.nampi.backend.vocabulary.Vocab;
@@ -28,7 +26,8 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder<HydraCollection
 
   private List<String> templateVariables = new ArrayList<>();
 
-  public HydraCollectionBuilder(QueryParameters params, Property mainType, Property orderByTemplateMappingProperty) {
+  public HydraCollectionBuilder(QueryParameters params, Property mainType,
+      Property orderByTemplateMappingProperty) {
     super(mainType);
     this.orderByTemplateMappingProperty = orderByTemplateMappingProperty;
     this.params = params;
@@ -36,19 +35,23 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder<HydraCollection
     addSearchVariable("offset", Hydra.offset, false, params.getOffset());
     addSearchVariable("pageIndex", Hydra.pageIndex, false);
     addSearchVariable("orderBy", this.orderByTemplateMappingProperty, false,
-        params.getOrderByClauses().empty() ? null : "'" + params.getOrderByClauses().toQueryString() + "'");
+        params.getOrderByClauses().empty() ? null
+            : "'" + params.getOrderByClauses().toQueryString() + "'");
     addSearchVariable("type", Vocab.typeVar, false,
-        params.getType().isPresent() ? "'" + URLEncoder.encode(params.getType().get(), Charset.defaultCharset()) + "'"
+        params.getType().isPresent()
+            ? "'" + URLEncoder.encode(params.getType().get(), Charset.defaultCharset()) + "'"
             : null);
     addSearchVariable("text", Vocab.textVar, false,
         params.getText().isPresent() ? "'" + params.getText().get() + "'" : null);
   }
 
-  public HydraCollectionBuilder addSearchVariable(String name, Property property, boolean required) {
+  public HydraCollectionBuilder addSearchVariable(String name, Property property,
+      boolean required) {
     return addSearchVariable(name, property, required, null);
   }
 
-  public HydraCollectionBuilder addSearchVariable(String name, Property property, boolean required, Object value) {
+  public HydraCollectionBuilder addSearchVariable(String name, Property property, boolean required,
+      Object value) {
     this.templateVariables.add(name);
     String templateMapping = mappingVar(name);
     // @formatter:off

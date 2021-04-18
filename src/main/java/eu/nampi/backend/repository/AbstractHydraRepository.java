@@ -5,12 +5,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.UUID;
-
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.JsonLDWriteContext;
@@ -20,9 +18,8 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
+import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
 import eu.nampi.backend.service.JenaService;
-import eu.nampi.backend.sparql.InterfaceHydraBuilder;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
 
@@ -89,7 +86,8 @@ public abstract class AbstractHydraRepository {
         options.setOmitGraph(true);
         ctx.setFrame(createFrame(model, startId));
         ctx.setOptions(options);
-        RDFWriter w = RDFWriter.create().format(RDFFormat.JSONLD_FRAME_FLAT).context(ctx).source(model).build();
+        RDFWriter w = RDFWriter.create().format(RDFFormat.JSONLD_FRAME_FLAT).context(ctx)
+            .source(model).build();
         w.output(out);
       } else {
         RDFDataMgr.write(out, model, lang);

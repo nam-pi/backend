@@ -1,4 +1,4 @@
-package eu.nampi.backend.sparql;
+package eu.nampi.backend.model.hydra;
 
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -10,14 +10,15 @@ import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
-
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
 import eu.nampi.backend.vocabulary.Vocab;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class AbstractHydraBuilder<T extends AbstractHydraBuilder<T>> implements InterfaceHydraBuilder {
+public abstract class AbstractHydraBuilder<T extends AbstractHydraBuilder<T>>
+    implements InterfaceHydraBuilder {
+
 
   protected abstract T getThis();
 
@@ -36,12 +37,15 @@ public abstract class AbstractHydraBuilder<T extends AbstractHydraBuilder<T>> im
   public AbstractHydraBuilder(Property mainType) {
     this.ef = this.builder.getExprFactory();
     this.mainType = mainType;
-    this.mainWhere.addPrefix("xsd", XSD.getURI()).addWhere(MAIN_SUBJ, RDF.type, this.mainType).addWhere(MAIN_SUBJ,
-        RDFS.label, MAIN_LABEL);
-    this.builder.addPrefix("api", Vocab.getURI()).addPrefix("core", Core.getURI()).addPrefix("hydra", Hydra.getURI())
-        .addPrefix("rdf", RDF.getURI()).addPrefix("rdfs", RDFS.getURI()).addPrefix("xsd", XSD.getURI())
-        .addConstruct(MAIN_SUBJ, RDF.type, this.mainType).addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
+    this.mainWhere.addPrefix("xsd", XSD.getURI()).addWhere(MAIN_SUBJ, RDF.type, this.mainType)
+        .addWhere(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
+    this.builder.addPrefix("api", Vocab.getURI()).addPrefix("core", Core.getURI())
+        .addPrefix("hydra", Hydra.getURI()).addPrefix("rdf", RDF.getURI())
+        .addPrefix("rdfs", RDFS.getURI()).addPrefix("xsd", XSD.getURI())
+        .addConstruct(MAIN_SUBJ, RDF.type, this.mainType)
+        .addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
   }
+
 
   public T addBind(String expression, Object var) {
     this.mainWhere.addBind(this.mainWhere.makeExpr(expression), var);
