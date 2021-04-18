@@ -13,7 +13,7 @@ public class UserController {
   @Autowired
   UserRepository userRepository;
 
-  @GetMapping("/users/search/current")
+  @GetMapping("/user")
   @Secured("ROLE_USER")
   public User currentUser() {
     return userRepository.getCurrentUser();
