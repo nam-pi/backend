@@ -35,7 +35,7 @@ spring:
     cache-names:
       - events
       - persons
-      - status
+      - aspects
   main:
     allow-bean-definition-overriding: true
   profiles: 

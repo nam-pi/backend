@@ -28,9 +28,8 @@ public class EventRepository extends AbstractHydraRepository {
 
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
-  public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> statusType,
-      Optional<String> occupationType, Optional<String> interactionType,
-      Optional<String> participant) {
+  public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> aspectType,
+      Optional<String> interactionType, Optional<String> participant) {
     HydraCollectionBuilder hydra =
         new HydraCollectionBuilder(params, Core.event, Vocab.eventOrderByVar);
     // @formatter:off
@@ -48,21 +47,13 @@ public class EventRepository extends AbstractHydraRepository {
     }, () -> {
       hydra.addSearchVariable("participant", Vocab.eventParticipantVar, false);
     });
-    statusType.ifPresentOrElse(st -> {
+    aspectType.ifPresentOrElse(at -> {
       hydra
-          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesStatus.asNode()),
-              PathFactory.pathLink(RDF.type.asNode())), "<" + st + ">")
-          .addSearchVariable("statusType", Vocab.eventStatusTypeVar, false, "'" + st + "'");
+          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesAspect.asNode()),
+              PathFactory.pathLink(RDF.type.asNode())), "<" + at + ">")
+          .addSearchVariable("aspectType", Vocab.eventAspectTypeVar, false, "'" + at + "'");
     }, () -> {
-      hydra.addSearchVariable("statusType", Vocab.eventStatusTypeVar, false);
-    });
-    occupationType.ifPresentOrElse(ot -> {
-      hydra
-          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesOccupation.asNode()),
-              PathFactory.pathLink(RDF.type.asNode())), "<" + ot + ">")
-          .addSearchVariable("occupationType", Vocab.eventOccupationTypeVar, false, "'" + ot + "'");
-    }, () -> {
-      hydra.addSearchVariable("occupationType", Vocab.eventOccupationTypeVar, false);
+      hydra.addSearchVariable("aspectType", Vocab.eventAspectTypeVar, false);
     });
     hydra.addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
@@ -117,11 +108,10 @@ public class EventRepository extends AbstractHydraRepository {
   }
 
   @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #statusType, #occupationType, #interactionType, #participant}")
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #aspectType, #interactionType, #participant}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates,
-      Optional<String> statusType, Optional<String> occupationType,
-      Optional<String> interactionType, Optional<String> participant) {
-    Model model = findAll(params, dates, statusType, occupationType, interactionType, participant);
+      Optional<String> aspectType, Optional<String> interactionType, Optional<String> participant) {
+    Model model = findAll(params, dates, aspectType, interactionType, participant);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
 

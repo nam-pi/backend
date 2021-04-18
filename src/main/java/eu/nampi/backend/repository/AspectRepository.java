@@ -11,12 +11,12 @@ import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Vocab;
 
 @Repository
-@CacheConfig(cacheNames = "status")
-public class StatusRepository extends AbstractHydraRepository {
+@CacheConfig(cacheNames = "aspects")
+public class AspectRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     // @formatter:off
-    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.status, Vocab.statusOrderByVar);
+    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.aspect, Vocab.aspectOrderByVar);
     // @formatter:on
     return construct(hydra);
   }

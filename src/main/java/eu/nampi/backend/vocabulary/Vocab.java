@@ -10,8 +10,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  */
 public class Vocab {
 
-  public static final String baseUri = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
-      + "/vocab";
+  public static final String baseUri =
+      ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString() + "/vocab";
 
   /**
    * The namespace of the vocabulary as a string
@@ -39,9 +39,7 @@ public class Vocab {
 
   public static final Property eventDatesVar = property("eventDatesVariable");
 
-  public static final Property eventStatusTypeVar = property("eventStatusTypeVariable");
-
-  public static final Property eventOccupationTypeVar = property("eventOccupationTypeVariable");
+  public static final Property eventAspectTypeVar = property("eventAspectTypeVariable");
 
   public static final Property eventInteractionTypeVar = property("eventInteractionTypeVariable");
 
@@ -49,7 +47,7 @@ public class Vocab {
 
   public static final Property personOrderByVar = property("personOrderByVariable");
 
-  public static final Property statusOrderByVar = property("statusOrderByVariable");
+  public static final Property aspectOrderByVar = property("aspectOrderByVariable");
 
   public static final Property textVar = property("textVariable");
 

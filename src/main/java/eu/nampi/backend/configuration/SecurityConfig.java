@@ -39,13 +39,15 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
   protected void configure(final HttpSecurity http) throws Exception {
     super.configure(http);
     http.addFilter(corsFilter().getFilter()).authorizeRequests()
-        .antMatchers("/", "/vocab", "/event/**", "/events/**", "/person/**", "/persons/**", "/status/**").permitAll()
-        .antMatchers("/users/**").hasRole("USER").anyRequest().authenticated();
+        .antMatchers("/", "/vocab", "/event/**", "/events/**", "/person/**", "/persons/**",
+            "/aspect/**", "/aspects/**")
+        .permitAll().antMatchers("/users/**").hasRole("USER").anyRequest().authenticated();
   }
 
   @Override
   protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-    KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
+    KeycloakAuthenticationProvider keycloakAuthenticationProvider =
+        keycloakAuthenticationProvider();
     auth.authenticationProvider(keycloakAuthenticationProvider);
   }
 
@@ -67,7 +69,8 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     CorsConfiguration config = new CorsConfiguration().applyPermitDefaultValues();
     config.addExposedHeader("Link");
     source.registerCorsConfiguration("/**", config);
-    FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(new CorsFilter(source));
+    FilterRegistrationBean<CorsFilter> bean =
+        new FilterRegistrationBean<CorsFilter>(new CorsFilter(source));
     bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
     return bean;
   }
