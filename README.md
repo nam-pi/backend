@@ -12,7 +12,7 @@ The NAMPI backend is a [Spring Boot](https://spring.io/projects/spring-boot) app
 
 * A new keycloak [realm](https://www.keycloak.org/docs/latest/server_admin/index.html#_create-realm) needs to be created using the default settings.
 * A new [client](https://www.keycloak.org/docs/latest/server_admin/index.html#_clients) has to be created using the default settings. _(For the development environment `Valid Redirect URIs` can be set to `*`)_
-* A role `user` for authenticated users has to be created.
+* A role `author` for authenticated authors has to be created.
 
 #### Optional
 
