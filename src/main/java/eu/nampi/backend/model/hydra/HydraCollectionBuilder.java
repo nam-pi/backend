@@ -13,8 +13,8 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.Hydra;
-import eu.nampi.backend.vocabulary.Vocab;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -37,11 +37,11 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder<HydraCollection
     addSearchVariable("orderBy", this.orderByTemplateMappingProperty, false,
         params.getOrderByClauses().empty() ? null
             : "'" + params.getOrderByClauses().toQueryString() + "'");
-    addSearchVariable("type", Vocab.typeVar, false,
+    addSearchVariable("type", Doc.typeVar, false,
         params.getType().isPresent()
             ? "'" + URLEncoder.encode(params.getType().get(), Charset.defaultCharset()) + "'"
             : null);
-    addSearchVariable("text", Vocab.textVar, false,
+    addSearchVariable("text", Doc.textVar, false,
         params.getText().isPresent() ? "'" + params.getText().get() + "'" : null);
   }
 

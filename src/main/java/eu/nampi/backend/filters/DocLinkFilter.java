@@ -1,7 +1,6 @@
 package eu.nampi.backend.filters;
 
 import java.io.IOException;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -17,7 +16,8 @@ public class DocLinkFilter implements Filter {
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filter)
       throws IOException, ServletException {
     HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-    httpServletResponse.setHeader("Link", "</vocab>; rel=\"http://www.w3.org/ns/hydra/core#apiDocumentation\"");
+    httpServletResponse.setHeader("Link",
+        "</doc>; rel=\"http://www.w3.org/ns/hydra/core#apiDocumentation\"");
     filter.doFilter(request, response);
   }
 

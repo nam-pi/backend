@@ -11,7 +11,7 @@ import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Vocab;
+import eu.nampi.backend.vocabulary.Doc;
 
 @Repository
 @CacheConfig(cacheNames = "persons")
@@ -19,7 +19,7 @@ public class PersonRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     HydraCollectionBuilder hydra =
-        new HydraCollectionBuilder(params, Core.person, Vocab.personOrderByVar);
+        new HydraCollectionBuilder(params, Core.person, Doc.personOrderByVar);
     return construct(hydra);
   }
 

@@ -8,10 +8,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 /**
  * The API documentation vocabulary.
  */
-public class Vocab {
+public class Doc {
 
   public static final String baseUri =
-      ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString() + "/vocab";
+      ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString() + "/doc";
 
   /**
    * The namespace of the vocabulary as a string

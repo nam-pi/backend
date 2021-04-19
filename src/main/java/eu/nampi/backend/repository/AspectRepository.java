@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Vocab;
+import eu.nampi.backend.vocabulary.Doc;
 
 @Repository
 @CacheConfig(cacheNames = "aspects")
@@ -16,7 +16,7 @@ public class AspectRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     // @formatter:off
-    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.aspect, Vocab.aspectOrderByVar);
+    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.aspect, Doc.aspectOrderByVar);
     // @formatter:on
     return construct(hydra);
   }

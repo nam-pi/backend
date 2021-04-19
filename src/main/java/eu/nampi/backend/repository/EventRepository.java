@@ -20,7 +20,7 @@ import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Vocab;
+import eu.nampi.backend.vocabulary.Doc;
 
 @Repository
 @CacheConfig(cacheNames = "events")
@@ -31,29 +31,29 @@ public class EventRepository extends AbstractHydraRepository {
   public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> aspectType,
       Optional<String> interactionType, Optional<String> participant) {
     HydraCollectionBuilder hydra =
-        new HydraCollectionBuilder(params, Core.event, Vocab.eventOrderByVar);
+        new HydraCollectionBuilder(params, Core.event, Doc.eventOrderByVar);
     // @formatter:off
     interactionType.ifPresentOrElse(it -> hydra
         .addMainWhere("<" + it + ">", "?p")
         .addUnions(
           new WhereBuilder().addWhere("?p", RDF.type, Core.person), 
           new WhereBuilder().addWhere("?p", RDF.type, Core.group))
-        .addSearchVariable("interactionType", Vocab.eventInteractionTypeVar, false, "'" + it + "'")
+        .addSearchVariable("interactionType", Doc.eventInteractionTypeVar, false, "'" + it + "'")
       , () -> hydra
-        .addSearchVariable("interactionType", Vocab.eventInteractionTypeVar, false));
+        .addSearchVariable("interactionType", Doc.eventInteractionTypeVar, false));
     participant.ifPresentOrElse(p -> {
-      hydra.addMainWhere(Core.hasParticipant, "<" + p + ">").addSearchVariable("participant", Vocab.eventParticipantVar,
+      hydra.addMainWhere(Core.hasParticipant, "<" + p + ">").addSearchVariable("participant", Doc.eventParticipantVar,
           false, "'" + p + "'");
     }, () -> {
-      hydra.addSearchVariable("participant", Vocab.eventParticipantVar, false);
+      hydra.addSearchVariable("participant", Doc.eventParticipantVar, false);
     });
     aspectType.ifPresentOrElse(at -> {
       hydra
           .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesAspect.asNode()),
               PathFactory.pathLink(RDF.type.asNode())), "<" + at + ">")
-          .addSearchVariable("aspectType", Vocab.eventAspectTypeVar, false, "'" + at + "'");
+          .addSearchVariable("aspectType", Doc.eventAspectTypeVar, false, "'" + at + "'");
     }, () -> {
-      hydra.addSearchVariable("aspectType", Vocab.eventAspectTypeVar, false);
+      hydra.addSearchVariable("aspectType", Doc.eventAspectTypeVar, false);
     });
     hydra.addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
@@ -79,7 +79,7 @@ public class EventRepository extends AbstractHydraRepository {
       .addConstruct("?realSortingDate", Core.hasXsdDateTime, "?date");
     // @formatter:on
     dates.map(s -> CONVERTER.convert(dates.get())).ifPresentOrElse(dr -> {
-      hydra.addSearchVariable("dates", Vocab.eventDatesVar, false, "'" + dates.get() + "'");
+      hydra.addSearchVariable("dates", Doc.eventDatesVar, false, "'" + dates.get() + "'");
       Optional<LocalDateTime> start = dr.getStart();
       if (start.isPresent()) {
         hydra.addBind(
@@ -102,7 +102,7 @@ public class EventRepository extends AbstractHydraRepository {
         hydra.addFilter("?date <= ?filterEnd");
       }
     }, () -> {
-      hydra.addSearchVariable("dates", Vocab.eventDatesVar, false);
+      hydra.addSearchVariable("dates", Doc.eventDatesVar, false);
     });
     return construct(hydra);
   }

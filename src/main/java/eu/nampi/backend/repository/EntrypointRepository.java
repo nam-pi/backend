@@ -7,19 +7,18 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.vocabulary.Core;
+import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.Hydra;
-import eu.nampi.backend.vocabulary.Vocab;
 
 @Repository
 public class EntrypointRepository extends AbstractHydraRepository {
 
   public String get(Lang lang) {
     Model model = ModelFactory.createDefaultModel();
-    model.setNsPrefix("vocab", Vocab.getURI());
+    model.setNsPrefix("doc", Doc.getURI());
     Resource ep = ResourceFactory.createResource(endpointUri());
-    model.add(ep, RDF.type, Vocab.entrypoint);
+    model.add(ep, RDF.type, Doc.entrypoint);
     model.add(ep, Hydra.title, "The NAMPI API");
 
     Resource events = ResourceFactory.createResource(endpointUri("events"));
