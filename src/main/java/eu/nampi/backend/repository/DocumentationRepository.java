@@ -32,6 +32,7 @@ public class DocumentationRepository extends AbstractHydraRepository {
     addEntryPoint(doc);
     addEventClass(doc);
     addPersonClass(doc);
+    addUserClass(doc);
     addSupportedCollections(doc);
     model.add(doc);
     return serialize(model, lang, doc.base());
@@ -65,6 +66,25 @@ public class DocumentationRepository extends AbstractHydraRepository {
     person.addSupportedProperty(
         new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
     doc.add(Hydra.supportedClass, person);
+  }
+
+  private void addUserClass(Class doc) {
+    Class user = new Class(Doc.user, Doc.user.getLocalName());
+    user.addSupportedProperty(
+        new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
+    user.addSupportedProperty(new SupportedProperty(SchemaOrg.familyName, "xsd:string",
+        "familyName", true, false, false));
+    user.addSupportedProperty(
+        new SupportedProperty(SchemaOrg.givenName, "xsd:string", "givenName", true, false, false));
+    user.addSupportedProperty(
+        new SupportedProperty(SchemaOrg.name, "xsd:string", "username", true, false, false));
+    user.addSupportedProperty(new SupportedProperty(SchemaOrg.identifier, "xsd:string",
+        "identifier", true, false, false));
+    user.addSupportedProperty(
+        new SupportedProperty(SchemaOrg.email, "xsd:string", "email", true, false, false));
+    user.addSupportedProperty(
+        new SupportedProperty(SchemaOrg.sameAs, Core.author, "sameAs", true, false, false));
+    doc.add(Hydra.supportedClass, user);
   }
 
   private void addSupportedCollections(Class doc) {

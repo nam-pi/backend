@@ -56,4 +56,6 @@ public class Core {
   public static final Property takesPlaceNotLaterThan = property("takes_place_not_later_than");
 
   public static final Property hasXsdDateTime = property("has_xsd_date_time");
+
+  public static final Property author = property("author");
 }

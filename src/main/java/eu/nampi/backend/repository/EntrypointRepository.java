@@ -2,10 +2,12 @@ package eu.nampi.backend.repository;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Doc;
@@ -13,6 +15,9 @@ import eu.nampi.backend.vocabulary.Hydra;
 
 @Repository
 public class EntrypointRepository extends AbstractHydraRepository {
+
+  @Autowired
+  UserRepository userRepository;
 
   public String get(Lang lang) {
     Model model = ModelFactory.createDefaultModel();
@@ -37,14 +42,12 @@ public class EntrypointRepository extends AbstractHydraRepository {
     model.add(personsBnode, Hydra.property, RDF.type);
     model.add(persons, Hydra.manages, personsBnode);
 
+    userRepository.getCurrentUser().ifPresent(u -> {
+      Property user = ResourceFactory.createProperty(endpointUri("user"));
+      model.add(ep, user, Doc.user);
+    });
+
     return serialize(model, lang, ResourceFactory.createResource(endpointUri()));
   }
-
-  // private void addCollection(Model model, Resource ep, String name, Resource
-  // type) {
-  // Resource res = ResourceFactory.createResource(endpointUri(endpointName));
-  // model.add(res, RDF.type, Hydra.Collection);
-  // model.add(ep, Hydra.collection, res);
-  // }
 
 }

@@ -62,4 +62,6 @@ public class Doc {
   public static final Property eventCollection = property("eventCollection");
 
   public static final Property personCollection = property("personCollection");
+
+  public static final Property user = property("user");
 }

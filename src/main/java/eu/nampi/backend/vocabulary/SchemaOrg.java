@@ -30,4 +30,15 @@ public class SchemaOrg {
 
   public static final Property EntryPoint = property("EntryPoint");
 
+  public static final Property familyName = property("familyName");
+
+  public static final Property givenName = property("givenName");
+
+  public static final Property name = property("name");
+
+  public static final Property identifier = property("identifier");
+
+  public static final Property email = property("email");
+
+  public static final Property sameAs = property("sameAs");
 }
