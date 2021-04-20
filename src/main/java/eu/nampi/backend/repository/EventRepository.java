@@ -28,34 +28,40 @@ public class EventRepository extends AbstractHydraRepository {
 
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
-  public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> aspectType,
-      Optional<String> interactionType, Optional<String> participant) {
+  public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> aspect,
+      Optional<String> aspectType, Optional<String> aspectUseType, Optional<String> participant,
+      Optional<String> participationType) {
     HydraCollectionBuilder hydra =
         new HydraCollectionBuilder(params, Core.event, Doc.eventOrderByVar);
     // @formatter:off
-    interactionType.ifPresentOrElse(it -> hydra
-        .addMainWhere("<" + it + ">", "?p")
-        .addUnions(
-          new WhereBuilder().addWhere("?p", RDF.type, Core.person), 
-          new WhereBuilder().addWhere("?p", RDF.type, Core.group))
-        .addSearchVariable("interactionType", Doc.eventInteractionTypeVar, false, "'" + it + "'")
+    participant.ifPresentOrElse(p -> hydra
+        .addMainWhere(Core.hasParticipant, "<" + p + ">")
+        .addSearchVariable("participant", Doc.eventParticipantVar, false, "'" + p + "'")
       , () -> hydra
-        .addSearchVariable("interactionType", Doc.eventInteractionTypeVar, false));
-    participant.ifPresentOrElse(p -> {
-      hydra.addMainWhere(Core.hasParticipant, "<" + p + ">").addSearchVariable("participant", Doc.eventParticipantVar,
-          false, "'" + p + "'");
-    }, () -> {
-      hydra.addSearchVariable("participant", Doc.eventParticipantVar, false);
-    });
-    aspectType.ifPresentOrElse(at -> {
-      hydra
-          .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesAspect.asNode()),
-              PathFactory.pathLink(RDF.type.asNode())), "<" + at + ">")
-          .addSearchVariable("aspectType", Doc.eventAspectTypeVar, false, "'" + at + "'");
-    }, () -> {
-      hydra.addSearchVariable("aspectType", Doc.eventAspectTypeVar, false);
-    });
-    hydra.addOptional(new WhereBuilder()
+        .addSearchVariable("participant", Doc.eventParticipantVar, false));
+    participationType.ifPresentOrElse(pt -> hydra
+        .addMainWhere("<" + pt + ">", "?p")
+        .addWhere("?p", RDF.type, Core.agent)
+        .addSearchVariable("participationType", Doc.eventParticipationTypeVar, false, "'" + pt + "'")
+      , () -> hydra
+        .addSearchVariable("participationType", Doc.eventParticipationTypeVar, false));
+    aspect.ifPresentOrElse(a -> hydra
+        .addMainWhere(Core.usesAspect, "<" + a + ">")
+        .addSearchVariable("aspect", Doc.eventAspectVar, false, "'" + a + "'")
+      , () -> hydra
+        .addSearchVariable("aspect", Doc.eventAspectVar, false));
+    aspectType.ifPresentOrElse(at -> hydra
+        .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.usesAspect.asNode()), PathFactory.pathLink(RDF.type.asNode())), "<" + at + ">")
+        .addSearchVariable("aspectType", Doc.eventAspectTypeVar, false, "'" + at + "'")
+      , () -> hydra
+        .addSearchVariable("aspectType", Doc.eventAspectTypeVar, false));
+    aspectUseType.ifPresentOrElse(aut -> hydra
+        .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(ResourceFactory.createProperty(aut).asNode()), PathFactory.pathLink(RDF.type.asNode())), Core.aspect)
+        .addSearchVariable("aspectUseType", Doc.eventAspectUseTypeVar, false, "'" + aut + "'")
+      , () -> hydra
+        .addSearchVariable("aspectUseType", Doc.eventAspectUseTypeVar, false));
+    hydra
+      .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
         .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime"))
       .addOptional(new WhereBuilder()
@@ -108,10 +114,12 @@ public class EventRepository extends AbstractHydraRepository {
   }
 
   @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #aspectType, #interactionType, #participant}")
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participationType}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates,
-      Optional<String> aspectType, Optional<String> interactionType, Optional<String> participant) {
-    Model model = findAll(params, dates, aspectType, interactionType, participant);
+      Optional<String> aspect, Optional<String> aspectType, Optional<String> aspectUseType,
+      Optional<String> participant, Optional<String> participationType) {
+    Model model =
+        findAll(params, dates, aspect, aspectType, aspectUseType, participant, participationType);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
 

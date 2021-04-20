@@ -39,11 +39,16 @@ public class Doc {
 
   public static final Property eventDatesVar = property("eventDatesVariable");
 
+  public static final Property eventAspectVar = property("eventAspectVariable");
+
   public static final Property eventAspectTypeVar = property("eventAspectTypeVariable");
 
-  public static final Property eventInteractionTypeVar = property("eventInteractionTypeVariable");
+  public static final Property eventAspectUseTypeVar = property("eventAspectUseTypeVariable");
 
   public static final Property eventParticipantVar = property("eventParticipantVariable");
+
+  public static final Property eventParticipationTypeVar =
+      property("eventParticipationTypeVariable");
 
   public static final Property personOrderByVar = property("personOrderByVariable");
 
