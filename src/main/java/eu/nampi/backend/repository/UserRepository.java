@@ -47,7 +47,7 @@ public class UserRepository extends AbstractHydraRepository {
         authorities =
             auth.getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.toList());
       }
-      UUID id = UUID.fromString(accessToken.getId());
+      UUID id = UUID.fromString(accessToken.getSubject());
       UUID rdfId = id;
       Map<String, Object> customClaims = accessToken.getOtherClaims();
       if (customClaims.containsKey(keycloakRdfIdAttribute)) {
@@ -58,7 +58,6 @@ public class UserRepository extends AbstractHydraRepository {
       return Optional.of(new User(id, accessToken.getPreferredUsername(), accessToken.getEmail(),
           authorities, accessToken.getFamilyName(), accessToken.getGivenName(), label, rdfId));
     }
-
   }
 
   public Optional<String> getCurrentUser(Lang lang) {
