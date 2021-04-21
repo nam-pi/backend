@@ -13,7 +13,7 @@ The NAMPI backend is a [Spring Boot](https://spring.io/projects/spring-boot) app
 * A new keycloak [realm](https://www.keycloak.org/docs/latest/server_admin/index.html#_create-realm) needs to be created using the default settings.
 * A new [client](https://www.keycloak.org/docs/latest/server_admin/index.html#_clients) has to be created using the default settings. _(For the development environment `Valid Redirect URIs` can be set to `*`)_
 * A role `author` for authenticated authors has to be created.
-* A mapper that maps a custom user attribute - to be used for RDF-ID overrides - into the keycloak access token. This needs to be configured for each used client.
+* A mapper that maps a custom user attribute - to be used for RDF-ID overrides - into the keycloak access token. This needs to be configured for each used client. This field can be used to specify a different UUID than the keycloak user id to connect to the `core:author` individual in the database.
 
 #### Optional
 
