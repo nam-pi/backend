@@ -8,7 +8,7 @@ keycloak:
 
 logging:
   level:
-    root: ${LOGGING_LEVEL:INFO} 
+    root: ${LOGGING_LEVEL:INFO}
     org:
       apache:
         http:
@@ -19,6 +19,7 @@ nampi:
   dataset-url-data: ${DATA_URL}
   dataset-url-inf-cache: ${INF_CACHE_URL}
   default-limit: ${DEFAULT_LIMIT:25}
+  keycloak-rdf-id-attribute: ${KEYCLOAK-RDF-ID-ATTRIBUTE:rdf-id}
   individuals-base-url: ${INDIVIDUALS_BASE_URL}
   other-owl-urls: ${OTHER_OWL_URLS:}
 
@@ -38,7 +39,7 @@ spring:
       - aspects
   main:
     allow-bean-definition-overriding: true
-  profiles: 
+  profiles:
     active: ${PROFILE:prod}
   redis:
     host: ${REDIS_URL}

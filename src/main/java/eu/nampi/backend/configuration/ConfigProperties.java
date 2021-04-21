@@ -18,6 +18,8 @@ public class ConfigProperties {
 
   int defaultLimit;
 
+  String keycloakRdfIdAttribute;
+
   List<String> otherOwlUrls;
 
 }

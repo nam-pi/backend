@@ -32,4 +32,6 @@ public class User {
 
   private String label;
 
+  private UUID rdfId;
+
 }

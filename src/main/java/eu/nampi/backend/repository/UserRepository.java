@@ -2,6 +2,7 @@ package eu.nampi.backend.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -15,6 +16,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.representations.AccessToken;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
@@ -25,6 +27,9 @@ import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
 public class UserRepository extends AbstractHydraRepository {
+
+  @Value("${nampi.keycloak-rdf-id-attribute}")
+  String keycloakRdfIdAttribute;
 
   public Optional<User> getCurrentUser() {
     Object origPrincipal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -42,18 +47,22 @@ public class UserRepository extends AbstractHydraRepository {
         authorities =
             auth.getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.toList());
       }
+      UUID id = UUID.fromString(accessToken.getId());
+      UUID rdfId = id;
+      Map<String, Object> customClaims = accessToken.getOtherClaims();
+      if (customClaims.containsKey(keycloakRdfIdAttribute)) {
+        rdfId = UUID.fromString((String) customClaims.get(keycloakRdfIdAttribute));
+      }
       String label = accessToken.getName().isEmpty() ? accessToken.getPreferredUsername()
           : accessToken.getName();
-      return Optional.of(new User(UUID.fromString(accessToken.getId()),
-          accessToken.getPreferredUsername(), accessToken.getEmail(), authorities,
-          accessToken.getFamilyName(), accessToken.getGivenName(), label));
+      return Optional.of(new User(id, accessToken.getPreferredUsername(), accessToken.getEmail(),
+          authorities, accessToken.getFamilyName(), accessToken.getGivenName(), label, rdfId));
     }
 
   }
 
   public Optional<String> getCurrentUser(Lang lang) {
     return getCurrentUser().map(u -> {
-      System.out.println(u);
       String uri = endpointUri("user");
       Resource userResource = ResourceFactory.createResource(uri);
       Model model = ModelFactory.createDefaultModel();
@@ -62,7 +71,7 @@ public class UserRepository extends AbstractHydraRepository {
       if (u.getAuthorities().contains("ROLE_AUTHOR")) {
         model.add(userResource, RDF.type, Core.author);
         model.add(userResource, SchemaOrg.sameAs,
-            ResourceFactory.createResource(individualsUri(Core.author, u.getId())));
+            ResourceFactory.createResource(individualsUri(Core.author, u.getRdfId())));
       }
       model.add(userResource, RDFS.label, u.getLabel());
       model.add(userResource, SchemaOrg.givenName, u.getGivenName());
