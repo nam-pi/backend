@@ -35,10 +35,11 @@ public class EventController extends AbstractRdfController {
       @RequestParam("aspectType") Optional<String> aspectType,
       @RequestParam("aspectUseType") Optional<String> aspectUseType,
       @RequestParam("participant") Optional<String> participant,
+      @RequestParam("participantType") Optional<String> participantType,
       @RequestParam("participationType") Optional<String> participationType) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
     String result = eventRepository.findAll(params, lang, dates, aspect, aspectType, aspectUseType,
-        participant, participationType);
+        participant, participantType, participationType);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 

@@ -30,7 +30,7 @@ public class EventRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> aspect,
       Optional<String> aspectType, Optional<String> aspectUseType, Optional<String> participant,
-      Optional<String> participationType) {
+      Optional<String> participantType, Optional<String> participationType) {
     HydraCollectionBuilder hydra =
         new HydraCollectionBuilder(params, Core.event, Doc.eventOrderByVar);
     // @formatter:off
@@ -39,6 +39,11 @@ public class EventRepository extends AbstractHydraRepository {
         .addSearchVariable("participant", Doc.eventParticipantVar, false, "'" + p + "'")
       , () -> hydra
         .addSearchVariable("participant", Doc.eventParticipantVar, false));
+    participantType.ifPresentOrElse(pt -> hydra
+        .addMainWhere(PathFactory.pathSeq(PathFactory.pathLink(Core.hasParticipant.asNode()), PathFactory.pathLink(RDF.type.asNode())), "<" + pt + ">")
+        .addSearchVariable("participantType", Doc.eventParticipantTypeVar, false, "'" + pt + "'")
+      , () -> hydra
+        .addSearchVariable("participantType", Doc.eventParticipantTypeVar, false));
     participationType.ifPresentOrElse(pt -> hydra
         .addMainWhere("<" + pt + ">", "?p")
         .addWhere("?p", RDF.type, Core.agent)
@@ -114,12 +119,13 @@ public class EventRepository extends AbstractHydraRepository {
   }
 
   @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participationType}")
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates,
       Optional<String> aspect, Optional<String> aspectType, Optional<String> aspectUseType,
-      Optional<String> participant, Optional<String> participationType) {
-    Model model =
-        findAll(params, dates, aspect, aspectType, aspectUseType, participant, participationType);
+      Optional<String> participant, Optional<String> participantType,
+      Optional<String> participationType) {
+    Model model = findAll(params, dates, aspect, aspectType, aspectUseType, participant,
+        participantType, participationType);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
 

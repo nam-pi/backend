@@ -47,6 +47,8 @@ public class Doc {
 
   public static final Property eventParticipantVar = property("eventParticipantVariable");
 
+  public static final Property eventParticipantTypeVar = property("eventParticipantTypeVariable");
+
   public static final Property eventParticipationTypeVar =
       property("eventParticipationTypeVariable");
 
