@@ -89,6 +89,11 @@ public abstract class AbstractHydraBuilder<T extends AbstractHydraBuilder<T>>
     return getThis();
   }
 
+  public T addMainOptional(Object p, Object o) {
+    this.mainWhere.addOptional(MAIN_SUBJ, p, o);
+    return getThis();
+  }
+
   public T addUnions(WhereBuilder... builder) {
     WhereBuilder nw = new WhereBuilder();
     for (WhereBuilder whereBuilder : builder) {

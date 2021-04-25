@@ -54,7 +54,11 @@ public class Doc {
 
   public static final Property personOrderByVar = property("personOrderByVariable");
 
+  public static final Property aspectCollection = property("aspectCollection");
+
   public static final Property aspectOrderByVar = property("aspectOrderByVariable");
+
+  public static final Property aspectPersonVar = property("aspectPersonVariable");
 
   public static final Property textVar = property("textVariable");
 

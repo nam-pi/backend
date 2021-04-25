@@ -47,6 +47,8 @@ public class Core {
 
   public static final Property hasParticipant = property("has_participant");
 
+  public static final Property hasMainParticipant = property("has_main_participant");
+
   public static final Property hasSortingDate = property("has_sorting_date");
 
   public static final Property takesPlaceOn = property("takes_place_on");
@@ -56,6 +58,8 @@ public class Core {
   public static final Property takesPlaceNotLaterThan = property("takes_place_not_later_than");
 
   public static final Property hasXsdDateTime = property("has_xsd_date_time");
+
+  public static final Property hasXsdString = property("has_xsd_string");
 
   public static final Property author = property("author");
 }
