@@ -12,12 +12,16 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdfconnection.RDFConnectionFuseki;
 import org.apache.jena.rdfconnection.RDFConnectionRemoteBuilder;
 import org.apache.jena.update.UpdateRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FusekiService implements JenaService {
+
+  @Autowired
+  private CacheService cacheService;
 
   private RDFConnectionRemoteBuilder dataBuilder;
 
@@ -71,6 +75,7 @@ public class FusekiService implements JenaService {
       conn.update("DELETE {?s ?p ?o } WHERE {?s ?p ?o }");
       conn.put(infCacheModel);
     }
+    cacheService.clear();
   }
 
   @Override
@@ -93,6 +98,8 @@ public class FusekiService implements JenaService {
     try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {
       conn.update(request);
     }
+    // Clear cache after each update
+    cacheService.clear();
   }
 
 }
