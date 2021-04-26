@@ -42,6 +42,7 @@ spring:
       - groups
       - persons
       - places
+      - sources
   main:
     allow-bean-definition-overriding: true
   profiles:

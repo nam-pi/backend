@@ -74,6 +74,14 @@ public class EntrypointRepository extends AbstractHydraRepository {
     model.add(placesBnode, Hydra.property, RDF.type);
     model.add(places, Hydra.manages, placesBnode);
 
+    Resource sources = ResourceFactory.createResource(endpointUri("sources"));
+    model.add(ep, Hydra.collection, sources);
+    model.add(sources, RDF.type, Hydra.collection);
+    Resource sourcesBnode = ResourceFactory.createResource();
+    model.add(sourcesBnode, Hydra.object, Core.source);
+    model.add(sourcesBnode, Hydra.property, RDF.type);
+    model.add(sources, Hydra.manages, sourcesBnode);
+
     userRepository.getCurrentUser().ifPresent(u -> {
       Property user = ResourceFactory.createProperty(endpointUri("user"));
       model.add(ep, user, Doc.user);

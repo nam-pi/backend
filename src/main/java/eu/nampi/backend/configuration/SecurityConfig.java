@@ -41,7 +41,7 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     http.addFilter(corsFilter().getFilter()).authorizeRequests()
         .antMatchers("/", "/doc", "/event/**", "/events/**", "/person/**", "/persons/**",
             "/aspect/**", "/aspects/**", "/author/**", "/authors/**", "/group/**", "/groups/**",
-            "/place/**", "/places/**")
+            "/place/**", "/places/**", "/source/**", "/sources/**")
         .permitAll().antMatchers("/user/**").hasRole("USER").anyRequest().authenticated();
   }
 
