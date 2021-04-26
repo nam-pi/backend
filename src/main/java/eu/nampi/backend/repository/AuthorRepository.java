@@ -36,9 +36,7 @@ public class AuthorRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     HydraCollectionBuilder hydra =
-        new HydraCollectionBuilder(params, Core.author, Doc.authorOrderByVar)
-            .addMainOptional(Core.hasXsdString, "?string")
-            .addMainConstruct(Core.hasXsdString, "?string");
+        new HydraCollectionBuilder(params, Core.author, Doc.authorOrderByVar);
     return construct(hydra);
   }
 
