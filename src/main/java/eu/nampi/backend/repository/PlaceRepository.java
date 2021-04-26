@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
@@ -20,8 +21,8 @@ public class PlaceRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     HydraCollectionBuilder hydra =
-        new HydraCollectionBuilder(params, Core.place, Doc.placeOrderByVar)
-            .addMainConstruct(SchemaOrg.sameAs, "?sa").addMainOptional(SchemaOrg.sameAs, "?sa");
+        new HydraCollectionBuilder(params, Core.place, Doc.placeOrderByVar);
+    addData(hydra);
     return construct(hydra);
   }
 
@@ -35,9 +36,13 @@ public class PlaceRepository extends AbstractHydraRepository {
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     String uri = individualsUri(Core.place, id);
-    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.place)
-        .addMainConstruct(SchemaOrg.sameAs, "?sa").addMainOptional(SchemaOrg.sameAs, "?sa");
+    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.place);
+    addData(builder);
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(uri));
+  }
+
+  private void addData(AbstractHydraBuilder<?> builder) {
+    builder.addMainConstruct(SchemaOrg.sameAs, "?sa").addMainOptional(SchemaOrg.sameAs, "?sa");
   }
 }

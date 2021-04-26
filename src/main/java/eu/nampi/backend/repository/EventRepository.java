@@ -17,6 +17,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
@@ -71,38 +72,13 @@ public class EventRepository extends AbstractHydraRepository {
         .addSearchVariable("aspectUseType", Doc.eventAspectUseTypeVar, false, "'" + aut + "'")
       , () -> hydra
         .addSearchVariable("aspectUseType", Doc.eventAspectUseTypeVar, false));
+    addData(hydra);
     hydra
-      .addOptional(new WhereBuilder()
-        .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
-        .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
-        .addWhere("?exactDate", RDF.type, Core.date))
-      .addOptional(new WhereBuilder()
-        .addWhere(MAIN_SUBJ, Core.takesPlaceNotEarlierThan, "?earliestDate")
-        .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
-        .addWhere("?earliestDate", RDF.type, Core.date))
-      .addOptional(new WhereBuilder()
-        .addWhere(MAIN_SUBJ, Core.takesPlaceNotLaterThan, "?latestDate")
-        .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
-        .addWhere("?latestDate", RDF.type, Core.date))
-      .addOptional(new WhereBuilder()
-        .addWhere(MAIN_SUBJ, Core.hasSortingDate, "?sortingDate")
-        .addWhere("?sortingDate", Core.hasXsdDateTime, "?sortingDateTime")
-        .addWhere("?sortingDate", RDF.type, Core.date))
       .addBind( "if(bound(?sortingDate), ?sortingDate, if(bound(?exactDate), ?exactDate, if(bound(?earliestDate), ?earliestDate, if(bound(?latestDate), ?latestDate, bnode()))))", "?realSortingDate")
       .addBind( "if(bound(?sortingDateTime), ?sortingDateTime, if(bound(?exactDateTime), ?exactDateTime, if(bound(?earliestDateTime), ?earliestDateTime, if(bound(?latestDateTime), ?latestDateTime, '" + (params.getOrderByClauses().getOrderFor("date").orElse(Order.ASCENDING) == Order.ASCENDING ? "9999-12-31T23:59:59" : "-9999-01-01:00:00:00") + "'^^xsd:dateTime))))", "?date")
       .addMainConstruct(Core.hasSortingDate, "?realSortingDate")
-      .addMainConstruct(Core.takesPlaceNotEarlierThan, "?earliestDate")
-      .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate")
-      .addMainConstruct(Core.takesPlaceOn, "?exactDate")
-      .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
-      .addConstruct("?earliestDate", RDF.type, Core.date)
-      .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
-      .addConstruct("?exactDate", RDF.type, Core.date)
-      .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
-      .addConstruct("?latestDate", RDF.type, Core.date)
       .addConstruct("?realSortingDate", Core.hasXsdDateTime, "?date")
-      .addConstruct("?realSortingDate", RDF.type, Core.date)
-      ;
+      .addConstruct("?realSortingDate", RDF.type, Core.date);
     // @formatter:on
     dates.map(s -> CONVERTER.convert(dates.get())).ifPresentOrElse(dr -> {
       hydra.addSearchVariable("dates", Doc.eventDatesVar, false, "'" + dates.get() + "'");
@@ -148,29 +124,42 @@ public class EventRepository extends AbstractHydraRepository {
   public String findOne(Lang lang, UUID id) {
     String uri = individualsUri(Core.event, id);
     HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.event);
-    builder
-        .addOptional(new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
-            .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
-            .addWhere("?exactDate", RDF.type, Core.date))
-        .addOptional(
-            new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotEarlierThan, "?earliestDate")
-                .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
-                .addWhere("?earliestDate", RDF.type, Core.date))
-        .addOptional(
-            new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotLaterThan, "?latestDate")
-                .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
-                .addWhere("?latestDate", RDF.type, Core.date))
-        .addMainConstruct(Core.takesPlaceNotEarlierThan, "?earliestDate")
-        .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate")
-        .addMainConstruct(Core.takesPlaceOn, "?exactDate")
-        .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
-        .addConstruct("?earliestDate", RDF.type, Core.date)
-        .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
-        .addConstruct("?exactDate", RDF.type, Core.date)
-        .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
-        .addConstruct("?latestDate", RDF.type, Core.date);
+    addData(builder);
+    builder.addMainConstruct(Core.hasSortingDate, "?sortingDate")
+        .addConstruct("?sortingDate", RDF.type, Core.date)
+        .addConstruct("?sortingDate", Core.hasXsdDateTime, "?sortingDateTime");
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(uri));
   }
 
+  private void addData(AbstractHydraBuilder<?> builder) {
+    // @formatter:off
+    builder
+      .addOptional(new WhereBuilder()
+        .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
+        .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
+        .addWhere("?exactDate", RDF.type, Core.date))
+      .addOptional(new WhereBuilder()
+        .addWhere(MAIN_SUBJ, Core.takesPlaceNotEarlierThan, "?earliestDate")
+        .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
+        .addWhere("?earliestDate", RDF.type, Core.date))
+      .addOptional(new WhereBuilder()
+        .addWhere(MAIN_SUBJ, Core.takesPlaceNotLaterThan, "?latestDate")
+        .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
+        .addWhere("?latestDate", RDF.type, Core.date))
+      .addOptional(new WhereBuilder()
+        .addWhere(MAIN_SUBJ, Core.hasSortingDate, "?sortingDate")
+        .addWhere("?sortingDate", Core.hasXsdDateTime, "?sortingDateTime")
+        .addWhere("?sortingDate", RDF.type, Core.date))
+      .addMainConstruct(Core.takesPlaceNotEarlierThan, "?earliestDate")
+      .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate")
+      .addMainConstruct(Core.takesPlaceOn, "?exactDate")
+      .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
+      .addConstruct("?earliestDate", RDF.type, Core.date)
+      .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
+      .addConstruct("?exactDate", RDF.type, Core.date)
+      .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
+      .addConstruct("?latestDate", RDF.type, Core.date);
+    // @formatter:off
+  }
 }
