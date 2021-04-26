@@ -90,6 +90,11 @@ public abstract class AbstractHydraBuilder<T extends AbstractHydraBuilder<T>>
     return getThis();
   }
 
+  public T addOptional(Object s, Object p, Object o) {
+    this.mainWhere.addOptional(s, p, o);
+    return getThis();
+  }
+
   public T addMainOptional(Object p, Object o) {
     this.mainWhere.addOptional(MAIN_SUBJ, p, o);
     return getThis();

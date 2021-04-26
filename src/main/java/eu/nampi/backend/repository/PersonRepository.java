@@ -1,9 +1,13 @@
 package eu.nampi.backend.repository;
 
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.MAIN_SUBJ;
 import java.util.UUID;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.RDF;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -42,7 +46,49 @@ public class PersonRepository extends AbstractHydraRepository {
     return serialize(model, lang, ResourceFactory.createResource(uri));
   }
 
+  private void addDateData(AbstractHydraBuilder<?> builder, String eventVar, Property type) {
+    String e = "?" + eventVar;
+    // @formatter:off
+    builder
+      .addOptional(new WhereBuilder()
+        .addWhere(MAIN_SUBJ, type, e)
+        .addOptional(new WhereBuilder()
+          .addWhere(e, Core.takesPlaceOn, e + "_exact")
+          .addWhere(e + "_exact", Core.hasXsdDateTime, e + "_exactDateTime"))
+        .addOptional(new WhereBuilder()
+          .addWhere(e, Core.takesPlaceNotEarlierThan, e + "_notEarlier")
+          .addWhere(e + "_notEarlier", Core.hasXsdDateTime, e + "_notEarlierDateTime"))
+        .addOptional(new WhereBuilder()
+          .addWhere(e, Core.takesPlaceNotLaterThan, e + "_notLater")
+          .addWhere(e + "_notLater", Core.hasXsdDateTime, e + "_notLaterDateTime"))
+        .addOptional(new WhereBuilder()
+          .addWhere(e, Core.hasSortingDate, e + "_sort")
+          .addWhere(e + "_sort", Core.hasXsdDateTime, e + "_sortDateTime")))
+      .addConstruct(MAIN_SUBJ, type, e)
+      .addConstruct(e, RDF.type, Core.event)
+      .addConstruct(e, Core.takesPlaceOn, e + "_exact")
+      .addConstruct(e + "_exact", RDF.type, Core.date)
+      .addConstruct(e + "_exact", Core.hasXsdDateTime, e + "_exactDateTime")
+      .addConstruct(e, Core.takesPlaceNotEarlierThan, e + "_notEarlier")
+      .addConstruct(e + "_notEarlier", RDF.type, Core.date)
+      .addConstruct(e + "_notEarlier", Core.hasXsdDateTime, e + "_notEarlierDateTime")
+      .addConstruct(e, Core.takesPlaceNotLaterThan, e + "_notLater")
+      .addConstruct(e + "_notLater", RDF.type, Core.date)
+      .addConstruct(e + "_notLater", Core.hasXsdDateTime, e + "_notLaterDateTime")
+      .addConstruct(e, Core.hasSortingDate, e + "_sort")
+      .addConstruct(e + "_sort", RDF.type, Core.date)
+      .addConstruct(e + "_sort", Core.hasXsdDateTime, e + "_sortDateTime");
+    // @formatter:on
+  }
+
   private void addData(AbstractHydraBuilder<?> builder) {
-    builder.addMainConstruct(SchemaOrg.sameAs, "?sa").addMainOptional(SchemaOrg.sameAs, "?sa");
+    addDateData(builder, "be", Core.isBornIn);
+    addDateData(builder, "de", Core.diesIn);
+    // @formatter:off
+    builder
+    // Related to same as
+      .addMainConstruct(SchemaOrg.sameAs, "?sa")
+      .addMainOptional(SchemaOrg.sameAs, "?sa");
+    // @formatter:on
   }
 }

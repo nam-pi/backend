@@ -82,4 +82,12 @@ public class Core {
   public static final Property hasXsdString = property("has_xsd_string");
 
   public static final Property author = property("author");
+
+  public static final Property startsLifeOf = property("starts_life_of");
+
+  public static final Property endsLifeOf = property("ends_life_of");
+
+  public static final Property diesIn = property("dies_in");
+
+  public static final Property isBornIn = property("is_born_in");
 }
