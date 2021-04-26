@@ -60,6 +60,10 @@ public class Doc {
 
   public static final Property aspectPersonVar = property("aspectPersonVariable");
 
+  public static final Property authorCollection = property("authorCollection");
+
+  public static final Property authorOrderByVar = property("aspectOrderByVariable");
+
   public static final Property textVar = property("textVariable");
 
   public static final Property typeVar = property("typeVariable");

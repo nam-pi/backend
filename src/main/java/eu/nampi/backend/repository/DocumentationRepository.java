@@ -31,6 +31,7 @@ public class DocumentationRepository extends AbstractHydraRepository {
         "The documentation for NAMPI, an API for the prosopographical data of the project 'Nuns and Monks - Prosopograpical Interfaces'");
     addEntryPoint(doc);
     addAspectClass(doc);
+    addAuthorClass(doc);
     addEventClass(doc);
     addPersonClass(doc);
     addUserClass(doc);
@@ -54,6 +55,13 @@ public class DocumentationRepository extends AbstractHydraRepository {
     aspect.addSupportedProperty(
         new SupportedProperty(Core.hasXsdString, "xsd:string", "label", true, false, false));
     doc.add(Hydra.supportedClass, aspect);
+  }
+
+  private void addAuthorClass(Class doc) {
+    Class author = new Class(Core.author, Core.author.getLocalName());
+    author.addSupportedProperty(
+        new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
+    doc.add(Hydra.supportedClass, author);
   }
 
   private void addEventClass(Class doc) {
@@ -99,9 +107,10 @@ public class DocumentationRepository extends AbstractHydraRepository {
 
   private void addSupportedCollections(Class doc) {
     Collection aspects = new Collection(Doc.aspectCollection, Core.aspect);
+    Collection authors = new Collection(Doc.authorCollection, Core.author);
     Collection persons = new Collection(Doc.personCollection, Core.person);
     Collection events = new Collection(Doc.eventCollection, Core.event);
-    doc.add(Hydra.supportedClass, aspects, events, persons);
+    doc.add(Hydra.supportedClass, aspects, authors, events, persons);
   }
 
 }

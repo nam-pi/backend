@@ -6,24 +6,56 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.Author;
+import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
+import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Core;
+import eu.nampi.backend.vocabulary.Doc;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
+@Repository
+@CacheConfig(cacheNames = "authors")
 public class AuthorRepository extends AbstractHydraRepository {
 
   @Autowired
   private JenaService jenaService;
+
+  public Model findAll(QueryParameters params) {
+    HydraCollectionBuilder hydra =
+        new HydraCollectionBuilder(params, Core.author, Doc.authorOrderByVar)
+            .addMainOptional(Core.hasXsdString, "?string")
+            .addMainConstruct(Core.hasXsdString, "?string");
+    return construct(hydra);
+  }
+
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
+  public String findAll(QueryParameters params, Lang lang) {
+    Model model = findAll(params);
+    return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
+  }
+
+  @Cacheable(key = "{#lang, #id}")
+  public String findOne(Lang lang, UUID id) {
+    String uri = individualsUri(Core.author, id);
+    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.author);
+    Model model = construct(builder);
+    return serialize(model, lang, ResourceFactory.createResource(uri));
+  }
 
   public Optional<Author> findOne(UUID rdfId) {
     AtomicReference<Optional<Author>> authorRef = new AtomicReference<>(Optional.empty());
