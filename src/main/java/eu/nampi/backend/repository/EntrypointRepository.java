@@ -26,6 +26,14 @@ public class EntrypointRepository extends AbstractHydraRepository {
     model.add(ep, RDF.type, Doc.entrypoint);
     model.add(ep, Hydra.title, "The NAMPI API");
 
+    Resource acts = ResourceFactory.createResource(endpointUri("acts"));
+    model.add(ep, Hydra.collection, acts);
+    model.add(acts, RDF.type, Hydra.collection);
+    Resource actsBnode = ResourceFactory.createResource();
+    model.add(actsBnode, Hydra.object, Core.act);
+    model.add(actsBnode, Hydra.property, RDF.type);
+    model.add(acts, Hydra.manages, actsBnode);
+
     Resource aspects = ResourceFactory.createResource(endpointUri("aspects"));
     model.add(ep, Hydra.collection, aspects);
     model.add(aspects, RDF.type, Hydra.collection);

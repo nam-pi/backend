@@ -76,6 +76,12 @@ public class Doc {
 
   public static final Property eventCollection = property("eventCollection");
 
+  public static final Property actCollection = property("actCollection");
+
+  public static final Property actOrderByVar = property("actOrderByVariable");
+
+  public static final Property actAuthorVar = property("actAuthorVariable");
+
   public static final Property personCollection = property("personCollection");
 
   public static final Property groupCollection = property("groupCollection");

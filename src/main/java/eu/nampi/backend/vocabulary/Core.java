@@ -33,6 +33,8 @@ public class Core {
 
   public static final Property date = property("date");
 
+  public static final Property act = property("act");
+
   public static final Property agent = property("agent");
 
   public static final Property event = property("event");
@@ -47,6 +49,8 @@ public class Core {
 
   public static final Property source = property("source");
 
+  public static final Property sourceLocation = property("source_location");
+
   public static final Property usesAspect = property("uses_aspect");
 
   public static final Property hasParticipant = property("has_participant");
@@ -54,6 +58,16 @@ public class Core {
   public static final Property hasMainParticipant = property("has_main_participant");
 
   public static final Property hasSortingDate = property("has_sorting_date");
+
+  public static final Property hasSourceLocation = property("has_source_location");
+
+  public static final Property hasSource = property("has_source");
+
+  public static final Property hasInterpretation = property("has_interpretation");
+
+  public static final Property isAuthoredOn = property("is_authored_on");
+
+  public static final Property isAuthoredBy = property("is_authored_by");
 
   public static final Property takesPlaceAt = property("takes_place_at");
 
