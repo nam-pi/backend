@@ -50,6 +50,14 @@ public class EntrypointRepository extends AbstractHydraRepository {
     model.add(eventsBnode, Hydra.property, RDF.type);
     model.add(events, Hydra.manages, eventsBnode);
 
+    Resource groups = ResourceFactory.createResource(endpointUri("groups"));
+    model.add(ep, Hydra.collection, groups);
+    model.add(groups, RDF.type, Hydra.collection);
+    Resource groupsBnode = ResourceFactory.createResource();
+    model.add(groupsBnode, Hydra.object, Core.group);
+    model.add(groupsBnode, Hydra.property, RDF.type);
+    model.add(groups, Hydra.manages, groupsBnode);
+
     Resource persons = ResourceFactory.createResource(endpointUri("persons"));
     model.add(ep, Hydra.collection, persons);
     model.add(persons, RDF.type, Hydra.collection);

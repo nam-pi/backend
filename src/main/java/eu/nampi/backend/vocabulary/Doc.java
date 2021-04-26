@@ -78,5 +78,9 @@ public class Doc {
 
   public static final Property personCollection = property("personCollection");
 
+  public static final Property groupCollection = property("groupCollection");
+
+  public static final Property groupOrderByVar = property("groupOrderByVariable");
+
   public static final Property user = property("user");
 }

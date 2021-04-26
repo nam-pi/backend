@@ -33,6 +33,7 @@ public class DocumentationRepository extends AbstractHydraRepository {
     addAspectClass(doc);
     addAuthorClass(doc);
     addEventClass(doc);
+    addGroupClass(doc);
     addPersonClass(doc);
     addUserClass(doc);
     addSupportedCollections(doc);
@@ -79,6 +80,13 @@ public class DocumentationRepository extends AbstractHydraRepository {
     doc.add(Hydra.supportedClass, event);
   }
 
+  private void addGroupClass(Class doc) {
+    Class group = new Class(Core.group, Core.group.getLocalName());
+    group.addSupportedProperty(
+        new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
+    doc.add(Hydra.supportedClass, group);
+  }
+
   private void addPersonClass(Class doc) {
     Class person = new Class(Core.person, Core.person.getLocalName());
     person.addSupportedProperty(
@@ -108,9 +116,10 @@ public class DocumentationRepository extends AbstractHydraRepository {
   private void addSupportedCollections(Class doc) {
     Collection aspects = new Collection(Doc.aspectCollection, Core.aspect);
     Collection authors = new Collection(Doc.authorCollection, Core.author);
+    Collection groups = new Collection(Doc.groupCollection, Core.group);
     Collection persons = new Collection(Doc.personCollection, Core.person);
     Collection events = new Collection(Doc.eventCollection, Core.event);
-    doc.add(Hydra.supportedClass, aspects, authors, events, persons);
+    doc.add(Hydra.supportedClass, aspects, authors, events, groups, persons);
   }
 
 }
