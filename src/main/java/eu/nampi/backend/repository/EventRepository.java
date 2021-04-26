@@ -30,10 +30,16 @@ public class EventRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> aspect,
       Optional<String> aspectType, Optional<String> aspectUseType, Optional<String> participant,
-      Optional<String> participantType, Optional<String> participationType) {
+      Optional<String> participantType, Optional<String> participationType,
+      Optional<String> place) {
     HydraCollectionBuilder hydra =
         new HydraCollectionBuilder(params, Core.event, Doc.eventOrderByVar);
     // @formatter:off
+    place.ifPresentOrElse(pl -> hydra
+        .addMainWhere(Core.takesPlaceAt, "<" + pl + ">")
+        .addSearchVariable("place", Doc.eventParticipantVar, false, "'" + pl + "'")
+      , () -> hydra
+        .addSearchVariable("place", Doc.eventParticipantVar, false));
     participant.ifPresentOrElse(p -> hydra
         .addMainWhere(Core.hasParticipant, "<" + p + ">")
         .addSearchVariable("participant", Doc.eventParticipantVar, false, "'" + p + "'")
@@ -119,13 +125,13 @@ public class EventRepository extends AbstractHydraRepository {
   }
 
   @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType}")
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates,
       Optional<String> aspect, Optional<String> aspectType, Optional<String> aspectUseType,
       Optional<String> participant, Optional<String> participantType,
-      Optional<String> participationType) {
+      Optional<String> participationType, Optional<String> place) {
     Model model = findAll(params, dates, aspect, aspectType, aspectUseType, participant,
-        participantType, participationType);
+        participantType, participationType, place);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
 
