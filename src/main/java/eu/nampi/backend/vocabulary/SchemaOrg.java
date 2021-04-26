@@ -40,4 +40,5 @@ public class SchemaOrg {
 
   public static final Property email = property("email");
 
+  public static final Property sameAs = property("sameAs");
 }
