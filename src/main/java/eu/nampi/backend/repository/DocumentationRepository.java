@@ -126,6 +126,10 @@ public class DocumentationRepository extends AbstractHydraRepository {
         RDFS.label.getLocalName(), true, false, false));
     person.addSupportedProperty(new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL,
         SchemaOrg.sameAs.getLocalName(), true, false, false));
+    person.addSupportedProperty(new SupportedProperty(Core.isBornIn, Core.event,
+        Core.isBornIn.getLocalName(), true, false, false));
+    person.addSupportedProperty(new SupportedProperty(Core.diesIn, Core.event,
+        Core.diesIn.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, person);
   }
 
