@@ -43,6 +43,8 @@ public class Core {
 
   public static final Property aspect = property("aspect");
 
+  public static final Property place = property("place");
+
   public static final Property usesAspect = property("uses_aspect");
 
   public static final Property hasParticipant = property("has_participant");

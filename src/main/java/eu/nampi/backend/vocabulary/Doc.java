@@ -82,5 +82,9 @@ public class Doc {
 
   public static final Property groupOrderByVar = property("groupOrderByVariable");
 
+  public static final Property placeCollection = property("placeCollection");
+
+  public static final Property placeOrderByVar = property("placeOrderByVariable");
+
   public static final Property user = property("user");
 }

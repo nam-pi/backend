@@ -35,6 +35,7 @@ public class DocumentationRepository extends AbstractHydraRepository {
     addEventClass(doc);
     addGroupClass(doc);
     addPersonClass(doc);
+    addPlaceClass(doc);
     addUserClass(doc);
     addSupportedCollections(doc);
     model.add(doc);
@@ -94,6 +95,15 @@ public class DocumentationRepository extends AbstractHydraRepository {
     doc.add(Hydra.supportedClass, person);
   }
 
+  private void addPlaceClass(Class doc) {
+    Class place = new Class(Core.place, Core.place.getLocalName());
+    place.addSupportedProperty(
+        new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
+    place.addSupportedProperty(
+        new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL, "sameAs", true, false, false));
+    doc.add(Hydra.supportedClass, place);
+  }
+
   private void addUserClass(Class doc) {
     Class user = new Class(Doc.user, Doc.user.getLocalName());
     user.addSupportedProperty(
@@ -109,17 +119,18 @@ public class DocumentationRepository extends AbstractHydraRepository {
     user.addSupportedProperty(
         new SupportedProperty(SchemaOrg.email, "xsd:string", "email", true, false, false));
     user.addSupportedProperty(
-        new SupportedProperty(SchemaOrg.sameAs, Core.author, "sameAs", true, false, false));
+        new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL, "sameAs", true, false, false));
     doc.add(Hydra.supportedClass, user);
   }
 
   private void addSupportedCollections(Class doc) {
     Collection aspects = new Collection(Doc.aspectCollection, Core.aspect);
     Collection authors = new Collection(Doc.authorCollection, Core.author);
+    Collection events = new Collection(Doc.eventCollection, Core.event);
     Collection groups = new Collection(Doc.groupCollection, Core.group);
     Collection persons = new Collection(Doc.personCollection, Core.person);
-    Collection events = new Collection(Doc.eventCollection, Core.event);
-    doc.add(Hydra.supportedClass, aspects, authors, events, groups, persons);
+    Collection places = new Collection(Doc.placeCollection, Core.place);
+    doc.add(Hydra.supportedClass, aspects, authors, events, groups, persons, places);
   }
 
 }

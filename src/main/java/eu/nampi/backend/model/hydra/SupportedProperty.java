@@ -4,7 +4,6 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-
 import eu.nampi.backend.vocabulary.Hydra;
 
 public class SupportedProperty extends AbstractHydraNode {
