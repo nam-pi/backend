@@ -34,9 +34,12 @@ spring:
   cache:
     type: redis
     cache-names:
-      - events
-      - persons
       - aspects
+      - authors
+      - events
+      - groups
+      - persons
+      - places
   main:
     allow-bean-definition-overriding: true
   profiles:
