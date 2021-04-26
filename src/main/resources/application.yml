@@ -29,6 +29,8 @@ server:
     enabled: true
   http2:
     enabled: true
+  error:
+    include-stacktrace: Never
 
 spring:
   cache:

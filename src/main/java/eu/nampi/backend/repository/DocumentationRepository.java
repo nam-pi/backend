@@ -56,6 +56,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
         new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
     aspect.addSupportedProperty(
         new SupportedProperty(Core.hasXsdString, "xsd:string", "label", true, false, false));
+    aspect.addSupportedProperty(
+        new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL, "sameAs", true, false, false));
     doc.add(Hydra.supportedClass, aspect);
   }
 
@@ -85,6 +87,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Class group = new Class(Core.group, Core.group.getLocalName());
     group.addSupportedProperty(
         new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
+    group.addSupportedProperty(
+        new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL, "sameAs", true, false, false));
     doc.add(Hydra.supportedClass, group);
   }
 
@@ -92,6 +96,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Class person = new Class(Core.person, Core.person.getLocalName());
     person.addSupportedProperty(
         new SupportedProperty(RDFS.label, "xsd:string", "label", true, false, false));
+    person.addSupportedProperty(
+        new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL, "sameAs", true, false, false));
     doc.add(Hydra.supportedClass, person);
   }
 

@@ -12,6 +12,7 @@ import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Doc;
+import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
 @CacheConfig(cacheNames = "groups")
@@ -19,7 +20,8 @@ public class GroupRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     HydraCollectionBuilder hydra =
-        new HydraCollectionBuilder(params, Core.group, Doc.groupOrderByVar);
+        new HydraCollectionBuilder(params, Core.group, Doc.groupOrderByVar)
+            .addMainConstruct(SchemaOrg.sameAs, "?sa").addMainOptional(SchemaOrg.sameAs, "?sa");
     return construct(hydra);
   }
 
@@ -33,7 +35,8 @@ public class GroupRepository extends AbstractHydraRepository {
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     String uri = individualsUri(Core.group, id);
-    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.group);
+    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.group)
+        .addMainConstruct(SchemaOrg.sameAs, "?sa").addMainOptional(SchemaOrg.sameAs, "?sa");
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(uri));
   }

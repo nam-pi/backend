@@ -21,7 +21,7 @@ public class PlaceRepository extends AbstractHydraRepository {
   public Model findAll(QueryParameters params) {
     HydraCollectionBuilder hydra =
         new HydraCollectionBuilder(params, Core.place, Doc.placeOrderByVar)
-            .addMainConstruct(SchemaOrg.sameAs, "?sa").addMainWhere(SchemaOrg.sameAs, "?sa");
+            .addMainConstruct(SchemaOrg.sameAs, "?sa").addMainOptional(SchemaOrg.sameAs, "?sa");
     return construct(hydra);
   }
 
@@ -35,7 +35,8 @@ public class PlaceRepository extends AbstractHydraRepository {
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     String uri = individualsUri(Core.place, id);
-    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.place);
+    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.place)
+        .addMainConstruct(SchemaOrg.sameAs, "?sa").addMainOptional(SchemaOrg.sameAs, "?sa");
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(uri));
   }
