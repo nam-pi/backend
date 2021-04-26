@@ -4,6 +4,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.http.HttpMethod;
@@ -109,7 +110,7 @@ public class DocumentationRepository extends AbstractHydraRepository {
     user.addSupportedProperty(
         new SupportedProperty(SchemaOrg.email, "xsd:string", "email", true, false, false));
     user.addSupportedProperty(
-        new SupportedProperty(SchemaOrg.sameAs, Core.author, "sameAs", true, false, false));
+        new SupportedProperty(OWL.sameAs, Core.author, "sameAs", true, false, false));
     doc.add(Hydra.supportedClass, user);
   }
 

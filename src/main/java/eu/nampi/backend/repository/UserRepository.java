@@ -11,6 +11,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.keycloak.KeycloakPrincipal;
@@ -69,7 +70,7 @@ public class UserRepository extends AbstractHydraRepository {
       model.add(userResource, RDF.type, Doc.user);
       if (u.getAuthorities().contains("ROLE_AUTHOR")) {
         model.add(userResource, RDF.type, Core.author);
-        model.add(userResource, SchemaOrg.sameAs,
+        model.add(userResource, OWL.sameAs,
             ResourceFactory.createResource(individualsUri(Core.author, u.getRdfId())));
       }
       model.add(userResource, RDFS.label, u.getLabel());
