@@ -150,19 +150,25 @@ public class EventRepository extends AbstractHydraRepository {
     HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.event);
     builder
         .addOptional(new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
-            .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime"))
+            .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
+            .addWhere("?exactDate", RDF.type, Core.date))
         .addOptional(
             new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotEarlierThan, "?earliestDate")
-                .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime"))
+                .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
+                .addWhere("?earliestDate", RDF.type, Core.date))
         .addOptional(
             new WhereBuilder().addWhere(MAIN_SUBJ, Core.takesPlaceNotLaterThan, "?latestDate")
-                .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime"))
+                .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
+                .addWhere("?latestDate", RDF.type, Core.date))
         .addMainConstruct(Core.takesPlaceNotEarlierThan, "?earliestDate")
         .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate")
         .addMainConstruct(Core.takesPlaceOn, "?exactDate")
         .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
+        .addConstruct("?earliestDate", RDF.type, Core.date)
         .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
-        .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime");
+        .addConstruct("?exactDate", RDF.type, Core.date)
+        .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
+        .addConstruct("?latestDate", RDF.type, Core.date);
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(uri));
   }
