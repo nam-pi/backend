@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
@@ -24,9 +23,9 @@ public class GroupController extends AbstractRdfController {
   @GetMapping(value = "/groups", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
       "application/n-triples" })
   public ResponseEntity<String> getGroups(@RequestHeader("accept") Lang lang,
-      @RequestParam("page") Optional<Integer> page, @RequestParam("pageIndex") Optional<Integer> pageIndex,
-      @RequestParam("limit") Optional<Integer> limit, @RequestParam("offset") Optional<Integer> offset,
-      @RequestParam("orderBy") Optional<OrderByClauses> orderBy, Optional<String> type, Optional<String> text) {
+      Optional<Integer> page, Optional<Integer> pageIndex,
+      Optional<Integer> limit, Optional<Integer> offset,
+      Optional<OrderByClauses> orderBy, Optional<String> type, Optional<String> text) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
     String result = groupRepository.findAll(params, lang);
     return new ResponseEntity<String>(result, HttpStatus.OK);

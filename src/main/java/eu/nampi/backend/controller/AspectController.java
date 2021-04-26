@@ -24,13 +24,9 @@ public class AspectController extends AbstractRdfController {
   @GetMapping(value = "/aspects", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
   public ResponseEntity<String> getAspects(@RequestHeader("accept") Lang lang,
-      @RequestParam("page") Optional<Integer> page,
-      @RequestParam("pageIndex") Optional<Integer> pageIndex,
-      @RequestParam("limit") Optional<Integer> limit,
-      @RequestParam("offset") Optional<Integer> offset,
-      @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
-      @RequestParam("type") Optional<String> type, @RequestParam("text") Optional<String> text,
-      @RequestParam("person") Optional<String> person) {
+      Optional<Integer> page, Optional<Integer> pageIndex, Optional<Integer> limit,
+      Optional<Integer> offset, Optional<OrderByClauses> orderBy, Optional<String> type,
+      Optional<String> text, @RequestParam("person") Optional<String> person) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
     String result = aspectRepository.findAll(params, lang, person);
     return new ResponseEntity<String>(result, HttpStatus.OK);
