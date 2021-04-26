@@ -4,6 +4,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -26,11 +27,25 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder<HydraCollection
 
   private List<String> templateVariables = new ArrayList<>();
 
+  private Optional<String> customTextFilter;
+
+  /**
+   * Creates a new HydraCollectionBuilder
+   * 
+   * @param params The default parameters from the user request
+   * @param mainType The type to query
+   * @param orderByTemplateMappingProperty The type of the ordering template mapping for the given
+   *        main type
+   * @param customTextFilter A filter expression string that replaces the default text filtering,
+   *        for instance to add additional fields to query. The actual search value needs to be
+   *        replaced by '%s', the value will passed through String.format(filter, textValue)
+   */
   public HydraCollectionBuilder(QueryParameters params, Property mainType,
-      Property orderByTemplateMappingProperty) {
+      Property orderByTemplateMappingProperty, Optional<String> customTextFilter) {
     super(mainType);
     this.orderByTemplateMappingProperty = orderByTemplateMappingProperty;
     this.params = params;
+    this.customTextFilter = customTextFilter;
     addSearchVariable("limit", Hydra.limit, false, params.getLimit());
     addSearchVariable("offset", Hydra.offset, false, params.getOffset());
     addSearchVariable("pageIndex", Hydra.pageIndex, false);
@@ -43,6 +58,11 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder<HydraCollection
             : null);
     addSearchVariable("text", Doc.textVar, false,
         params.getText().isPresent() ? "'" + params.getText().get() + "'" : null);
+  }
+
+  public HydraCollectionBuilder(QueryParameters params, Property mainType,
+      Property orderByTemplateMappingProperty) {
+    this(params, mainType, orderByTemplateMappingProperty, Optional.empty());
   }
 
   public HydraCollectionBuilder addSearchVariable(String name, Property property,
@@ -76,7 +96,15 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder<HydraCollection
       this.builder.addConstruct(MAIN_SUBJ, RDF.type, iri);
     });
     params.getText().ifPresent(t -> {
-      this.mainWhere.addFilter(ef.regex(MAIN_LABEL, t, "i"));
+      if (this.customTextFilter.isPresent()) {
+        try {
+          this.mainWhere.addFilter(String.format(this.customTextFilter.get(), t));
+        } catch (ParseException e) {
+          log.error(e.getMessage());
+        }
+      } else {
+        this.mainWhere.addFilter(ef.regex(MAIN_LABEL, t, "i"));
+      }
     });
     try {
       // @formatter:off

@@ -35,15 +35,16 @@ public abstract class AbstractHydraBuilder<T extends AbstractHydraBuilder<T>>
   protected Property mainType;
 
   public AbstractHydraBuilder(Property mainType) {
-    this.ef = this.builder.getExprFactory();
     this.mainType = mainType;
-    this.mainWhere.addPrefix("xsd", XSD.getURI()).addWhere(MAIN_SUBJ, RDF.type, this.mainType)
+    this.mainWhere.addPrefix("xsd", XSD.getURI()).addPrefix("rdfs", RDFS.getURI())
+        .addPrefix("core", Core.getURI()).addWhere(MAIN_SUBJ, RDF.type, this.mainType)
         .addWhere(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
     this.builder.addPrefix("doc", Doc.getURI()).addPrefix("core", Core.getURI())
         .addPrefix("hydra", Hydra.getURI()).addPrefix("rdf", RDF.getURI())
         .addPrefix("rdfs", RDFS.getURI()).addPrefix("xsd", XSD.getURI())
         .addConstruct(MAIN_SUBJ, RDF.type, this.mainType)
         .addConstruct(MAIN_SUBJ, RDFS.label, MAIN_LABEL);
+    this.ef = this.builder.getExprFactory();
   }
 
 

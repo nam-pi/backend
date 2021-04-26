@@ -21,9 +21,10 @@ public class AspectRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params, Optional<String> person) {
     HydraCollectionBuilder hydra =
-        new HydraCollectionBuilder(params, Core.aspect, Doc.aspectOrderByVar)
-            .addMainOptional(Core.hasXsdString, "?string")
-            .addMainConstruct(Core.hasXsdString, "?string");
+        new HydraCollectionBuilder(params, Core.aspect, Doc.aspectOrderByVar,
+            Optional.of("regex(?t, '%s', 'i')")).addMainOptional(Core.hasXsdString, "?string")
+                .addMainOptional("rdfs:label|core:has_xsd_string", "?t")
+                .addMainConstruct(Core.hasXsdString, "?string");
     person.ifPresentOrElse(
         p -> hydra.addWhere("?e", Core.usesAspect, MAIN_SUBJ)
             .addWhere("?e", Core.hasMainParticipant, "<" + p + ">")
