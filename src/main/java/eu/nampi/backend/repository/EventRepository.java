@@ -74,16 +74,20 @@ public class EventRepository extends AbstractHydraRepository {
     hydra
       .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
-        .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime"))
+        .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
+        .addWhere("?exactDate", RDF.type, Core.date))
       .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceNotEarlierThan, "?earliestDate")
-        .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime"))
+        .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
+        .addWhere("?earliestDate", RDF.type, Core.date))
       .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceNotLaterThan, "?latestDate")
-        .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime"))
+        .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
+        .addWhere("?latestDate", RDF.type, Core.date))
       .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.hasSortingDate, "?sortingDate")
-        .addWhere("?sortingDate", Core.hasXsdDateTime, "?sortingDateTime"))
+        .addWhere("?sortingDate", Core.hasXsdDateTime, "?sortingDateTime")
+        .addWhere("?sortingDate", RDF.type, Core.date))
       .addBind( "if(bound(?sortingDate), ?sortingDate, if(bound(?exactDate), ?exactDate, if(bound(?earliestDate), ?earliestDate, if(bound(?latestDate), ?latestDate, bnode()))))", "?realSortingDate")
       .addBind( "if(bound(?sortingDateTime), ?sortingDateTime, if(bound(?exactDateTime), ?exactDateTime, if(bound(?earliestDateTime), ?earliestDateTime, if(bound(?latestDateTime), ?latestDateTime, '" + (params.getOrderByClauses().getOrderFor("date").orElse(Order.ASCENDING) == Order.ASCENDING ? "9999-12-31T23:59:59" : "-9999-01-01:00:00:00") + "'^^xsd:dateTime))))", "?date")
       .addMainConstruct(Core.hasSortingDate, "?realSortingDate")
@@ -91,9 +95,14 @@ public class EventRepository extends AbstractHydraRepository {
       .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate")
       .addMainConstruct(Core.takesPlaceOn, "?exactDate")
       .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
+      .addConstruct("?earliestDate", RDF.type, Core.date)
       .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
+      .addConstruct("?exactDate", RDF.type, Core.date)
       .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
-      .addConstruct("?realSortingDate", Core.hasXsdDateTime, "?date");
+      .addConstruct("?latestDate", RDF.type, Core.date)
+      .addConstruct("?realSortingDate", Core.hasXsdDateTime, "?date")
+      .addConstruct("?realSortingDate", RDF.type, Core.date)
+      ;
     // @formatter:on
     dates.map(s -> CONVERTER.convert(dates.get())).ifPresentOrElse(dr -> {
       hydra.addSearchVariable("dates", Doc.eventDatesVar, false, "'" + dates.get() + "'");
