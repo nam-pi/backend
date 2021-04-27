@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
@@ -23,12 +24,20 @@ public class EventController extends AbstractRdfController {
   @GetMapping(value = "/events", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
   public ResponseEntity<String> getEvents(@RequestHeader("accept") Lang lang,
-      Optional<Integer> page, Optional<Integer> pageIndex, Optional<Integer> limit,
-      Optional<Integer> offset, Optional<OrderByClauses> orderBy, Optional<String> type,
-      Optional<String> text, Optional<String> dates, Optional<String> aspect,
-      Optional<String> aspectType, Optional<String> aspectUseType, Optional<String> participant,
-      Optional<String> participantType, Optional<String> participationType,
-      Optional<String> place) {
+      @RequestParam("page") Optional<Integer> page,
+      @RequestParam("pageIndex") Optional<Integer> pageIndex,
+      @RequestParam("limit") Optional<Integer> limit,
+      @RequestParam("offset") Optional<Integer> offset,
+      @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
+      @RequestParam("type") Optional<String> type, @RequestParam("text") Optional<String> text,
+      @RequestParam("dates") Optional<String> dates,
+      @RequestParam("aspect") Optional<String> aspect,
+      @RequestParam("aspectType") Optional<String> aspectType,
+      @RequestParam("aspectUseType") Optional<String> aspectUseType,
+      @RequestParam("participant") Optional<String> participant,
+      @RequestParam("participantType") Optional<String> participantType,
+      @RequestParam("participationType") Optional<String> participationType,
+      @RequestParam("place") Optional<String> place) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
     String result = eventRepository.findAll(params, lang, dates, aspect, aspectType, aspectUseType,
         participant, participantType, participationType, place);
