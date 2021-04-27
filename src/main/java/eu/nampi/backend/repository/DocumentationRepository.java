@@ -108,6 +108,12 @@ public class DocumentationRepository extends AbstractHydraRepository {
         Core.takesPlaceNotLaterThan.getLocalName(), true, false, false));
     event.addSupportedProperty(new SupportedProperty(Core.takesPlaceOn, Core.date,
         Core.takesPlaceOn.getLocalName(), true, false, false));
+    event.addSupportedProperty(new SupportedProperty(Core.takesPlaceAt, Core.place,
+        Core.takesPlaceAt.getLocalName(), true, false, false));
+    event.addSupportedProperty(new SupportedProperty(Core.hasMainParticipant, Core.person,
+        Core.hasMainParticipant.getLocalName(), true, false, false));
+    event.addSupportedProperty(new SupportedProperty(Core.usesAspect, Core.aspect,
+        Core.usesAspect.getLocalName(), true, true, true));
     doc.add(Hydra.supportedClass, event);
   }
 

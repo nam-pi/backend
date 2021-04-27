@@ -12,6 +12,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -135,29 +136,54 @@ public class EventRepository extends AbstractHydraRepository {
   private void addData(AbstractHydraBuilder<?> builder) {
     // @formatter:off
     builder
+      // Person related data
+      .addOptional(new WhereBuilder()
+        .addWhere(MAIN_SUBJ, Core.hasMainParticipant, "?prs")
+        .addWhere("?prs", RDFS.label, "?prsl"))
+      .addMainConstruct(Core.hasMainParticipant, "?prs")
+      .addConstruct("?prs", RDF.type, Core.person)
+      .addConstruct("?prs", RDFS.label, "?prsl")
+      // // Aspect related data
+      .addOptional(new WhereBuilder()
+        .addWhere(MAIN_SUBJ, Core.usesAspect, "?asp")
+        .addWhere("?asp", RDFS.label, "?aspl"))
+      .addMainConstruct(Core.usesAspect, "?asp")
+      .addConstruct("?asp", RDF.type, Core.aspect)
+      .addConstruct("?asp", RDFS.label, "?aspl")
+      // Place related data
+      .addOptional(new WhereBuilder()
+        .addWhere(MAIN_SUBJ, Core.takesPlaceAt, "?pla")
+        .addWhere("?pla", RDFS.label, "?plal"))
+      .addMainConstruct(Core.takesPlaceAt, "?pla")
+      .addConstruct("?pla", RDF.type, Core.place)
+      .addConstruct("?pla", RDFS.label, "?plal")
+      // The exact event date
       .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceOn, "?exactDate")
         .addWhere("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
         .addWhere("?exactDate", RDF.type, Core.date))
+      .addMainConstruct(Core.takesPlaceOn, "?exactDate")
+      .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
+      .addConstruct("?exactDate", RDF.type, Core.date)
+      // The earliest possible event date
       .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceNotEarlierThan, "?earliestDate")
         .addWhere("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
         .addWhere("?earliestDate", RDF.type, Core.date))
+      .addMainConstruct(Core.takesPlaceNotEarlierThan, "?earliestDate")
+      .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
+      .addConstruct("?earliestDate", RDF.type, Core.date)
+      // The latest possible event date
       .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.takesPlaceNotLaterThan, "?latestDate")
         .addWhere("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
         .addWhere("?latestDate", RDF.type, Core.date))
+      .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate")
+      // The sorting date
       .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, Core.hasSortingDate, "?sortingDate")
         .addWhere("?sortingDate", Core.hasXsdDateTime, "?sortingDateTime")
         .addWhere("?sortingDate", RDF.type, Core.date))
-      .addMainConstruct(Core.takesPlaceNotEarlierThan, "?earliestDate")
-      .addMainConstruct(Core.takesPlaceNotLaterThan, "?latestDate")
-      .addMainConstruct(Core.takesPlaceOn, "?exactDate")
-      .addConstruct("?earliestDate", Core.hasXsdDateTime, "?earliestDateTime")
-      .addConstruct("?earliestDate", RDF.type, Core.date)
-      .addConstruct("?exactDate", Core.hasXsdDateTime, "?exactDateTime")
-      .addConstruct("?exactDate", RDF.type, Core.date)
       .addConstruct("?latestDate", Core.hasXsdDateTime, "?latestDateTime")
       .addConstruct("?latestDate", RDF.type, Core.date);
     // @formatter:off
