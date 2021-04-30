@@ -8,6 +8,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -52,6 +53,7 @@ public class PersonRepository extends AbstractHydraRepository {
     builder
       .addOptional(new WhereBuilder()
         .addWhere(MAIN_SUBJ, type, e)
+        .addWhere(e, RDFS.label, e + "_label")
         .addOptional(new WhereBuilder()
           .addWhere(e, Core.takesPlaceOn, e + "_exact")
           .addWhere(e + "_exact", Core.hasXsdDateTime, e + "_exactDateTime"))
@@ -66,6 +68,7 @@ public class PersonRepository extends AbstractHydraRepository {
           .addWhere(e + "_sort", Core.hasXsdDateTime, e + "_sortDateTime")))
       .addConstruct(MAIN_SUBJ, type, e)
       .addConstruct(e, RDF.type, Core.event)
+      .addConstruct(e, RDFS.label, e + "_label")
       .addConstruct(e, Core.takesPlaceOn, e + "_exact")
       .addConstruct(e + "_exact", RDF.type, Core.date)
       .addConstruct(e + "_exact", Core.hasXsdDateTime, e + "_exactDateTime")
