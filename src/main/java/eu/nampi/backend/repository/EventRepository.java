@@ -172,7 +172,7 @@ public class EventRepository extends AbstractHydraRepository {
 
     /* Set up construction */
 
-    addDataConstructs(builder, varMain, HydraCollectionBuilder.VAR_MAIN_LABEL);
+    addDataConstructs(builder, varMain);
 
     builder.mapper
       .add("dates", Doc.eventDatesVar, dates.orElse(""))
@@ -205,14 +205,13 @@ public class EventRepository extends AbstractHydraRepository {
     builder.addWhere(placeWhere(varMain));
     builder.addWhere(participantWhere(varMain));
     builder.addWhere(aspectWhere(varMain));
-    addDataConstructs(builder, varMain, HydraSingleBuilder.VAR_MAIN_LABEL);
-    return serialize(construct(builder), lang, ResourceFactory.createResource(builder.baseNode.getURI()));
+    addDataConstructs(builder, varMain);
+    return serialize(construct(builder), lang, ResourceFactory.createResource(builder.iri));
   }
 
-  private ConstructBuilder addDataConstructs(ConstructBuilder construct, Node varMain, Node varMainLabel) {
+  private void addDataConstructs(ConstructBuilder builder, Node varMain) {
     // @formatter:off
-    return construct.addConstruct(varMain, RDF.type, Core.event)
-      .addConstruct(varMain, RDFS.label, varMainLabel)
+    builder
       // Participant
       .addConstruct(varMain, Core.hasParticipant, VAR_PARTICIPANT)
       .addConstruct(VAR_PARTICIPANT, RDF.type, Core.agent)

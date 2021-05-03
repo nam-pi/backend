@@ -13,6 +13,7 @@ import org.apache.jena.vocabulary.XSD;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.Hydra;
+import eu.nampi.backend.vocabulary.SchemaOrg;
 
 public abstract class AbstractHydraBuilder extends ConstructBuilder implements InterfaceHydraBuilder {
 
@@ -32,7 +33,10 @@ public abstract class AbstractHydraBuilder extends ConstructBuilder implements I
         .addPrefix("hydra", Hydra.getURI())
         .addPrefix("rdf", RDF.getURI())
         .addPrefix("rdfs", RDFS.getURI())
-        .addPrefix("xsd", XSD.getURI());
+        .addPrefix("schema", SchemaOrg.getURI())
+        .addPrefix("xsd", XSD.getURI())
+        .addConstruct(VAR_MAIN, RDF.type, mainType)
+        .addConstruct(VAR_MAIN, RDFS.label, VAR_MAIN_LABEL);
     // @formatter:on
     this.baseNode = baseNode;
     this.ef = this.getExprFactory();
