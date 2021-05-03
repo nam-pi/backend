@@ -2,6 +2,7 @@ package eu.nampi.backend.repository;
 
 import java.util.Optional;
 import java.util.UUID;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
@@ -11,10 +12,11 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
-import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.model.hydra.AbstractHydraBuilderOld;
+import eu.nampi.backend.model.hydra.HydraCollectionBuilderOld;
+import eu.nampi.backend.model.hydra.HydraSingleBuilderOld;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Doc;
 
@@ -24,7 +26,7 @@ public class ActRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params, Optional<String> author, Optional<String> source) {
     // @formatter:off
-    HydraCollectionBuilder hydra = new HydraCollectionBuilder(params, Core.act, Doc.actOrderByVar);
+    HydraCollectionBuilderOld hydra = new HydraCollectionBuilderOld(params, Core.act, Doc.actOrderByVar);
     author.ifPresentOrElse(a -> hydra
         .addMainWhere(Core.isAuthoredBy, "<" + a + ">")
         .addSearchVariable("author", Doc.actAuthorVar, false, "'" + a + "'")
@@ -40,10 +42,8 @@ public class ActRepository extends AbstractHydraRepository {
     return construct(hydra);
   }
 
-  @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #author, #source}")
-  public String findAll(QueryParameters params, Lang lang, Optional<String> author,
-      Optional<String> source) {
+  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #author, #source}")
+  public String findAll(QueryParameters params, Lang lang, Optional<String> author, Optional<String> source) {
     Model model = findAll(params, author, source);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
@@ -51,13 +51,13 @@ public class ActRepository extends AbstractHydraRepository {
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     String uri = individualsUri(Core.act, id);
-    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.act);
+    HydraSingleBuilderOld builder = new HydraSingleBuilderOld(uri, Core.act);
     addData(builder);
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(uri));
   }
 
-  private void addData(AbstractHydraBuilder<?> builder) {
+  private void addData(AbstractHydraBuilderOld<?> builder) {
     // @formatter:off
     builder
       // Author related

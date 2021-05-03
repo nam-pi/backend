@@ -37,19 +37,19 @@ public class ParameterMapper {
   public ParameterMapper add(String variable, Property type, Object value, boolean required) {
     this.parts.add(variable);
     Node bnode = NodeFactory.createVariable("mapping_" + variable);
-    // @formatter:off
     this.bind.addBind(construct.getExprFactory().bnode(), bnode);
+    // @formatter:off
     this.construct
       .addConstruct(varSearch, Hydra.mapping, bnode)
       .addConstruct(bnode, RDF.type, Hydra.IriTemplateMapping)
       .addConstruct(bnode, Hydra.variable, variable)
       .addConstruct(bnode, Hydra.property, type)
       .addConstruct(bnode, Hydra.required, required);
+    // @formatter:on
 
     if (value != null && !value.toString().equals("")) {
-      viewParts.add(variable + "=" +  URLEncoder.encode(value.toString(), Charset.defaultCharset()));
+      viewParts.add(variable + "=" + URLEncoder.encode(value.toString(), Charset.defaultCharset()));
     }
-    // @formatter:on
     return this;
   }
 
@@ -59,12 +59,12 @@ public class ParameterMapper {
     // @formatter:off
     if (!parts.isEmpty()) {
       templateBuilder
-        .append(parts.stream().collect(Collectors.joining(",", "{?", "}")));
+        .append(parts.stream().sorted().collect(Collectors.joining(",", "{?", "}")));
     }
     StringBuilder viewStringBuilder = new StringBuilder(this.baseUrl);
     if (!viewParts.isEmpty()) {
       viewStringBuilder
-        .append(viewParts.stream().collect(Collectors.joining("&", "?", "")));
+        .append(viewParts.stream().sorted().collect(Collectors.joining("&", "?", "")));
     }
     Node resView = NodeFactory.createURI(viewStringBuilder.toString());
     this.construct

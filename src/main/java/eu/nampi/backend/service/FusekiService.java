@@ -3,7 +3,7 @@ package eu.nampi.backend.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
+
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.query.QuerySolution;
@@ -14,7 +14,9 @@ import org.apache.jena.rdfconnection.RDFConnectionRemoteBuilder;
 import org.apache.jena.update.UpdateRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
 import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
+import eu.nampi.backend.model.hydra.InterfaceHydraBuilderOld;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -33,23 +35,22 @@ public class FusekiService implements JenaService {
   @Value("${nampi.other-owl-urls}")
   private List<String> otherOwlUrls;
 
-  public FusekiService(RDFConnectionRemoteBuilder dataBuilder,
-      RDFConnectionRemoteBuilder infCacheBuilder) {
+  public FusekiService(RDFConnectionRemoteBuilder dataBuilder, RDFConnectionRemoteBuilder infCacheBuilder) {
     this.dataBuilder = dataBuilder;
     this.infCacheBuilder = infCacheBuilder;
   }
 
   @Override
-  public Model construct(ConstructBuilder constructBuilder) {
+  public Model construct(InterfaceHydraBuilder constructBuilder) {
     try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {
-      String query = constructBuilder.buildString();
+      String query = constructBuilder.buildHydra();
       log.debug(query);
       return conn.queryConstruct(query);
     }
   }
 
   @Override
-  public Model construct(InterfaceHydraBuilder hydraBuilder) {
+  public Model construct(InterfaceHydraBuilderOld hydraBuilder) {
     try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {
       String query = hydraBuilder.buildString();
       log.debug(query);

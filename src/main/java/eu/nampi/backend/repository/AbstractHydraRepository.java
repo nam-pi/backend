@@ -11,7 +11,6 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -25,6 +24,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import eu.nampi.backend.exception.NotFoundException;
 import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
+import eu.nampi.backend.model.hydra.InterfaceHydraBuilderOld;
 import eu.nampi.backend.service.JenaService;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
@@ -35,11 +35,11 @@ public abstract class AbstractHydraRepository {
   @Autowired
   private JenaService jenaService;
 
-  protected Model construct(InterfaceHydraBuilder builder) {
+  protected Model construct(InterfaceHydraBuilderOld builder) {
     return jenaService.construct(builder);
   }
 
-  protected Model construct(ConstructBuilder builder) {
+  protected Model construct(InterfaceHydraBuilder builder) {
     return jenaService.construct(builder);
   }
 
@@ -99,8 +99,7 @@ public abstract class AbstractHydraRepository {
         options.setOmitGraph(true);
         ctx.setFrame(createFrame(model, startId));
         ctx.setOptions(options);
-        RDFWriter w = RDFWriter.create().format(RDFFormat.JSONLD_FRAME_FLAT).context(ctx)
-            .source(model).build();
+        RDFWriter w = RDFWriter.create().format(RDFFormat.JSONLD_FRAME_FLAT).context(ctx).source(model).build();
         w.output(out);
       } else {
         RDFDataMgr.write(out, model, lang);

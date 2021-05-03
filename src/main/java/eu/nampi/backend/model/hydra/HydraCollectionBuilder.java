@@ -1,183 +1,136 @@
 package eu.nampi.backend.model.hydra;
 
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.query.Query;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
+
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.Hydra;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class HydraCollectionBuilder extends AbstractHydraBuilder<HydraCollectionBuilder> {
+public class HydraCollectionBuilder extends AbstractHydraBuilder {
 
-  private Property orderByTemplateMappingProperty;
+  public static final Node VAR_FIRST = NodeFactory.createVariable("first");
+  public static final Node VAR_LAST = NodeFactory.createVariable("last");
+  public static final Node VAR_MANAGES = NodeFactory.createVariable("manages");
+  public static final Node VAR_NEXT = NodeFactory.createVariable("next");
+  public static final Node VAR_PREVIOUS = NodeFactory.createVariable("previous");
+  public static final Node VAR_SEARCH = NodeFactory.createVariable("search");
+  public static final Node VAR_TOTAL_ITEMS = NodeFactory.createVariable("totalItems");
 
-  private QueryParameters params;
+  public final ParameterMapper mapper;
+  public final WhereBuilder countWhere;
+  public final WhereBuilder dataWhere;
 
-  private List<String> templateVariables = new ArrayList<>();
+  private final QueryParameters params;
+  private final SelectBuilder bindSelect = new SelectBuilder();
+  private final WhereBuilder bindWhere = new WhereBuilder();
 
-  private Optional<String> customTextFilter;
+  public HydraCollectionBuilder(String baseUri, Property mainType, QueryParameters params) {
+    this(baseUri, mainType, params, true);
+  }
 
-  /**
-   * Creates a new HydraCollectionBuilder
-   * 
-   * @param params The default parameters from the user request
-   * @param mainType The type to query
-   * @param orderByTemplateMappingProperty The type of the ordering template mapping for the given
-   *        main type
-   * @param customTextFilter A filter expression string that replaces the default text filtering,
-   *        for instance to add additional fields to query. The actual search value needs to be
-   *        replaced by '%s', the value will passed through String.format(filter, textValue)
-   */
-  public HydraCollectionBuilder(QueryParameters params, Property mainType,
-      Property orderByTemplateMappingProperty, Optional<String> customTextFilter) {
-    super(mainType);
-    this.orderByTemplateMappingProperty = orderByTemplateMappingProperty;
+  public HydraCollectionBuilder(String baseUri, Property mainType, QueryParameters params, boolean includeTextFilter) {
+    super(NodeFactory.createURI(baseUri), mainType);
+    this.countWhere = mainWhere();
+    this.dataWhere = mainWhere();
+    this.mapper = new ParameterMapper(baseUri, VAR_SEARCH, this, bindSelect);
     this.params = params;
-    this.customTextFilter = customTextFilter;
-    addSearchVariable("limit", Hydra.limit, false, params.getLimit());
-    addSearchVariable("offset", Hydra.offset, false, params.getOffset());
-    addSearchVariable("pageIndex", Hydra.pageIndex, false);
-    addSearchVariable("orderBy", this.orderByTemplateMappingProperty, false,
-        params.getOrderByClauses().empty() ? null
-            : "'" + params.getOrderByClauses().toQueryString() + "'");
-    addSearchVariable("type", Doc.typeVar, false,
-        params.getType().isPresent()
-            ? "'" + URLEncoder.encode(params.getType().get(), Charset.defaultCharset()) + "'"
-            : null);
-    addSearchVariable("text", Doc.textVar, false,
-        params.getText().isPresent() ? "'" + params.getText().get() + "'" : null);
-  }
 
-  public HydraCollectionBuilder(QueryParameters params, Property mainType,
-      Property orderByTemplateMappingProperty) {
-    this(params, mainType, orderByTemplateMappingProperty, Optional.empty());
-  }
-
-  public HydraCollectionBuilder addSearchVariable(String name, Property property,
-      boolean required) {
-    return addSearchVariable(name, property, required, null);
-  }
-
-  public HydraCollectionBuilder addSearchVariable(String name, Property property, boolean required,
-      Object value) {
-    this.templateVariables.add(name);
-    String templateMapping = mappingVar(name);
-    // @formatter:off
-    this.builder
-      .addConstruct(templateMapping, RDF.type, Hydra.IriTemplateMapping)
-      .addConstruct(templateMapping, Hydra.property, property)
-      .addConstruct(templateMapping, Hydra.required, required ? "true" : "false")
-      .addConstruct(templateMapping, Hydra.variable, name)
-      .addConstruct("?search", Hydra.mapping, templateMapping);
-    // @formatter:on
-    if (value != null) {
-      this.builder.addBind(this.builder.makeExpr(String.valueOf(value)), pad(name));
+    // Add text filter
+    dataWhere.addWhere(labelWhere());
+    if (includeTextFilter && params.getText().isPresent()) {
+      Expr regex = ef.regex(VAR_MAIN_LABEL, params.getText().get(), "i");
+      dataWhere.addFilter(regex);
+      countWhere.addWhere(labelWhere()).addFilter(regex);
     }
-    return getThis();
+
+    // Add type filter
+    if (params.getType().isPresent()) {
+      Resource typeResource = ResourceFactory.createResource(params.getType().get());
+      dataWhere.addWhere(VAR_MAIN, RDF.type, typeResource);
+      countWhere.addWhere(VAR_MAIN, RDF.type, typeResource);
+    }
   }
 
   @Override
-  public Query build() {
-    params.getType().ifPresent(t -> {
-      String iri = "<" + t + ">";
-      this.mainWhere.addWhere(MAIN_SUBJ, RDF.type, iri);
-      this.builder.addConstruct(MAIN_SUBJ, RDF.type, iri);
-    });
-    params.getText().ifPresent(t -> {
-      if (this.customTextFilter.isPresent()) {
-        try {
-          this.mainWhere.addFilter(String.format(this.customTextFilter.get(), t));
-        } catch (ParseException e) {
-          log.error(e.getMessage());
-        }
-      } else {
-        this.mainWhere.addFilter(ef.regex(MAIN_LABEL, t, "i"));
-      }
-    });
+  public String buildHydra() {
+    // @formatter:off
     try {
-      // @formatter:off
-      SelectBuilder countSelect = new SelectBuilder()
-        .addVar("COUNT(*)", "?count")
-        .addWhere(this.mainWhere);
+      
+      // Construct the result
+      this
+        // Add general hydra data
+        .addConstruct(baseNode, RDF.type, Hydra.Collection)
+        .addConstruct(baseNode, Hydra.totalItems, VAR_TOTAL_ITEMS)
+        .addConstruct(baseNode, Hydra.manages, VAR_MANAGES)
+        .addConstruct(VAR_MANAGES, Hydra.object, Core.event)
+        // Add search
+        .addConstruct(baseNode, Hydra.search, VAR_SEARCH )
+        .addConstruct(VAR_SEARCH, RDF.type, Hydra.IriTemplate)
+        .addConstruct(VAR_SEARCH, Hydra.variableRepresentation, Hydra.BasicRepresentation)
+        // Add event data
+        .addConstruct(baseNode, Hydra.member, VAR_MAIN);
+
+      // Add all variable bindings
+      bindWhere
+        .addBind(ef.bnode(), VAR_SEARCH)
+        .addBind(ef.bnode(), VAR_MANAGES);
+
+      // Set up selects
       SelectBuilder dataSelect = new SelectBuilder()
         .addVar("*")
-        .addWhere(this.mainWhere);
-      params
-        .getOrderByClauses()
-        .appendAllTo(dataSelect);
-      dataSelect.addOrderBy(MAIN_SUBJ)
-        .setLimit(this.params.getLimit())
-        .setOffset(this.params.getOffset());
-      SelectBuilder searchSelect = new SelectBuilder()
+        .addWhere(dataWhere);
+        params.getOrderByClauses().appendAllTo(dataSelect);
+        dataSelect.addOrderBy(VAR_MAIN)
+        .setOffset(params.getOffset())
+        .setLimit(params.getLimit());
+      SelectBuilder countSelect = new SelectBuilder()
+        .addVar("count(*)", VAR_TOTAL_ITEMS)
+        .addWhere(countWhere);
+      SelectBuilder contentSelect = new SelectBuilder()
         .addVar("*")
-        .addBind("bnode()", "?search")
-        .addBind(this.ef.concat(this.params.getBaseUrl(), "{?" + this.templateVariables.stream().collect(Collectors.joining(",")) + "}"), "?template")
-        .addBind("bnode()", "?manages");
-      for (String string : templateVariables) {
-        searchSelect.addBind("bnode()", mappingVar(string));
-      }
-      this.builder
+        .addUnion(dataSelect)
+        .addUnion(countSelect);
+      bindSelect 
+        .addVar("*")
+        .addWhere(bindWhere);
+
+      Node view = mapper
+        .add("limit", Hydra.limit, params.getLimit())
+        .add("offset", Hydra.offset, params.getOffset())
+        .add("orderBy", Doc.eventOrderByVar, params.getOrderByClauses().toQueryString())
+        .add("pageIndex", Hydra.pageIndex, null)
+        .add("text", Doc.textVar, params.getText().orElse(""))
+        .add("type", RDF.type, params.getType().orElse(""))
+        .addTemplate(baseNode);
+
+      this
+        .addConstruct(view, Hydra.first, VAR_FIRST)
+        .addConstruct(view, Hydra.previous, VAR_PREVIOUS)
+        .addConstruct(view, Hydra.next, VAR_NEXT)
+        .addConstruct(view, Hydra.last, VAR_LAST)
         .addWhere(new WhereBuilder()
-          .addUnion(countSelect)
-          .addUnion(dataSelect)
-          .addUnion(searchSelect))
-        .addConstruct("?col", Hydra.member, MAIN_SUBJ)
-        .addConstruct("?col", Hydra.search, "?search")
-        .addConstruct("?col", Hydra.totalItems, "?count")
-        .addConstruct("?col", Hydra.view, "?view")
-        .addConstruct("?col", RDF.type, Hydra.Collection)
-        .addConstruct("?col", Hydra.manages, "?manages")
-        .addConstruct("?manages", Hydra.object, mainType)
-        .addConstruct("?search", Hydra.template, "?template")
-        .addConstruct("?search", Hydra.variableRepresentation, Hydra.BasicRepresentation)
-        .addConstruct("?search", RDF.type, Hydra.IriTemplate)
-        .addConstruct("?view", Hydra.first, "?first")
-        .addConstruct("?view", Hydra.last, "?last")
-        .addConstruct("?view", Hydra.next, "?next")
-        .addConstruct("?view", Hydra.previous, "?prev")
-        .addConstruct("?view", RDF.type, Hydra.PartialCollectionView)
-        .addBind(ef.asExpr(this.params.getBaseUrl()), "?baseUrl")
-        .addBind(ef.asExpr(this.params.getRelativePath()), "?path")
-        .addBind(ef.asExpr(this.params.isCustomLimit()), "?customMeta")
-        .addBind(ef.iri("?baseUrl"), "?col")
-        .addBind("concat(?baseUrl, " + IntStream.range(0, templateVariables.size()).mapToObj(idx -> {
-          String val = templateVariables.get(idx);
-          return "if(bound(?" + val + "), concat('" + (idx == 0 ? "?" : "&") + val + "=', xsd:string(" + pad(val) + ")), '')";
-        }).collect(Collectors.joining(", ")) + ")", "?viewUri")
-        .addBind("iri(?viewUri)", "?view")
-        .addBind("iri(replace(?viewUri, 'offset=\\\\d*', 'offset=0'))", "?first")
-        .addBind("if(?count > ?limit, iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', if(?count = 0, xsd:string(0), xsd:string(?count - ?limit))))), 1+'')", "?last")
-        .addBind("?offset - ?limit", "?prevOffset")
-        .addBind("if(?prevOffset >= 0, iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', xsd:string(?prevOffset)))), 1+'')", "?prev")
-        .addBind("?offset + ?limit", "?nextOffset")
-        .addBind("if(?nextOffset < ?count, iri(replace(?viewUri, 'offset=\\\\d*', concat('offset=', xsd:string(?nextOffset)))), 1+'')", "?next");
-      // @formatter:on
-      return this.builder.build();
+        .addUnion(contentSelect)
+        .addUnion(bindSelect))
+        .addBind("if(contains('" + view + "', 'offset=0'), 1+'', replace('" + view + "', 'offset=\\\\d*', 'offset=0'))", VAR_FIRST)
+        .addBind("if(" + params.getOffset() + " >= floor(" + VAR_TOTAL_ITEMS + " / " + params.getLimit() + ") * " + params.getLimit() + " , 1+'', replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(xsd:integer(floor(" + VAR_TOTAL_ITEMS + " / " + params.getLimit() + ") * " + params.getLimit() + ")))))", VAR_LAST)
+        .addBind("if(" + (params.getOffset() - params.getLimit()) + " >= 0, iri(replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(" + (params.getOffset() - params.getLimit()) + ")))), 1+'')", VAR_PREVIOUS)
+        .addBind("if(" + (params.getOffset() + params.getLimit()) + " < " + VAR_TOTAL_ITEMS + ", replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(" + (params.getOffset() + params.getLimit()) + "))), 1+'')", VAR_NEXT);
     } catch (ParseException e) {
       log.error(e.getMessage());
-      return null;
     }
+      // @formatter:on
+    return buildString();
   }
-
-  @Override
-  protected HydraCollectionBuilder getThis() {
-    return this;
-  }
-
-  private String mappingVar(String var) {
-    return pad(var) + "Mapping";
-  }
-
 }

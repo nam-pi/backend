@@ -1,6 +1,6 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.MAIN_SUBJ;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilderOld.MAIN_SUBJ;
 
 import java.util.UUID;
 
@@ -16,9 +16,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
-import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.model.hydra.AbstractHydraBuilderOld;
+import eu.nampi.backend.model.hydra.HydraCollectionBuilderOld;
+import eu.nampi.backend.model.hydra.HydraSingleBuilderOld;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.SchemaOrg;
@@ -28,14 +28,12 @@ import eu.nampi.backend.vocabulary.SchemaOrg;
 public class PersonRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
-    HydraCollectionBuilder hydra =
-        new HydraCollectionBuilder(params, Core.person, Doc.personOrderByVar);
+    HydraCollectionBuilderOld hydra = new HydraCollectionBuilderOld(params, Core.person, Doc.personOrderByVar);
     addData(hydra);
     return construct(hydra);
   }
 
-  @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
+  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     Model model = findAll(params);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
@@ -44,13 +42,13 @@ public class PersonRepository extends AbstractHydraRepository {
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     String uri = individualsUri(Core.person, id);
-    HydraSingleBuilder builder = new HydraSingleBuilder(uri, Core.person);
+    HydraSingleBuilderOld builder = new HydraSingleBuilderOld(uri, Core.person);
     addData(builder);
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(uri));
   }
 
-  private void addDateData(AbstractHydraBuilder<?> builder, String eventVar, Property type) {
+  private void addDateData(AbstractHydraBuilderOld<?> builder, String eventVar, Property type) {
     String e = "?" + eventVar;
     // @formatter:off
     builder
@@ -87,7 +85,7 @@ public class PersonRepository extends AbstractHydraRepository {
     // @formatter:on
   }
 
-  private void addData(AbstractHydraBuilder<?> builder) {
+  private void addData(AbstractHydraBuilderOld<?> builder) {
     addDateData(builder, "be", Core.isBornIn);
     addDateData(builder, "de", Core.diesIn);
     // @formatter:off
