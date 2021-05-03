@@ -12,7 +12,6 @@ import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.Hydra;
 import lombok.extern.slf4j.Slf4j;
@@ -32,19 +31,22 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
   public final WhereBuilder countWhere;
   public final WhereBuilder dataWhere;
 
+  private final Property orderByVar;
   private final QueryParameters params;
   private final SelectBuilder bindSelect = new SelectBuilder();
   private final WhereBuilder bindWhere = new WhereBuilder();
 
-  public HydraCollectionBuilder(String baseUri, Property mainType, QueryParameters params) {
-    this(baseUri, mainType, params, true);
+  public HydraCollectionBuilder(String baseUri, Property mainType, Property orderByVar, QueryParameters params) {
+    this(baseUri, mainType, orderByVar, params, true);
   }
 
-  public HydraCollectionBuilder(String baseUri, Property mainType, QueryParameters params, boolean includeTextFilter) {
+  public HydraCollectionBuilder(String baseUri, Property mainType, Property orderByVar, QueryParameters params,
+      boolean includeTextFilter) {
     super(NodeFactory.createURI(baseUri), mainType);
     this.countWhere = mainWhere();
     this.dataWhere = mainWhere();
     this.mapper = new ParameterMapper(baseUri, VAR_SEARCH, this, bindSelect);
+    this.orderByVar = orderByVar;
     this.params = params;
 
     // Add text filter
@@ -74,12 +76,10 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
         .addConstruct(baseNode, RDF.type, Hydra.Collection)
         .addConstruct(baseNode, Hydra.totalItems, VAR_TOTAL_ITEMS)
         .addConstruct(baseNode, Hydra.manages, VAR_MANAGES)
-        .addConstruct(VAR_MANAGES, Hydra.object, Core.event)
-        // Add search
+        .addConstruct(VAR_MANAGES, Hydra.object, mainType)
         .addConstruct(baseNode, Hydra.search, VAR_SEARCH )
         .addConstruct(VAR_SEARCH, RDF.type, Hydra.IriTemplate)
         .addConstruct(VAR_SEARCH, Hydra.variableRepresentation, Hydra.BasicRepresentation)
-        // Add event data
         .addConstruct(baseNode, Hydra.member, VAR_MAIN);
 
       // Add all variable bindings
@@ -109,7 +109,7 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
       Node view = mapper
         .add("limit", Hydra.limit, params.getLimit())
         .add("offset", Hydra.offset, params.getOffset())
-        .add("orderBy", Doc.eventOrderByVar, params.getOrderByClauses().toQueryString())
+        .add("orderBy", orderByVar, params.getOrderByClauses().toQueryString())
         .add("pageIndex", Hydra.pageIndex, null)
         .add("text", Doc.textVar, params.getText().orElse(""))
         .add("type", RDF.type, params.getType().orElse(""))

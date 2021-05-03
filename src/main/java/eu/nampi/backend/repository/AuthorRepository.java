@@ -25,6 +25,7 @@ import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Core;
+import eu.nampi.backend.vocabulary.Doc;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -36,7 +37,8 @@ public class AuthorRepository extends AbstractHydraRepository {
   private JenaService jenaService;
 
   public Model findAll(QueryParameters params) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("authors"), Core.author, params);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("authors"), Core.author,
+        Doc.authorOrderByVar, params);
     return construct(builder);
   }
 

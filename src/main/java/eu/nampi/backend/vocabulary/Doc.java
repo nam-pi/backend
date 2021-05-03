@@ -63,7 +63,7 @@ public class Doc {
 
   public static final Property authorCollection = property("authorCollection");
 
-  public static final Property authorOrderByVar = property("aspectOrderByVariable");
+  public static final Property authorOrderByVar = property("authorOrderByVariable");
 
   public static final Property textVar = property("textVariable");
 

@@ -16,6 +16,7 @@ import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
+import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
@@ -25,7 +26,8 @@ public class PlaceRepository extends AbstractHydraRepository {
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
 
   public Model findAll(QueryParameters params) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("places"), Core.place, params);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("places"), Core.place, Doc.placeOrderByVar,
+        params);
     builder.dataWhere.addOptional(HydraCollectionBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
     addData(builder, HydraCollectionBuilder.VAR_MAIN);
     return construct(builder);

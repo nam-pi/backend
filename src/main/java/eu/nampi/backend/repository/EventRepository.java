@@ -58,7 +58,8 @@ public class EventRepository extends AbstractHydraRepository {
       Optional<String> aspectType, Optional<String> aspectUseType, Optional<String> participant,
       Optional<String> participantType, Optional<String> participationType, Optional<String> place) {
 
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("events"), Core.event, params);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("events"), Core.event, Doc.eventOrderByVar,
+        params);
     ExprFactory ef = builder.getExprFactory();
     Node varMain = HydraCollectionBuilder.VAR_MAIN;
 
