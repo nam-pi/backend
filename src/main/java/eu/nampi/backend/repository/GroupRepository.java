@@ -27,7 +27,7 @@ public class GroupRepository extends AbstractHydraRepository {
   public Model findAll(QueryParameters params) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("groups"), Core.group, params);
     builder.dataWhere.addOptional(HydraCollectionBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
-    addDataConstructs(builder, HydraCollectionBuilder.VAR_MAIN);
+    addData(builder, HydraCollectionBuilder.VAR_MAIN);
     return construct(builder);
   }
 
@@ -40,13 +40,13 @@ public class GroupRepository extends AbstractHydraRepository {
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.group, id), Core.group);
-    addDataConstructs(builder, HydraSingleBuilder.VAR_MAIN);
+    addData(builder, HydraSingleBuilder.VAR_MAIN);
     builder.addOptional(HydraCollectionBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }
 
-  private void addDataConstructs(ConstructBuilder builder, Node varMain) {
+  private void addData(ConstructBuilder builder, Node varMain) {
     builder.addConstruct(varMain, SchemaOrg.sameAs, VAR_SAME_AS);
   }
 
