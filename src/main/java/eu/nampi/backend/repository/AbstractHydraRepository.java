@@ -5,10 +5,13 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.UUID;
+
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
+
+import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -19,6 +22,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import eu.nampi.backend.exception.NotFoundException;
 import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
 import eu.nampi.backend.service.JenaService;
@@ -32,6 +36,10 @@ public abstract class AbstractHydraRepository {
   private JenaService jenaService;
 
   protected Model construct(InterfaceHydraBuilder builder) {
+    return jenaService.construct(builder);
+  }
+
+  protected Model construct(ConstructBuilder builder) {
     return jenaService.construct(builder);
   }
 

@@ -10,8 +10,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  */
 public class Doc {
 
-  public static final String baseUri =
-      ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString() + "/doc";
+  public static final String baseUri = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
+      + "/doc";
 
   /**
    * The namespace of the vocabulary as a string
@@ -45,12 +45,13 @@ public class Doc {
 
   public static final Property eventAspectUseTypeVar = property("eventAspectUseTypeVariable");
 
+  public static final Property eventPlaceVar = property("eventPlaceVariable");
+
   public static final Property eventParticipantVar = property("eventParticipantVariable");
 
   public static final Property eventParticipantTypeVar = property("eventParticipantTypeVariable");
 
-  public static final Property eventParticipationTypeVar =
-      property("eventParticipationTypeVariable");
+  public static final Property eventParticipationTypeVar = property("eventParticipationTypeVariable");
 
   public static final Property personOrderByVar = property("personOrderByVariable");
 

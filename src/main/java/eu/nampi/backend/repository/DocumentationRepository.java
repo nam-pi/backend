@@ -9,6 +9,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Repository;
+
 import eu.nampi.backend.model.hydra.Class;
 import eu.nampi.backend.model.hydra.Collection;
 import eu.nampi.backend.model.hydra.SupportedOperation;
@@ -110,8 +111,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
         Core.takesPlaceOn.getLocalName(), true, false, false));
     event.addSupportedProperty(new SupportedProperty(Core.takesPlaceAt, Core.place,
         Core.takesPlaceAt.getLocalName(), true, false, false));
-    event.addSupportedProperty(new SupportedProperty(Core.hasMainParticipant, Core.person,
-        Core.hasMainParticipant.getLocalName(), true, false, false));
+    event.addSupportedProperty(new SupportedProperty(Core.hasParticipant, Core.agent,
+        Core.hasParticipant.getLocalName(), true, false, false));
     event.addSupportedProperty(new SupportedProperty(Core.usesAspect, Core.aspect,
         Core.usesAspect.getLocalName(), true, true, true));
     doc.add(Hydra.supportedClass, event);

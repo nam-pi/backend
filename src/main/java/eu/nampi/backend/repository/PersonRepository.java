@@ -1,7 +1,9 @@
 package eu.nampi.backend.repository;
 
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.MAIN_SUBJ;
+
 import java.util.UUID;
+
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -12,6 +14,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
