@@ -43,7 +43,7 @@ public class GroupRepository extends AbstractHydraRepository {
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.group, id), Core.group);
     addData(builder, HydraSingleBuilder.VAR_MAIN);
-    builder.addOptional(HydraCollectionBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
+    builder.addOptional(HydraSingleBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }

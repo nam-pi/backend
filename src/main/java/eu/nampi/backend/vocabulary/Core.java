@@ -53,6 +53,8 @@ public class Core {
 
   public static final Property usesAspect = property("uses_aspect");
 
+  public static final Property aspectIsUsedIn = property("aspect_is_used_in");
+
   public static final Property hasParticipant = property("has_participant");
 
   public static final Property hasMainParticipant = property("has_main_participant");

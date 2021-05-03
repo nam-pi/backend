@@ -1,21 +1,26 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilderOld.MAIN_SUBJ;
-
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.jena.arq.querybuilder.ConstructBuilder;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
+import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.AbstractHydraBuilderOld;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilderOld;
-import eu.nampi.backend.model.hydra.HydraSingleBuilderOld;
+import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
+import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.SchemaOrg;
@@ -24,20 +29,39 @@ import eu.nampi.backend.vocabulary.SchemaOrg;
 @CacheConfig(cacheNames = "aspects")
 public class AspectRepository extends AbstractHydraRepository {
 
+  private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
+  private static final Node VAR_STRING = NodeFactory.createVariable("string");
+
   public Model findAll(QueryParameters params, Optional<String> person) {
-    HydraCollectionBuilderOld hydra;
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("aspects"), Core.aspect,
+        Doc.aspectOrderByVar, params, false);
+    ExprFactory ef = builder.ef;
+    Node varMain = HydraCollectionBuilder.VAR_MAIN;
+
     if (params.getText().isPresent()) {
-      hydra = new HydraCollectionBuilderOld(params, Core.aspect, Doc.aspectOrderByVar,
-          Optional.of("regex(?t, '%s', 'i')")).addMainOptional("rdfs:label|core:has_xsd_string", "?t");
-    } else {
-      hydra = new HydraCollectionBuilderOld(params, Core.aspect, Doc.aspectOrderByVar);
+      Node varSearchString = NodeFactory.createVariable("searchString");
+      Path path = PathFactory.pathAlt(PathFactory.pathLink(RDFS.label.asNode()),
+          PathFactory.pathLink(Core.hasXsdString.asNode()));
+      Expr regex = ef.regex(varSearchString, params.getText().get(), "i");
+      builder.dataWhere.addOptional(varMain, path, varSearchString).addFilter(regex);
+      builder.countWhere.addOptional(varMain, path, varSearchString).addFilter(regex);
     }
-    person.ifPresentOrElse(
-        p -> hydra.addWhere("?e", Core.usesAspect, MAIN_SUBJ).addWhere("?e", Core.hasMainParticipant, "<" + p + ">")
-            .addSearchVariable("person", Doc.aspectPersonVar, false, "'" + p + "'"),
-        () -> hydra.addSearchVariable("person", Doc.aspectPersonVar, false));
-    addData(hydra);
-    return construct(hydra);
+    builder.dataWhere.addOptional(varMain, Core.hasXsdString, VAR_STRING);
+
+    if (person.isPresent()) {
+      Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.aspectIsUsedIn.asNode()),
+          PathFactory.pathLink(Core.hasParticipant.asNode()));
+      builder.dataWhere.addWhere(varMain, path, ResourceFactory.createResource(person.get()));
+      builder.countWhere.addWhere(varMain, path, ResourceFactory.createResource(person.get()));
+    }
+
+    builder.dataWhere.addOptional(varMain, SchemaOrg.sameAs, VAR_SAME_AS);
+
+    addData(builder, varMain);
+
+    builder.mapper.add("person", Doc.aspectPersonVar, person.orElse(""));
+
+    return construct(builder);
   }
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #person}")
@@ -48,15 +72,16 @@ public class AspectRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    String uri = individualsUri(Core.aspect, id);
-    HydraSingleBuilderOld builder = new HydraSingleBuilderOld(uri, Core.aspect);
-    addData(builder);
+    HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.aspect, id), Core.aspect);
+    addData(builder, HydraSingleBuilder.VAR_MAIN);
+    builder.addOptional(HydraSingleBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS)
+        .addOptional(HydraSingleBuilder.VAR_MAIN, Core.hasXsdString, VAR_STRING);
+    addData(builder, HydraSingleBuilder.VAR_MAIN);
     Model model = construct(builder);
-    return serialize(model, lang, ResourceFactory.createResource(uri));
+    return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }
 
-  private void addData(AbstractHydraBuilderOld<?> builder) {
-    builder.addMainOptional(Core.hasXsdString, "?string").addMainConstruct(Core.hasXsdString, "?string")
-        .addMainConstruct(SchemaOrg.sameAs, "?sa").addMainOptional(SchemaOrg.sameAs, "?sa");
+  private void addData(ConstructBuilder builder, Node varMain) {
+    builder.addConstruct(varMain, SchemaOrg.sameAs, VAR_SAME_AS).addConstruct(varMain, Core.hasXsdString, VAR_STRING);
   }
 }

@@ -68,69 +68,69 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
   @Override
   public String buildHydra() {
     // @formatter:off
-    try {
-      
-      // Construct the result
-      this
-        // Add general hydra data
-        .addConstruct(baseNode, RDF.type, Hydra.Collection)
-        .addConstruct(baseNode, Hydra.totalItems, VAR_TOTAL_ITEMS)
-        .addConstruct(baseNode, Hydra.manages, VAR_MANAGES)
-        .addConstruct(VAR_MANAGES, Hydra.object, mainType)
-        .addConstruct(baseNode, Hydra.search, VAR_SEARCH )
-        .addConstruct(VAR_SEARCH, RDF.type, Hydra.IriTemplate)
-        .addConstruct(VAR_SEARCH, Hydra.variableRepresentation, Hydra.BasicRepresentation)
-        .addConstruct(baseNode, Hydra.member, VAR_MAIN);
+		try {
+			
+			// Construct the result
+			this
+				// Add general hydra data
+				.addConstruct(baseNode, RDF.type, Hydra.Collection)
+				.addConstruct(baseNode, Hydra.totalItems, VAR_TOTAL_ITEMS)
+				.addConstruct(baseNode, Hydra.manages, VAR_MANAGES)
+				.addConstruct(VAR_MANAGES, Hydra.object, mainType)
+				.addConstruct(baseNode, Hydra.search, VAR_SEARCH )
+				.addConstruct(VAR_SEARCH, RDF.type, Hydra.IriTemplate)
+				.addConstruct(VAR_SEARCH, Hydra.variableRepresentation, Hydra.BasicRepresentation)
+				.addConstruct(baseNode, Hydra.member, VAR_MAIN);
 
-      // Add all variable bindings
-      bindWhere
-        .addBind(ef.bnode(), VAR_SEARCH)
-        .addBind(ef.bnode(), VAR_MANAGES);
+			// Add all variable bindings
+			bindWhere
+				.addBind(ef.bnode(), VAR_SEARCH)
+				.addBind(ef.bnode(), VAR_MANAGES);
 
-      // Set up selects
-      SelectBuilder dataSelect = new SelectBuilder()
-        .addVar("*")
-        .addWhere(dataWhere);
-        params.getOrderByClauses().appendAllTo(dataSelect);
-        dataSelect.addOrderBy(VAR_MAIN)
-        .setOffset(params.getOffset())
-        .setLimit(params.getLimit());
-      SelectBuilder countSelect = new SelectBuilder()
-        .addVar("count(*)", VAR_TOTAL_ITEMS)
-        .addWhere(countWhere);
-      SelectBuilder contentSelect = new SelectBuilder()
-        .addVar("*")
-        .addUnion(dataSelect)
-        .addUnion(countSelect);
-      bindSelect 
-        .addVar("*")
-        .addWhere(bindWhere);
+			// Set up selects
+			SelectBuilder dataSelect = new SelectBuilder()
+				.addVar("*")
+				.addWhere(dataWhere);
+				params.getOrderByClauses().appendAllTo(dataSelect);
+				dataSelect.addOrderBy(VAR_MAIN)
+				.setOffset(params.getOffset())
+				.setLimit(params.getLimit());
+			SelectBuilder countSelect = new SelectBuilder()
+				.addVar("count(*)", VAR_TOTAL_ITEMS)
+				.addWhere(countWhere);
+			SelectBuilder contentSelect = new SelectBuilder()
+				.addVar("*")
+				.addUnion(dataSelect)
+				.addUnion(countSelect);
+			bindSelect 
+				.addVar("*")
+				.addWhere(bindWhere);
 
-      Node view = mapper
-        .add("limit", Hydra.limit, params.getLimit())
-        .add("offset", Hydra.offset, params.getOffset())
-        .add("orderBy", orderByVar, params.getOrderByClauses().toQueryString())
-        .add("pageIndex", Hydra.pageIndex, null)
-        .add("text", Doc.textVar, params.getText().orElse(""))
-        .add("type", RDF.type, params.getType().orElse(""))
-        .addTemplate(baseNode);
+			Node view = mapper
+				.add("limit", Hydra.limit, params.getLimit())
+				.add("offset", Hydra.offset, params.getOffset())
+				.add("orderBy", orderByVar, params.getOrderByClauses().toQueryString())
+				.add("pageIndex", Hydra.pageIndex, null)
+				.add("text", Doc.textVar, params.getText().orElse(""))
+				.add("type", RDF.type, params.getType().orElse(""))
+				.addTemplate(baseNode);
 
-      this
-        .addConstruct(view, Hydra.first, VAR_FIRST)
-        .addConstruct(view, Hydra.previous, VAR_PREVIOUS)
-        .addConstruct(view, Hydra.next, VAR_NEXT)
-        .addConstruct(view, Hydra.last, VAR_LAST)
-        .addWhere(new WhereBuilder()
-        .addUnion(contentSelect)
-        .addUnion(bindSelect))
-        .addBind("if(contains('" + view + "', 'offset=0'), 1+'', replace('" + view + "', 'offset=\\\\d*', 'offset=0'))", VAR_FIRST)
-        .addBind("if(" + params.getOffset() + " >= floor(" + VAR_TOTAL_ITEMS + " / " + params.getLimit() + ") * " + params.getLimit() + " , 1+'', replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(xsd:integer(floor(" + VAR_TOTAL_ITEMS + " / " + params.getLimit() + ") * " + params.getLimit() + ")))))", VAR_LAST)
-        .addBind("if(" + (params.getOffset() - params.getLimit()) + " >= 0, iri(replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(" + (params.getOffset() - params.getLimit()) + ")))), 1+'')", VAR_PREVIOUS)
-        .addBind("if(" + (params.getOffset() + params.getLimit()) + " < " + VAR_TOTAL_ITEMS + ", replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(" + (params.getOffset() + params.getLimit()) + "))), 1+'')", VAR_NEXT);
-    } catch (ParseException e) {
-      log.error(e.getMessage());
-    }
-      // @formatter:on
+			this
+				.addConstruct(view, Hydra.first, VAR_FIRST)
+				.addConstruct(view, Hydra.previous, VAR_PREVIOUS)
+				.addConstruct(view, Hydra.next, VAR_NEXT)
+				.addConstruct(view, Hydra.last, VAR_LAST)
+				.addWhere(new WhereBuilder()
+				.addUnion(contentSelect)
+				.addUnion(bindSelect))
+				.addBind("if(contains('" + view + "', 'offset=0'), 1+'', replace('" + view + "', 'offset=\\\\d*', 'offset=0'))", VAR_FIRST)
+				.addBind("if(" + params.getOffset() + " >= floor(" + VAR_TOTAL_ITEMS + " / " + params.getLimit() + ") * " + params.getLimit() + " , 1+'', replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(xsd:integer(floor(" + VAR_TOTAL_ITEMS + " / " + params.getLimit() + ") * " + params.getLimit() + ")))))", VAR_LAST)
+				.addBind("if(" + (params.getOffset() - params.getLimit()) + " >= 0, iri(replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(" + (params.getOffset() - params.getLimit()) + ")))), 1+'')", VAR_PREVIOUS)
+				.addBind("if(" + (params.getOffset() + params.getLimit()) + " < " + VAR_TOTAL_ITEMS + ", replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(" + (params.getOffset() + params.getLimit()) + "))), 1+'')", VAR_NEXT);
+		} catch (ParseException e) {
+			log.error(e.getMessage());
+		}
+			// @formatter:on
     return buildString();
   }
 }

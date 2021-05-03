@@ -26,8 +26,8 @@ public class SourceRepository extends AbstractHydraRepository {
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
 
   public Model findAll(QueryParameters params) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("sources"), Core.source, Doc.sourceOrderByVar,
-        params);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("sources"), Core.source,
+        Doc.sourceOrderByVar, params);
     builder.dataWhere.addOptional(HydraCollectionBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
     addData(builder, HydraCollectionBuilder.VAR_MAIN);
     return construct(builder);
@@ -43,7 +43,7 @@ public class SourceRepository extends AbstractHydraRepository {
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.source, id), Core.source);
     addData(builder, HydraSingleBuilder.VAR_MAIN);
-    builder.addOptional(HydraCollectionBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
+    builder.addOptional(HydraSingleBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }
