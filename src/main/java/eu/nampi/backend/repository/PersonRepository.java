@@ -1,7 +1,5 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilderOld.MAIN_SUBJ;
-
 import java.util.UUID;
 
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
@@ -54,7 +52,7 @@ public class PersonRepository extends AbstractHydraRepository {
     return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }
 
-  private void addDateConstruct(ConstructBuilder builder, String varPrefix, Property type) {
+  private void addDateConstruct(ConstructBuilder builder, String varPrefix, Property type, Node varMain) {
     // @formatter:off
     Node var = NodeFactory.createVariable(varPrefix);
     Node varLabel = getVarEventLabel(varPrefix);
@@ -67,7 +65,7 @@ public class PersonRepository extends AbstractHydraRepository {
     Node varDateSort = getVarDateSort(varPrefix);
     Node varDateTimeSort = getVarDateTimeSort(varPrefix);
     builder
-      .addConstruct(MAIN_SUBJ, type, var)
+      .addConstruct(varMain, type, var)
       .addConstruct(var, RDF.type, Core.event)
       .addConstruct(var, RDFS.label, varLabel)
       .addConstruct(var, Core.takesPlaceOn, varDateExact)
@@ -85,7 +83,7 @@ public class PersonRepository extends AbstractHydraRepository {
     // @formatter:on
   }
 
-  private void addDateData(WhereBuilder builder, String varPrefix, Property type) {
+  private void addDateData(WhereBuilder builder, String varPrefix, Property type, Node varMain) {
     // @formatter:off
     Node var = NodeFactory.createVariable(varPrefix);
     Node varLabel = getVarEventLabel(varPrefix);
@@ -99,7 +97,7 @@ public class PersonRepository extends AbstractHydraRepository {
     Node varDateTimeSort = getVarDateTimeSort(varPrefix);
     builder
       .addOptional(new WhereBuilder()
-        .addWhere(MAIN_SUBJ, type, var)
+        .addWhere(varMain, type, var)
         .addWhere(var, RDFS.label, varLabel)
         .addOptional(new WhereBuilder()
           .addWhere(var, Core.takesPlaceOn, varDateExact)
@@ -117,15 +115,15 @@ public class PersonRepository extends AbstractHydraRepository {
   }
 
   private void addConstruct(ConstructBuilder builder, Node varMain) {
-    addDateConstruct(builder, "birth", Core.isBornIn);
-    addDateConstruct(builder, "death", Core.diesIn);
+    addDateConstruct(builder, "birth", Core.isBornIn, varMain);
+    addDateConstruct(builder, "death", Core.diesIn, varMain);
     builder.addConstruct(varMain, SchemaOrg.sameAs, VAR_SAME_AS);
   }
 
   private WhereBuilder addData(Node varMain) {
     WhereBuilder builder = new WhereBuilder();
-    addDateData(builder, "birth", Core.isBornIn);
-    addDateData(builder, "death", Core.diesIn);
+    addDateData(builder, "birth", Core.isBornIn, varMain);
+    addDateData(builder, "death", Core.diesIn, varMain);
     builder.addOptional(varMain, SchemaOrg.sameAs, VAR_SAME_AS);
     return builder;
   }

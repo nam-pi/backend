@@ -24,7 +24,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import eu.nampi.backend.exception.NotFoundException;
 import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
-import eu.nampi.backend.model.hydra.InterfaceHydraBuilderOld;
 import eu.nampi.backend.service.JenaService;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
@@ -34,10 +33,6 @@ public abstract class AbstractHydraRepository {
 
   @Autowired
   private JenaService jenaService;
-
-  protected Model construct(InterfaceHydraBuilderOld builder) {
-    return jenaService.construct(builder);
-  }
 
   protected Model construct(InterfaceHydraBuilder builder) {
     return jenaService.construct(builder);

@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
-import eu.nampi.backend.model.hydra.InterfaceHydraBuilderOld;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -44,15 +43,6 @@ public class FusekiService implements JenaService {
   public Model construct(InterfaceHydraBuilder constructBuilder) {
     try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {
       String query = constructBuilder.buildHydra();
-      log.debug(query);
-      return conn.queryConstruct(query);
-    }
-  }
-
-  @Override
-  public Model construct(InterfaceHydraBuilderOld hydraBuilder) {
-    try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {
-      String query = hydraBuilder.buildString();
       log.debug(query);
       return conn.queryConstruct(query);
     }

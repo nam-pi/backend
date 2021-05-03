@@ -8,13 +8,10 @@ import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 
 import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
-import eu.nampi.backend.model.hydra.InterfaceHydraBuilderOld;
 
 public interface JenaService {
 
   public Model construct(InterfaceHydraBuilder constructBuilder);
-
-  public Model construct(InterfaceHydraBuilderOld hydraBuilder);
 
   public void initInfCache();
 
