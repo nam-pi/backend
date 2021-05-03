@@ -18,7 +18,7 @@ import eu.nampi.backend.vocabulary.SchemaOrg;
 public abstract class AbstractHydraBuilder extends ConstructBuilder implements InterfaceHydraBuilder {
 
   public static final Node VAR_MAIN = NodeFactory.createVariable("main");
-  public static final Node VAR_MAIN_LABEL = NodeFactory.createVariable("mainLabel");
+  public static final Node VAR_MAIN_LABEL = NodeFactory.createVariable("label");
 
   public final ExprFactory ef;
   public final Node baseNode;

@@ -4,7 +4,10 @@ import static eu.nampi.backend.model.hydra.AbstractHydraBuilderOld.MAIN_SUBJ;
 
 import java.util.UUID;
 
+import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -16,9 +19,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.AbstractHydraBuilderOld;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilderOld;
-import eu.nampi.backend.model.hydra.HydraSingleBuilderOld;
+import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
+import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.SchemaOrg;
@@ -27,10 +29,14 @@ import eu.nampi.backend.vocabulary.SchemaOrg;
 @CacheConfig(cacheNames = "persons")
 public class PersonRepository extends AbstractHydraRepository {
 
+  private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
+
   public Model findAll(QueryParameters params) {
-    HydraCollectionBuilderOld hydra = new HydraCollectionBuilderOld(params, Core.person, Doc.personOrderByVar);
-    addData(hydra);
-    return construct(hydra);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("persons"), Core.person,
+        Doc.personOrderByVar, params);
+    builder.dataWhere.addWhere(addData(HydraCollectionBuilder.VAR_MAIN));
+    addConstruct(builder, HydraCollectionBuilder.VAR_MAIN);
+    return construct(builder);
   }
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
@@ -41,58 +47,123 @@ public class PersonRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    String uri = individualsUri(Core.person, id);
-    HydraSingleBuilderOld builder = new HydraSingleBuilderOld(uri, Core.person);
-    addData(builder);
+    HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.person, id), Core.person);
+    builder.addWhere(addData(HydraSingleBuilder.VAR_MAIN));
+    addConstruct(builder, HydraSingleBuilder.VAR_MAIN);
     Model model = construct(builder);
-    return serialize(model, lang, ResourceFactory.createResource(uri));
+    return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }
 
-  private void addDateData(AbstractHydraBuilderOld<?> builder, String eventVar, Property type) {
-    String e = "?" + eventVar;
+  private void addDateConstruct(ConstructBuilder builder, String varPrefix, Property type) {
     // @formatter:off
+    Node var = NodeFactory.createVariable(varPrefix);
+    Node varLabel = getVarEventLabel(varPrefix);
+    Node varDateExact = getVarEventDateExact(varPrefix);
+    Node varDateTimeExact = getVarEventDateTimeExact(varPrefix);
+    Node varDateNotEarlier = getVarDateNotEarlier(varPrefix);
+    Node varDateTimeNotEarlier = getVarDateTimeNotEarlier(varPrefix);
+    Node varDateNotLater = getVarDateNotLater(varPrefix);
+    Node varDateTimeNotLater = getVarDateTimeNotLater(varPrefix);
+    Node varDateSort = getVarDateSort(varPrefix);
+    Node varDateTimeSort = getVarDateTimeSort(varPrefix);
+    builder
+      .addConstruct(MAIN_SUBJ, type, var)
+      .addConstruct(var, RDF.type, Core.event)
+      .addConstruct(var, RDFS.label, varLabel)
+      .addConstruct(var, Core.takesPlaceOn, varDateExact)
+      .addConstruct(varDateExact, RDF.type, Core.date)
+      .addConstruct(varDateExact, Core.hasXsdDateTime, varDateTimeExact)
+      .addConstruct(var, Core.takesPlaceNotEarlierThan, varDateNotEarlier)
+      .addConstruct(varDateNotEarlier, RDF.type, Core.date)
+      .addConstruct(varDateNotEarlier, Core.hasXsdDateTime, varDateTimeNotEarlier)
+      .addConstruct(var, Core.takesPlaceNotLaterThan, varDateNotLater)
+      .addConstruct(varDateNotLater, RDF.type, Core.date)
+      .addConstruct(varDateNotLater, Core.hasXsdDateTime, varDateTimeNotLater)
+      .addConstruct(var, Core.hasSortingDate, varDateSort)
+      .addConstruct(varDateSort, RDF.type, Core.date)
+      .addConstruct(varDateSort, Core.hasXsdDateTime, varDateTimeSort);
+    // @formatter:on
+  }
+
+  private void addDateData(WhereBuilder builder, String varPrefix, Property type) {
+    // @formatter:off
+    Node var = NodeFactory.createVariable(varPrefix);
+    Node varLabel = getVarEventLabel(varPrefix);
+    Node varDateExact = getVarEventDateExact(varPrefix);
+    Node varDateTimeExact = getVarEventDateTimeExact(varPrefix);
+    Node varDateNotEarlier = getVarDateNotEarlier(varPrefix);
+    Node varDateTimeNotEarlier = getVarDateTimeNotEarlier(varPrefix);
+    Node varDateNotLater = getVarDateNotLater(varPrefix);
+    Node varDateTimeNotLater = getVarDateTimeNotLater(varPrefix);
+    Node varDateSort = getVarDateSort(varPrefix);
+    Node varDateTimeSort = getVarDateTimeSort(varPrefix);
     builder
       .addOptional(new WhereBuilder()
-        .addWhere(MAIN_SUBJ, type, e)
-        .addWhere(e, RDFS.label, e + "_label")
+        .addWhere(MAIN_SUBJ, type, var)
+        .addWhere(var, RDFS.label, varLabel)
         .addOptional(new WhereBuilder()
-          .addWhere(e, Core.takesPlaceOn, e + "_exact")
-          .addWhere(e + "_exact", Core.hasXsdDateTime, e + "_exactDateTime"))
+          .addWhere(var, Core.takesPlaceOn, varDateExact)
+          .addWhere(varDateExact, Core.hasXsdDateTime, varDateTimeExact))
         .addOptional(new WhereBuilder()
-          .addWhere(e, Core.takesPlaceNotEarlierThan, e + "_notEarlier")
-          .addWhere(e + "_notEarlier", Core.hasXsdDateTime, e + "_notEarlierDateTime"))
+          .addWhere(var, Core.takesPlaceNotEarlierThan, varDateNotEarlier)
+          .addWhere(varDateNotEarlier, Core.hasXsdDateTime, varDateTimeNotEarlier))
         .addOptional(new WhereBuilder()
-          .addWhere(e, Core.takesPlaceNotLaterThan, e + "_notLater")
-          .addWhere(e + "_notLater", Core.hasXsdDateTime, e + "_notLaterDateTime"))
+          .addWhere(var, Core.takesPlaceNotLaterThan, varDateNotLater)
+          .addWhere(varDateNotLater, Core.hasXsdDateTime, varDateTimeNotLater))
         .addOptional(new WhereBuilder()
-          .addWhere(e, Core.hasSortingDate, e + "_sort")
-          .addWhere(e + "_sort", Core.hasXsdDateTime, e + "_sortDateTime")))
-      .addConstruct(MAIN_SUBJ, type, e)
-      .addConstruct(e, RDF.type, Core.event)
-      .addConstruct(e, RDFS.label, e + "_label")
-      .addConstruct(e, Core.takesPlaceOn, e + "_exact")
-      .addConstruct(e + "_exact", RDF.type, Core.date)
-      .addConstruct(e + "_exact", Core.hasXsdDateTime, e + "_exactDateTime")
-      .addConstruct(e, Core.takesPlaceNotEarlierThan, e + "_notEarlier")
-      .addConstruct(e + "_notEarlier", RDF.type, Core.date)
-      .addConstruct(e + "_notEarlier", Core.hasXsdDateTime, e + "_notEarlierDateTime")
-      .addConstruct(e, Core.takesPlaceNotLaterThan, e + "_notLater")
-      .addConstruct(e + "_notLater", RDF.type, Core.date)
-      .addConstruct(e + "_notLater", Core.hasXsdDateTime, e + "_notLaterDateTime")
-      .addConstruct(e, Core.hasSortingDate, e + "_sort")
-      .addConstruct(e + "_sort", RDF.type, Core.date)
-      .addConstruct(e + "_sort", Core.hasXsdDateTime, e + "_sortDateTime");
+          .addWhere(var, Core.hasSortingDate, varDateSort)
+          .addWhere(varDateSort, Core.hasXsdDateTime, varDateTimeSort)));
     // @formatter:on
   }
 
-  private void addData(AbstractHydraBuilderOld<?> builder) {
-    addDateData(builder, "be", Core.isBornIn);
-    addDateData(builder, "de", Core.diesIn);
-    // @formatter:off
-    builder
-    // Related to same as
-      .addMainConstruct(SchemaOrg.sameAs, "?sa")
-      .addMainOptional(SchemaOrg.sameAs, "?sa");
-    // @formatter:on
+  private void addConstruct(ConstructBuilder builder, Node varMain) {
+    addDateConstruct(builder, "birth", Core.isBornIn);
+    addDateConstruct(builder, "death", Core.diesIn);
+    builder.addConstruct(varMain, SchemaOrg.sameAs, VAR_SAME_AS);
   }
+
+  private WhereBuilder addData(Node varMain) {
+    WhereBuilder builder = new WhereBuilder();
+    addDateData(builder, "birth", Core.isBornIn);
+    addDateData(builder, "death", Core.diesIn);
+    builder.addOptional(varMain, SchemaOrg.sameAs, VAR_SAME_AS);
+    return builder;
+  }
+
+  private Node getVarDateTimeSort(String prefix) {
+    return NodeFactory.createVariable(prefix + "_sortDateTime");
+  }
+
+  private Node getVarDateSort(String prefix) {
+    return NodeFactory.createVariable(prefix + "_sort");
+  }
+
+  private Node getVarDateTimeNotLater(String prefix) {
+    return NodeFactory.createVariable(prefix + "_notLaterDateTime");
+  }
+
+  private Node getVarDateNotLater(String prefix) {
+    return NodeFactory.createVariable(prefix + "_notLater");
+  }
+
+  private Node getVarDateTimeNotEarlier(String prefix) {
+    return NodeFactory.createVariable(prefix + "_notEarlierDateTime");
+  }
+
+  private Node getVarDateNotEarlier(String prefix) {
+    return NodeFactory.createVariable(prefix + "_notEarlier");
+  }
+
+  private Node getVarEventDateTimeExact(String prefix) {
+    return NodeFactory.createVariable(prefix + "_exactDateTime");
+  }
+
+  private Node getVarEventDateExact(String prefix) {
+    return NodeFactory.createVariable(prefix + "_exact");
+  }
+
+  private Node getVarEventLabel(String prefix) {
+    return NodeFactory.createVariable(prefix + "_label");
+  }
+
 }
