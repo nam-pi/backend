@@ -83,6 +83,8 @@ public class Doc {
 
   public static final Property actAuthorVar = property("actAuthorVariable");
 
+  public static final Property actSourceVar = property("actSourceVariable");
+
   public static final Property personCollection = property("personCollection");
 
   public static final Property groupCollection = property("groupCollection");
