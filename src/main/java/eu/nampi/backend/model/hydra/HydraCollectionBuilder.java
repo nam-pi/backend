@@ -125,7 +125,7 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
 				.addUnion(bindSelect))
 				.addBind("if(contains('" + view + "', 'offset=0'), 1+'', replace('" + view + "', 'offset=\\\\d*', 'offset=0'))", VAR_FIRST)
 				.addBind("if(" + params.getOffset() + " >= floor(" + VAR_TOTAL_ITEMS + " / " + params.getLimit() + ") * " + params.getLimit() + " , 1+'', replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(xsd:integer(floor(" + VAR_TOTAL_ITEMS + " / " + params.getLimit() + ") * " + params.getLimit() + ")))))", VAR_LAST)
-				.addBind("if(" + (params.getOffset() - params.getLimit()) + " >= 0, iri(replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(" + (params.getOffset() - params.getLimit()) + ")))), 1+'')", VAR_PREVIOUS)
+				.addBind("if(" + (params.getOffset() - params.getLimit()) + " >= 0, replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(" + (params.getOffset() - params.getLimit()) + "))), 1+'')", VAR_PREVIOUS)
 				.addBind("if(" + (params.getOffset() + params.getLimit()) + " < " + VAR_TOTAL_ITEMS + ", replace('" + view + "', 'offset=\\\\d*', concat('offset=', str(" + (params.getOffset() + params.getLimit()) + "))), 1+'')", VAR_NEXT);
 		} catch (ParseException e) {
 			log.error(e.getMessage());
