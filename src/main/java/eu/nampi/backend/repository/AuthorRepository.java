@@ -21,11 +21,10 @@ import org.springframework.stereotype.Repository;
 
 import eu.nampi.backend.model.Author;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilderOld;
-import eu.nampi.backend.model.hydra.HydraSingleBuilderOld;
+import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
+import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Doc;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -37,8 +36,8 @@ public class AuthorRepository extends AbstractHydraRepository {
   private JenaService jenaService;
 
   public Model findAll(QueryParameters params) {
-    HydraCollectionBuilderOld hydra = new HydraCollectionBuilderOld(params, Core.author, Doc.authorOrderByVar);
-    return construct(hydra);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("authors"), Core.author, params);
+    return construct(builder);
   }
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
@@ -49,10 +48,9 @@ public class AuthorRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    String uri = individualsUri(Core.author, id);
-    HydraSingleBuilderOld builder = new HydraSingleBuilderOld(uri, Core.author);
+    HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.author, id), Core.author);
     Model model = construct(builder);
-    return serialize(model, lang, ResourceFactory.createResource(uri));
+    return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }
 
   public Optional<Author> findOne(UUID rdfId) {

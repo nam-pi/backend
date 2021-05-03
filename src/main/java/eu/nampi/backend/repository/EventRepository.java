@@ -206,7 +206,8 @@ public class EventRepository extends AbstractHydraRepository {
     builder.addWhere(participantWhere(varMain));
     builder.addWhere(aspectWhere(varMain));
     addDataConstructs(builder, varMain);
-    return serialize(construct(builder), lang, ResourceFactory.createResource(builder.iri));
+    Model model = construct(builder);
+    return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }
 
   private void addDataConstructs(ConstructBuilder builder, Node varMain) {
