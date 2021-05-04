@@ -66,7 +66,7 @@ public class AspectRepository extends AbstractHydraRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #person}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> person) {
     Model model = findAll(params, person);
-    return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
+    return serialize(model, lang, ResourceFactory.createResource(endpointUri("aspects")));
   }
 
   @Cacheable(key = "{#lang, #id}")

@@ -86,7 +86,7 @@ public class ActRepository extends AbstractHydraRepository {
   public String findAll(QueryParameters params, Lang lang, Optional<String> author,
       Optional<String> source) {
     Model model = findAll(params, author, source);
-    return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
+    return serialize(model, lang, ResourceFactory.createResource(endpointUri("acts")));
   }
 
   @Cacheable(key = "{#lang, #id}")

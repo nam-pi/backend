@@ -44,7 +44,7 @@ public class AuthorRepository extends AbstractHydraRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     Model model = findAll(params);
-    return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
+    return serialize(model, lang, ResourceFactory.createResource(endpointUri("authors")));
   }
 
   @Cacheable(key = "{#lang, #id}")
