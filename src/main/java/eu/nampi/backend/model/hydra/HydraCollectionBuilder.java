@@ -10,9 +10,8 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
-
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.vocabulary.Doc;
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Hydra;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,12 +35,13 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
   private final SelectBuilder bindSelect = new SelectBuilder();
   private final WhereBuilder bindWhere = new WhereBuilder();
 
-  public HydraCollectionBuilder(String baseUri, Property mainType, Property orderByVar, QueryParameters params) {
+  public HydraCollectionBuilder(String baseUri, Property mainType, Property orderByVar,
+      QueryParameters params) {
     this(baseUri, mainType, orderByVar, params, true);
   }
 
-  public HydraCollectionBuilder(String baseUri, Property mainType, Property orderByVar, QueryParameters params,
-      boolean includeTextFilter) {
+  public HydraCollectionBuilder(String baseUri, Property mainType, Property orderByVar,
+      QueryParameters params, boolean includeTextFilter) {
     super(NodeFactory.createURI(baseUri), mainType);
     this.countWhere = mainWhere();
     this.dataWhere = mainWhere();
@@ -111,7 +111,7 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
 				.add("offset", Hydra.offset, params.getOffset())
 				.add("orderBy", orderByVar, params.getOrderByClauses().toQueryString())
 				.add("pageIndex", Hydra.pageIndex, null)
-				.add("text", Doc.textVar, params.getText().orElse(""))
+				.add("text", Api.textVar, params.getText().orElse(""))
 				.add("type", RDF.type, params.getType().orElse(""))
 				.addTemplate(baseNode);
 

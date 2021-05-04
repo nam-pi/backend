@@ -1,7 +1,6 @@
 package eu.nampi.backend.repository;
 
 import java.util.UUID;
-
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -11,12 +10,11 @@ import org.apache.jena.riot.Lang;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
@@ -26,14 +24,15 @@ public class PlaceRepository extends AbstractHydraRepository {
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
 
   public Model findAll(QueryParameters params) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("places"), Core.place, Doc.placeOrderByVar,
-        params);
+    HydraCollectionBuilder builder =
+        new HydraCollectionBuilder(endpointUri("places"), Core.place, Api.placeOrderByVar, params);
     builder.dataWhere.addOptional(HydraCollectionBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
     addData(builder, HydraCollectionBuilder.VAR_MAIN);
     return construct(builder);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     Model model = findAll(params);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));

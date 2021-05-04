@@ -16,6 +16,8 @@ public class ConfigProperties {
 
   String datasetUrlInfCache;
 
+  String dataBaseUrl;
+
   int defaultLimit;
 
   String keycloakRdfIdAttribute;

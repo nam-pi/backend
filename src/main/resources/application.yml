@@ -16,11 +16,11 @@ logging:
 
 nampi:
   core-owl-url: ${CORE_OWL_URL:https://purl.org/nampi/owl/core}
+  data-base-url: ${DATA_BASE_URL:}
   dataset-url-data: ${DATA_URL}
   dataset-url-inf-cache: ${INF_CACHE_URL}
   default-limit: ${DEFAULT_LIMIT:25}
   keycloak-rdf-id-attribute: ${KEYCLOAK-RDF-ID-ATTRIBUTE:rdf-id}
-  individuals-base-url: ${INDIVIDUALS_BASE_URL}
   other-owl-urls: ${OTHER_OWL_URLS:}
 
 server:

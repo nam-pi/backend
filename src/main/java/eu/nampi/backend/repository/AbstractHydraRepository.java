@@ -5,12 +5,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.UUID;
-
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -20,8 +18,8 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import eu.nampi.backend.exception.NotFoundException;
 import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
 import eu.nampi.backend.service.JenaService;
@@ -30,6 +28,9 @@ import net.minidev.json.JSONObject;
 
 @Slf4j
 public abstract class AbstractHydraRepository {
+
+  @Value("${nampi.data-base-url}")
+  private String dataBaseUrl;
 
   @Autowired
   private JenaService jenaService;
@@ -43,7 +44,9 @@ public abstract class AbstractHydraRepository {
   }
 
   protected String endpointUri() {
-    return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+    return dataBaseUrl == null || dataBaseUrl.isBlank()
+        ? ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
+        : dataBaseUrl.replaceAll("/$", "");
   }
 
   protected String endpointUri(String... path) {
@@ -94,7 +97,8 @@ public abstract class AbstractHydraRepository {
         options.setOmitGraph(true);
         ctx.setFrame(createFrame(model, startId));
         ctx.setOptions(options);
-        RDFWriter w = RDFWriter.create().format(RDFFormat.JSONLD_FRAME_FLAT).context(ctx).source(model).build();
+        RDFWriter w = RDFWriter.create().format(RDFFormat.JSONLD_FRAME_FLAT).context(ctx)
+            .source(model).build();
         w.output(out);
       } else {
         RDFDataMgr.write(out, model, lang);
