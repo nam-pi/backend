@@ -9,13 +9,13 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
-
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.Hydra;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
-public abstract class AbstractHydraBuilder extends ConstructBuilder implements InterfaceHydraBuilder {
+public abstract class AbstractHydraBuilder extends ConstructBuilder
+    implements InterfaceHydraBuilder {
 
   public static final Node VAR_MAIN = NodeFactory.createVariable("main");
   public static final Node VAR_MAIN_LABEL = NodeFactory.createVariable("label");
@@ -29,8 +29,8 @@ public abstract class AbstractHydraBuilder extends ConstructBuilder implements I
     super();
     // @formatter:off
     this
+        .addPrefix("api", Api.getURI())
         .addPrefix("core", Core.getURI())
-        .addPrefix("doc", Doc.getURI())
         .addPrefix("hydra", Hydra.getURI())
         .addPrefix("rdf", RDF.getURI())
         .addPrefix("rdfs", RDFS.getURI())

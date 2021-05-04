@@ -58,6 +58,7 @@ services:
       args:
         CORE_OWL_URL: https://purl.org/nampi/owl/core
         DATA_URL: http://fuseki:3030/data
+        DATA_BASE_URL: ${DATA_BASE_URL}
         INF_CACHE_URL: http://fuseki:3030/inf_cache
         JAVA_VERSION: 11
         KEYCLOAK_REALM: ${KEYCLOAK_REALM}

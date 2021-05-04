@@ -1,7 +1,6 @@
 package eu.nampi.backend.repository;
 
 import java.util.UUID;
-
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
@@ -15,12 +14,11 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
@@ -31,13 +29,14 @@ public class PersonRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("persons"), Core.person,
-        Doc.personOrderByVar, params);
+        Api.personOrderByVar, params);
     builder.dataWhere.addWhere(addData(HydraCollectionBuilder.VAR_MAIN));
     addConstruct(builder, HydraCollectionBuilder.VAR_MAIN);
     return construct(builder);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     Model model = findAll(params);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
@@ -45,14 +44,16 @@ public class PersonRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.person, id), Core.person);
+    HydraSingleBuilder builder =
+        new HydraSingleBuilder(individualsUri(Core.person, id), Core.person);
     builder.addWhere(addData(HydraSingleBuilder.VAR_MAIN));
     addConstruct(builder, HydraSingleBuilder.VAR_MAIN);
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }
 
-  private void addDateConstruct(ConstructBuilder builder, String varPrefix, Property type, Node varMain) {
+  private void addDateConstruct(ConstructBuilder builder, String varPrefix, Property type,
+      Node varMain) {
     // @formatter:off
     Node var = NodeFactory.createVariable(varPrefix);
     Node varLabel = getVarEventLabel(varPrefix);

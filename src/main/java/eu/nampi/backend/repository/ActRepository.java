@@ -2,7 +2,6 @@ package eu.nampi.backend.repository;
 
 import java.util.Optional;
 import java.util.UUID;
-
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -18,12 +17,11 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Doc;
 
 @Repository
 @CacheConfig(cacheNames = "acts")
@@ -34,15 +32,19 @@ public class ActRepository extends AbstractHydraRepository {
   private static final Node VAR_AUTHORED_DATE = NodeFactory.createVariable("authoredDate");
   private static final Node VAR_AUTHORED_DATE_TIME = NodeFactory.createVariable("authoredDateTime");
   private static final Node VAR_INTERPRETATION = NodeFactory.createVariable("interpretation");
-  private static final Node VAR_INTERPRETATION_LABEL = NodeFactory.createVariable("interpretationLabel");
+  private static final Node VAR_INTERPRETATION_LABEL =
+      NodeFactory.createVariable("interpretationLabel");
   private static final Node VAR_SOURCE_LOCATION = NodeFactory.createVariable("sourceLocation");
-  private static final Node VAR_SOURCE_LOCATION_SOURCE = NodeFactory.createVariable("sourceLocationSource");
-  private static final Node VAR_SOURCE_LOCATION_SOURCE_LABEL = NodeFactory.createVariable("sourceLocationSourceLabel");
-  private static final Node VAR_SOURCE_LOCATION_STRING = NodeFactory.createVariable("sourceLocationString");
+  private static final Node VAR_SOURCE_LOCATION_SOURCE =
+      NodeFactory.createVariable("sourceLocationSource");
+  private static final Node VAR_SOURCE_LOCATION_SOURCE_LABEL =
+      NodeFactory.createVariable("sourceLocationSourceLabel");
+  private static final Node VAR_SOURCE_LOCATION_STRING =
+      NodeFactory.createVariable("sourceLocationString");
 
   public Model findAll(QueryParameters params, Optional<String> author, Optional<String> source) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("acts"), Core.act, Doc.actOrderByVar,
-        params);
+    HydraCollectionBuilder builder =
+        new HydraCollectionBuilder(endpointUri("acts"), Core.act, Api.actOrderByVar, params);
     ExprFactory ef = builder.getExprFactory();
     Node varMain = HydraCollectionBuilder.VAR_MAIN;
 
@@ -72,15 +74,17 @@ public class ActRepository extends AbstractHydraRepository {
     addData(builder, varMain);
 
     builder.mapper
-      .add("author", Doc.actAuthorVar, author.orElse(""))
-      .add("source", Doc.actSourceVar, source.orElse(""));
+      .add("author", Api.actAuthorVar, author.orElse(""))
+      .add("source", Api.actSourceVar, source.orElse(""));
 
     // @formatter:on
     return construct(builder);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #author, #source}")
-  public String findAll(QueryParameters params, Lang lang, Optional<String> author, Optional<String> source) {
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #author, #source}")
+  public String findAll(QueryParameters params, Lang lang, Optional<String> author,
+      Optional<String> source) {
     Model model = findAll(params, author, source);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }

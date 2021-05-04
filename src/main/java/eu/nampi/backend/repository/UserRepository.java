@@ -21,8 +21,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.User;
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
@@ -65,8 +65,8 @@ public class UserRepository extends AbstractHydraRepository {
       String uri = endpointUri("user");
       Resource userResource = ResourceFactory.createResource(uri);
       Model model = ModelFactory.createDefaultModel();
-      model.setNsPrefix("doc", Doc.getURI()).setNsPrefix("core", Core.getURI());
-      model.add(userResource, RDF.type, Doc.user);
+      model.setNsPrefix("api", Api.getURI()).setNsPrefix("core", Core.getURI());
+      model.add(userResource, RDF.type, Api.user);
       if (u.getAuthorities().contains("ROLE_AUTHOR")) {
         model.add(userResource, RDF.type, Core.author);
         model.add(userResource, SchemaOrg.sameAs,

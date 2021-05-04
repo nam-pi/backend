@@ -9,8 +9,8 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.Hydra;
 
 @Repository
@@ -21,9 +21,9 @@ public class EntrypointRepository extends AbstractHydraRepository {
 
   public String get(Lang lang) {
     Model model = ModelFactory.createDefaultModel();
-    model.setNsPrefix("doc", Doc.getURI());
+    model.setNsPrefix("api", Api.getURI());
     Resource ep = ResourceFactory.createResource(endpointUri());
-    model.add(ep, RDF.type, Doc.entrypoint);
+    model.add(ep, RDF.type, Api.entrypoint);
     model.add(ep, Hydra.title, "The NAMPI API");
 
     Resource acts = ResourceFactory.createResource(endpointUri("acts"));
@@ -92,7 +92,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
 
     userRepository.getCurrentUser().ifPresent(u -> {
       Property user = ResourceFactory.createProperty(endpointUri("user"));
-      model.add(ep, user, Doc.user);
+      model.add(ep, user, Api.user);
     });
 
     return serialize(model, lang, ResourceFactory.createResource(endpointUri()));

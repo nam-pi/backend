@@ -2,7 +2,6 @@ package eu.nampi.backend.repository;
 
 import java.util.Optional;
 import java.util.UUID;
-
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.graph.Node;
@@ -17,12 +16,11 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Doc;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
@@ -34,7 +32,7 @@ public class AspectRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params, Optional<String> person) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("aspects"), Core.aspect,
-        Doc.aspectOrderByVar, params, false);
+        Api.aspectOrderByVar, params, false);
     ExprFactory ef = builder.ef;
     Node varMain = HydraCollectionBuilder.VAR_MAIN;
 
@@ -59,12 +57,13 @@ public class AspectRepository extends AbstractHydraRepository {
 
     addData(builder, varMain);
 
-    builder.mapper.add("person", Doc.aspectPersonVar, person.orElse(""));
+    builder.mapper.add("person", Api.aspectPersonVar, person.orElse(""));
 
     return construct(builder);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #person}")
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #person}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> person) {
     Model model = findAll(params, person);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
@@ -72,7 +71,8 @@ public class AspectRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.aspect, id), Core.aspect);
+    HydraSingleBuilder builder =
+        new HydraSingleBuilder(individualsUri(Core.aspect, id), Core.aspect);
     addData(builder, HydraSingleBuilder.VAR_MAIN);
     builder.addOptional(HydraSingleBuilder.VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS)
         .addOptional(HydraSingleBuilder.VAR_MAIN, Core.hasXsdString, VAR_STRING);
@@ -82,6 +82,7 @@ public class AspectRepository extends AbstractHydraRepository {
   }
 
   private void addData(ConstructBuilder builder, Node varMain) {
-    builder.addConstruct(varMain, SchemaOrg.sameAs, VAR_SAME_AS).addConstruct(varMain, Core.hasXsdString, VAR_STRING);
+    builder.addConstruct(varMain, SchemaOrg.sameAs, VAR_SAME_AS).addConstruct(varMain,
+        Core.hasXsdString, VAR_STRING);
   }
 }

@@ -3,7 +3,6 @@ package eu.nampi.backend.repository;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.Order;
@@ -21,14 +20,13 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.model.DateRange;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.Doc;
 
 @Repository
 @CacheConfig(cacheNames = "events")
@@ -56,10 +54,11 @@ public class EventRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params, Optional<String> dates, Optional<String> aspect,
       Optional<String> aspectType, Optional<String> aspectUseType, Optional<String> participant,
-      Optional<String> participantType, Optional<String> participationType, Optional<String> place) {
+      Optional<String> participantType, Optional<String> participationType,
+      Optional<String> place) {
 
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("events"), Core.event, Doc.eventOrderByVar,
-        params);
+    HydraCollectionBuilder builder =
+        new HydraCollectionBuilder(endpointUri("events"), Core.event, Api.eventOrderByVar, params);
     ExprFactory ef = builder.getExprFactory();
     Node varMain = HydraCollectionBuilder.VAR_MAIN;
 
@@ -176,25 +175,27 @@ public class EventRepository extends AbstractHydraRepository {
     addData(builder, varMain);
 
     builder.mapper
-      .add("dates", Doc.eventDatesVar, dates.orElse(""))
-      .add("place", Doc.eventPlaceVar, place.orElse(""))
-      .add("participant", Doc.eventParticipantVar, participant.orElse(""))
-      .add("participantType", Doc.eventParticipantTypeVar, participantType.orElse(""))
-      .add("participationType", Doc.eventParticipationTypeVar, participationType.orElse(""))
-      .add("aspect", Doc.eventAspectVar, aspect.orElse(""))
-      .add("aspectType", Doc.eventAspectTypeVar, aspectType.orElse(""))
-      .add("aspectUseType", Doc.eventAspectUseTypeVar, aspectUseType.orElse(""));
+      .add("dates", Api.eventDatesVar, dates.orElse(""))
+      .add("place", Api.eventPlaceVar, place.orElse(""))
+      .add("participant", Api.eventParticipantVar, participant.orElse(""))
+      .add("participantType", Api.eventParticipantTypeVar, participantType.orElse(""))
+      .add("participationType", Api.eventParticipationTypeVar, participationType.orElse(""))
+      .add("aspect", Api.eventAspectVar, aspect.orElse(""))
+      .add("aspectType", Api.eventAspectTypeVar, aspectType.orElse(""))
+      .add("aspectUseType", Api.eventAspectUseTypeVar, aspectUseType.orElse(""));
 
     // @formatter:on
     return construct(builder);
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place}")
-  public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> aspect,
-      Optional<String> aspectType, Optional<String> aspectUseType, Optional<String> participant,
-      Optional<String> participantType, Optional<String> participationType, Optional<String> place) {
-    Model model = findAll(params, dates, aspect, aspectType, aspectUseType, participant, participantType,
-        participationType, place);
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place}")
+  public String findAll(QueryParameters params, Lang lang, Optional<String> dates,
+      Optional<String> aspect, Optional<String> aspectType, Optional<String> aspectUseType,
+      Optional<String> participant, Optional<String> participantType,
+      Optional<String> participationType, Optional<String> place) {
+    Model model = findAll(params, dates, aspect, aspectType, aspectUseType, participant,
+        participantType, participationType, place);
     return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
   }
 
@@ -247,9 +248,10 @@ public class EventRepository extends AbstractHydraRepository {
   }
 
   private WhereBuilder aspectWhere(Node varMain) {
-    return new WhereBuilder().addOptional(new WhereBuilder().addWhere(varMain, Core.usesAspect, VAR_ASPECT)
-        .addWhere(VAR_ASPECT, RDFS.label, VAR_ASPECT_LABEL)
-        .addOptional(VAR_ASPECT, Core.hasXsdString, VAR_ASPECT_STRING));
+    return new WhereBuilder()
+        .addOptional(new WhereBuilder().addWhere(varMain, Core.usesAspect, VAR_ASPECT)
+            .addWhere(VAR_ASPECT, RDFS.label, VAR_ASPECT_LABEL)
+            .addOptional(VAR_ASPECT, Core.hasXsdString, VAR_ASPECT_STRING));
   }
 
   WhereBuilder datesWhere(Node varMain, ExprFactory ef, Optional<QueryParameters> params) {
@@ -300,12 +302,13 @@ public class EventRepository extends AbstractHydraRepository {
   }
 
   private WhereBuilder participantWhere(Node varMain) {
-    return new WhereBuilder().addWhere(varMain, Core.hasParticipant, VAR_PARTICIPANT).addWhere(VAR_PARTICIPANT,
-        RDFS.label, VAR_PARTICIPANT_LABEL);
+    return new WhereBuilder().addWhere(varMain, Core.hasParticipant, VAR_PARTICIPANT)
+        .addWhere(VAR_PARTICIPANT, RDFS.label, VAR_PARTICIPANT_LABEL);
   }
 
   private WhereBuilder placeWhere(Node varMain) {
-    return new WhereBuilder().addOptional(new WhereBuilder().addWhere(varMain, Core.takesPlaceAt, VAR_PLACE)
-        .addWhere(VAR_PLACE, RDFS.label, VAR_PLACE_LABEL));
+    return new WhereBuilder()
+        .addOptional(new WhereBuilder().addWhere(varMain, Core.takesPlaceAt, VAR_PLACE)
+            .addWhere(VAR_PLACE, RDFS.label, VAR_PLACE_LABEL));
   }
 }
