@@ -68,7 +68,7 @@ public class ActRepository extends AbstractHydraRepository {
         .addFilter(ef.sameTerm(varSource, ResourceFactory.createResource(source.get())));
     }
 
-    builder.dataWhere.addWhere(dataWhere(varMain));
+    builder.dataWhere.addWhere(dataWhere(varMain)).addWhere(builder.commentWhere());
     addData(builder, varMain);
 
     builder.mapper
@@ -90,6 +90,7 @@ public class ActRepository extends AbstractHydraRepository {
     HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.act, id), Core.act);
     builder.addWhere(dataWhere(HydraSingleBuilder.VAR_MAIN));
     addData(builder, HydraSingleBuilder.VAR_MAIN);
+    builder.addWhere(builder.commentWhere());
     Model model = construct(builder);
     return serialize(model, lang, ResourceFactory.createResource(builder.iri));
   }
