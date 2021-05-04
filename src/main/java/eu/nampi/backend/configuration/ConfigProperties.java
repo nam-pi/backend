@@ -1,7 +1,6 @@
 package eu.nampi.backend.configuration;
 
 import java.util.List;
-import java.util.Optional;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import lombok.Getter;
 import lombok.Setter;
