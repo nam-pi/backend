@@ -196,7 +196,7 @@ public class EventRepository extends AbstractHydraRepository {
       Optional<String> participationType, Optional<String> place) {
     Model model = findAll(params, dates, aspect, aspectType, aspectUseType, participant,
         participantType, participationType, place);
-    return serialize(model, lang, ResourceFactory.createResource(params.getBaseUrl()));
+    return serialize(model, lang, ResourceFactory.createResource(endpointUri("events")));
   }
 
   @Cacheable(key = "{#lang, #id}")
