@@ -8,17 +8,46 @@ keycloak:
 
 logging:
   level:
+    root: ${LOGGING_LEVEL:INFO}
     org:
-      springframework:
-        web: ${LOGGING_LEVEL:INFO} 
+      apache:
+        http:
+          wire: WARN
 
 nampi:
-  triple-store-url: ${TRIPLE_STORE_URL} 
-  core-owl-url: ${CORE_OWL_URL:https://raw.githubusercontent.com/nam-pi/ontologies/master/core.owl}
+  core-owl-url: ${CORE_OWL_URL:https://purl.org/nampi/owl/core}
+  dataset-url-data: ${DATA_URL}
+  dataset-url-inf-cache: ${INF_CACHE_URL}
+  default-limit: ${DEFAULT_LIMIT:25}
+  keycloak-rdf-id-attribute: ${KEYCLOAK-RDF-ID-ATTRIBUTE:rdf-id}
+  individuals-base-url: ${INDIVIDUALS_BASE_URL}
+  other-owl-urls: ${OTHER_OWL_URLS:}
 
 server:
   port: ${APPLICATION_PORT:8080}
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+  error:
+    include-stacktrace: Never
 
 spring:
+  cache:
+    type: redis
+    cache-names:
+      - acts
+      - aspects
+      - authors
+      - events
+      - groups
+      - persons
+      - places
+      - sources
   main:
     allow-bean-definition-overriding: true
+  profiles:
+    active: ${PROFILE:prod}
+  redis:
+    host: ${REDIS_URL}
+    port: ${REDIS_PORT}

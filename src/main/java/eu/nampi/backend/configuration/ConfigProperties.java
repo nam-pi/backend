@@ -1,7 +1,7 @@
 package eu.nampi.backend.configuration;
 
+import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,8 +10,16 @@ import lombok.Setter;
 @ConfigurationProperties(prefix = "nampi")
 public class ConfigProperties {
 
-  String tripleStoreUrl;
-
   String coreOwlUrl;
+
+  String datasetUrlData;
+
+  String datasetUrlInfCache;
+
+  int defaultLimit;
+
+  String keycloakRdfIdAttribute;
+
+  List<String> otherOwlUrls;
 
 }

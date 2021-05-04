@@ -30,3 +30,9 @@ build/
 ### VS Code ###
 .vscode/
 .devcontainer/
+
+### VIM ###
+.vim/
+
+.env
+docker-compose.override.yml

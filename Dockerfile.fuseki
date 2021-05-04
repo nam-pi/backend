@@ -1,0 +1,6 @@
+ARG FUSEKI_VERSION=latest
+
+FROM stain/jena-fuseki:${FUSEKI_VERSION}
+
+RUN apt-get update; \
+  apt-get install -y --no-install-recommends procps
