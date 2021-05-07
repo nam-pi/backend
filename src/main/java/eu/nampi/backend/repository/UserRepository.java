@@ -68,7 +68,6 @@ public class UserRepository extends AbstractHydraRepository {
       model.setNsPrefix("api", Api.getURI()).setNsPrefix("core", Core.getURI());
       model.add(userResource, RDF.type, Api.user);
       if (u.getAuthorities().contains("ROLE_AUTHOR")) {
-        model.add(userResource, RDF.type, Core.author);
         model.add(userResource, SchemaOrg.sameAs,
             ResourceFactory.createResource(individualsUri(Core.author, u.getRdfId())));
       }
