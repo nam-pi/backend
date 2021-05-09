@@ -30,7 +30,7 @@ public class AspectRepository extends AbstractHydraRepository {
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
   private static final Node VAR_STRING = NodeFactory.createVariable("string");
 
-  public Model findAll(QueryParameters params, Optional<String> person) {
+  public Model findAll(QueryParameters params, Optional<String> participant) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("aspects"), Core.aspect,
         Api.aspectOrderByVar, params, false, false);
     ExprFactory ef = builder.ef;
@@ -46,18 +46,18 @@ public class AspectRepository extends AbstractHydraRepository {
     }
     builder.dataWhere.addOptional(varMain, Core.hasXsdString, VAR_STRING);
 
-    if (person.isPresent()) {
+    if (participant.isPresent()) {
       Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.aspectIsUsedIn.asNode()),
           PathFactory.pathLink(Core.hasParticipant.asNode()));
-      builder.dataWhere.addWhere(varMain, path, ResourceFactory.createResource(person.get()));
-      builder.countWhere.addWhere(varMain, path, ResourceFactory.createResource(person.get()));
+      builder.dataWhere.addWhere(varMain, path, ResourceFactory.createResource(participant.get()));
+      builder.countWhere.addWhere(varMain, path, ResourceFactory.createResource(participant.get()));
     }
 
     builder.dataWhere.addOptional(varMain, SchemaOrg.sameAs, VAR_SAME_AS);
 
     addData(builder, varMain);
 
-    builder.mapper.add("person", Api.aspectPersonVar, person.orElse(""));
+    builder.mapper.add("person", Api.aspectPersonVar, participant.orElse(""));
 
     return construct(builder);
   }
