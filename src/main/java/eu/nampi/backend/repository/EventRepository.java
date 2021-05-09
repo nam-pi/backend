@@ -227,7 +227,7 @@ public class EventRepository extends AbstractHydraRepository {
       // Place
       .addConstruct(varMain, Core.takesPlaceAt, VAR_PLACE)
       .addConstruct(VAR_PLACE, RDF.type, Core.place)
-      .addConstruct(VAR_PLACE, RDF.type, VAR_PLACE_LABEL)
+      .addConstruct(VAR_PLACE, RDFS.label, VAR_PLACE_LABEL)
       // Exact date
       .addConstruct(varMain, Core.takesPlaceOn, VAR_DATE_EXACT)
       .addConstruct(VAR_DATE_EXACT, RDF.type, Core.date)
