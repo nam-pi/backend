@@ -39,6 +39,7 @@ spring:
       - acts
       - aspects
       - authors
+      - classes
       - events
       - groups
       - persons

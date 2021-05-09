@@ -1,13 +1,12 @@
 package eu.nampi.backend.model.hydra;
 
-import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDFS;
-
 import eu.nampi.backend.vocabulary.Hydra;
 
 public class Collection extends Class {
 
-  public Collection(Property type, Property itemType) {
+  public Collection(Resource type, Resource itemType) {
     super(type.getURI(), type.getLocalName());
     add(RDFS.subClassOf, Hydra.Collection);
     SupportedProperty manages = new SupportedProperty(Hydra.manages, true, false, false);

@@ -35,13 +35,13 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
   private final SelectBuilder bindSelect = new SelectBuilder();
   private final WhereBuilder bindWhere = new WhereBuilder();
 
-  public HydraCollectionBuilder(String baseUri, Property mainType, Property orderByVar,
+  public HydraCollectionBuilder(String baseUri, Resource mainType, Property orderByVar,
       QueryParameters params) {
-    this(baseUri, mainType, orderByVar, params, true);
+    this(baseUri, mainType, orderByVar, params, true, false);
   }
 
-  public HydraCollectionBuilder(String baseUri, Property mainType, Property orderByVar,
-      QueryParameters params, boolean includeTextFilter) {
+  public HydraCollectionBuilder(String baseUri, Resource mainType, Property orderByVar,
+      QueryParameters params, boolean includeTextFilter, boolean optionalLabel) {
     super(NodeFactory.createURI(baseUri), mainType);
     this.countWhere = mainWhere();
     this.dataWhere = mainWhere();
@@ -50,11 +50,19 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
     this.params = params;
 
     // Add text filter
-    dataWhere.addWhere(labelWhere());
+    if (optionalLabel) {
+      dataWhere.addOptional(labelWhere());
+    } else {
+      dataWhere.addWhere(labelWhere());
+    }
     if (includeTextFilter && params.getText().isPresent()) {
       Expr regex = ef.regex(VAR_MAIN_LABEL, params.getText().get(), "i");
       dataWhere.addFilter(regex);
-      countWhere.addWhere(labelWhere()).addFilter(regex);
+      if (optionalLabel) {
+        countWhere.addOptional(labelWhere()).addFilter(regex);
+      } else {
+        countWhere.addWhere(labelWhere()).addFilter(regex);
+      }
     }
 
     // Add type filter

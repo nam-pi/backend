@@ -5,7 +5,7 @@ import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
@@ -23,9 +23,9 @@ public abstract class AbstractHydraBuilder extends ConstructBuilder
 
   public final ExprFactory ef;
   public final Node baseNode;
-  public final Property mainType;
+  public final Resource mainType;
 
-  public AbstractHydraBuilder(Node baseNode, Property mainType) {
+  public AbstractHydraBuilder(Node baseNode, Resource mainType) {
     super();
     // @formatter:off
     this

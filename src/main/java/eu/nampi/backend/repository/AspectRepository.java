@@ -32,7 +32,7 @@ public class AspectRepository extends AbstractHydraRepository {
 
   public Model findAll(QueryParameters params, Optional<String> person) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("aspects"), Core.aspect,
-        Api.aspectOrderByVar, params, false);
+        Api.aspectOrderByVar, params, false, false);
     ExprFactory ef = builder.ef;
     Node varMain = HydraCollectionBuilder.VAR_MAIN;
 

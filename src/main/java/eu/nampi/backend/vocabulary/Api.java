@@ -31,6 +31,10 @@ public class Api {
     return ResourceFactory.createProperty(uri, local);
   }
 
+  public static Property classOrderByVar = property("classOrderByVariable");
+
+  public static Property classCollection = property("classCollection");
+
   public static Property eventOrderByVar = property("eventOrderByVariable");
 
   public static Property eventDatesVar = property("eventDatesVariable");
