@@ -28,9 +28,9 @@ public class ClassController extends AbstractRdfController {
       @RequestParam("offset") Optional<Integer> offset,
       @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
       @RequestParam("type") Optional<String> type, @RequestParam("text") Optional<String> text,
-      @RequestParam("parent") Optional<String> parent) {
+      @RequestParam("ancestor") Optional<String> ancestor) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
-    String result = classRepository.findAll(params, lang, parent);
+    String result = classRepository.findAll(params, lang, ancestor);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 

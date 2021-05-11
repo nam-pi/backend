@@ -57,7 +57,7 @@ public class AspectRepository extends AbstractHydraRepository {
 
     addData(builder, varMain);
 
-    builder.mapper.add("person", Api.aspectPersonVar, participant.orElse(""));
+    builder.mapper.add("participant", Api.aspectParticipantVar, participant.orElse(""));
 
     return construct(builder);
   }

@@ -59,7 +59,7 @@ public class Api {
 
   public static Property aspectOrderByVar = property("aspectOrderByVariable");
 
-  public static Property aspectPersonVar = property("aspectPersonVariable");
+  public static Property aspectParticipantVar = property("aspectParticipantVariable");
 
   public static Property authorCollection = property("authorCollection");
 
