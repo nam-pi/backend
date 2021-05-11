@@ -5,10 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -38,10 +36,11 @@ public class OrderByClauses implements Serializable {
     this.add(orderBy, DEFAULT_ORDER);
   }
 
-  public void appendAllTo(SelectBuilder selectBuilder) {
+  public SelectBuilder appendAllTo(SelectBuilder selectBuilder) {
     for (Map.Entry<String, Order> entry : this.clauses.entrySet()) {
       selectBuilder.addOrderBy(padKey(entry.getKey()), entry.getValue());
     }
+    return selectBuilder;
   }
 
   public boolean containsKey(String name) {

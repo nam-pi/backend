@@ -40,19 +40,18 @@ public class ClassRepository extends AbstractHydraRepository {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("classes"),
         RDFS.Class, Api.classOrderByVar, params);
 
-    if (ancestor.isPresent()) {
-      Resource resParent = ResourceFactory.createResource(ancestor.get());
-      Expr filter = builder.ef.sameTerm(VAR_PARENT, resParent);
+    // Add ancestor query
+    ancestor.map(ResourceFactory::createResource).ifPresent(res -> {
+      Expr filter = builder.ef.sameTerm(VAR_PARENT, res);
       WhereBuilder where = new WhereBuilder()
           .addWhere(VAR_MAIN, RDFS.subClassOf, VAR_PARENT)
           .addFilter(filter);
       builder.dataSelect.addWhere(where);
       builder.countWhere.addWhere(where);
-    }
+    });
+    builder.mapper.add("ancestor", RDFS.Class, ancestor);
 
     builder.dataSelect.addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
-
-    builder.mapper.add("ancestor", RDFS.Class, ancestor);
 
     builder.build((model, row) -> {
       Resource base = row.getResource(VAR_MAIN.toString());

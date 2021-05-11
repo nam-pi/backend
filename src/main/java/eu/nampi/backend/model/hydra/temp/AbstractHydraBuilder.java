@@ -53,8 +53,7 @@ public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
         .addPrefix("rdfs", RDFS.getURI())
         .addPrefix("schema", SchemaOrg.getURI())
         .addPrefix("xsd", XSD.getURI())
-        .addWhere(VAR_MAIN, RDF.type, mainType)
-        .addWhere(VAR_MAIN, RDFS.label, VAR_LABEL);
+        .addWhere(VAR_MAIN, RDF.type, mainType);
     model
         .setNsPrefix("api", Api.getURI())
         .setNsPrefix("core", Core.getURI())
