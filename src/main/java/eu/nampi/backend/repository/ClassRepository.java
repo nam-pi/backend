@@ -55,8 +55,6 @@ public class ClassRepository extends AbstractHydraRepository {
     builder.dataSelect
         .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
 
-
-
     // Add ancestor query
     builder.mapper.add("ancestor", RDFS.Class, ancestor);
     ancestor.map(ResourceFactory::createResource).ifPresent(res -> {
