@@ -5,14 +5,12 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-
 import eu.nampi.backend.vocabulary.Hydra;
 
 public class ParameterMapper {
@@ -30,11 +28,11 @@ public class ParameterMapper {
     this.varSearch = varSearch;
   }
 
-  public ParameterMapper add(String variable, Property type, Object value) {
+  public ParameterMapper add(String variable, Resource type, Object value) {
     return this.add(variable, type, value, false);
   }
 
-  public ParameterMapper add(String variable, Property type, Object value, boolean required) {
+  public ParameterMapper add(String variable, Resource type, Object value, boolean required) {
     this.parts.add(variable);
     Node bnode = NodeFactory.createVariable("mapping_" + variable);
     this.bind.addBind(construct.getExprFactory().bnode(), bnode);

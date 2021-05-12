@@ -33,7 +33,7 @@ public abstract class AbstractHydraRepository {
   private String dataBaseUrl;
 
   @Autowired
-  private JenaService jenaService;
+  protected JenaService jenaService;
 
   protected Model construct(InterfaceHydraBuilder builder) {
     return jenaService.construct(builder);

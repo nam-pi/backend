@@ -4,7 +4,6 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.expr.Expr;
@@ -30,17 +29,17 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
   public final WhereBuilder countWhere;
   public final WhereBuilder dataWhere;
 
-  private final Property orderByVar;
+  private final Resource orderByVar;
   private final QueryParameters params;
   private final SelectBuilder bindSelect = new SelectBuilder();
   private final WhereBuilder bindWhere = new WhereBuilder();
 
-  public HydraCollectionBuilder(String baseUri, Resource mainType, Property orderByVar,
+  public HydraCollectionBuilder(String baseUri, Resource mainType, Resource orderByVar,
       QueryParameters params) {
     this(baseUri, mainType, orderByVar, params, true, false);
   }
 
-  public HydraCollectionBuilder(String baseUri, Resource mainType, Property orderByVar,
+  public HydraCollectionBuilder(String baseUri, Resource mainType, Resource orderByVar,
       QueryParameters params, boolean includeTextFilter, boolean optionalLabel) {
     super(NodeFactory.createURI(baseUri), mainType);
     this.countWhere = mainWhere();

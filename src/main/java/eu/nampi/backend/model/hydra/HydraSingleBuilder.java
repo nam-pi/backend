@@ -1,13 +1,13 @@
 package eu.nampi.backend.model.hydra;
 
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 
 public class HydraSingleBuilder extends AbstractHydraBuilder {
 
   public final String iri;
 
-  public HydraSingleBuilder(String iri, Property type) {
+  public HydraSingleBuilder(String iri, Resource type) {
     super(NodeFactory.createURI(iri), type);
     this.iri = iri;
     addWhere(mainWhere());

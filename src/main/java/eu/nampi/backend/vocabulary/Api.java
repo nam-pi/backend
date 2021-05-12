@@ -31,73 +31,39 @@ public class Api {
     return ResourceFactory.createProperty(uri, local);
   }
 
-  public static Property classOrderByVar = property("classOrderByVariable");
-
-  public static Property classCollection = property("classCollection");
-
-  public static Property eventOrderByVar = property("eventOrderByVariable");
-
-  public static Property eventDatesVar = property("eventDatesVariable");
-
-  public static Property eventAspectVar = property("eventAspectVariable");
-
-  public static Property eventAspectTypeVar = property("eventAspectTypeVariable");
-
-  public static Property eventAspectUseTypeVar = property("eventAspectUseTypeVariable");
-
-  public static Property eventPlaceVar = property("eventPlaceVariable");
-
-  public static Property eventParticipantVar = property("eventParticipantVariable");
-
-  public static Property eventParticipantTypeVar = property("eventParticipantTypeVariable");
-
-  public static Property eventParticipationTypeVar = property("eventParticipationTypeVariable");
-
-  public static Property personOrderByVar = property("personOrderByVariable");
-
-  public static Property aspectCollection = property("aspectCollection");
-
-  public static Property aspectOrderByVar = property("aspectOrderByVariable");
-
-  public static Property aspectParticipantVar = property("aspectParticipantVariable");
-
-  public static Property authorCollection = property("authorCollection");
-
-  public static Property authorOrderByVar = property("authorOrderByVariable");
-
-  public static Property textVar = property("textVariable");
-
-  public static Property typeVar = property("typeVariable");
-
-  public static Property events = property("events");
-
-  public static Property persons = property("persons");
-
-  public static Property entrypoint = property("entrypoint");
-
-  public static Property eventCollection = property("eventCollection");
-
-  public static Property actCollection = property("actCollection");
-
-  public static Property actOrderByVar = property("actOrderByVariable");
-
-  public static Property actAuthorVar = property("actAuthorVariable");
-
-  public static Property actSourceVar = property("actSourceVariable");
-
-  public static Property personCollection = property("personCollection");
-
-  public static Property groupCollection = property("groupCollection");
-
-  public static Property groupOrderByVar = property("groupOrderByVariable");
-
-  public static Property placeCollection = property("placeCollection");
-
-  public static Property placeOrderByVar = property("placeOrderByVariable");
-
-  public static Property sourceCollection = property("sourceCollection");
-
-  public static Property sourceOrderByVar = property("sourceOrderByVariable");
-
-  public static Property user = property("user");
+  public static Resource actAuthorVar = resource("actAuthorVariable");
+  public static Resource actCollection = resource("actCollection");
+  public static Resource actOrderByVar = resource("actOrderByVariable");
+  public static Resource actSourceVar = resource("actSourceVariable");
+  public static Resource aspectCollection = resource("aspectCollection");
+  public static Resource aspectOrderByVar = resource("aspectOrderByVariable");
+  public static Resource aspectParticipantVar = resource("aspectParticipantVariable");
+  public static Resource authorCollection = resource("authorCollection");
+  public static Resource authorOrderByVar = resource("authorOrderByVariable");
+  public static Resource classCollection = resource("classCollection");
+  public static Resource classOrderByVar = resource("classOrderByVariable");
+  public static Resource entrypoint = resource("entrypoint");
+  public static Resource eventAspectTypeVar = resource("eventAspectTypeVariable");
+  public static Resource eventAspectUseTypeVar = resource("eventAspectUseTypeVariable");
+  public static Resource eventAspectVar = resource("eventAspectVariable");
+  public static Resource eventCollection = resource("eventCollection");
+  public static Resource eventDatesVar = resource("eventDatesVariable");
+  public static Resource eventOrderByVar = resource("eventOrderByVariable");
+  public static Resource eventParticipantTypeVar = resource("eventParticipantTypeVariable");
+  public static Resource eventParticipantVar = resource("eventParticipantVariable");
+  public static Resource eventParticipationTypeVar = resource("eventParticipationTypeVariable");
+  public static Resource eventPlaceVar = resource("eventPlaceVariable");
+  public static Resource events = resource("events");
+  public static Resource groupCollection = resource("groupCollection");
+  public static Resource groupOrderByVar = resource("groupOrderByVariable");
+  public static Resource personCollection = resource("personCollection");
+  public static Resource personOrderByVar = resource("personOrderByVariable");
+  public static Resource persons = resource("persons");
+  public static Resource placeCollection = resource("placeCollection");
+  public static Resource placeOrderByVar = resource("placeOrderByVariable");
+  public static Resource sourceCollection = resource("sourceCollection");
+  public static Resource sourceOrderByVar = resource("sourceOrderByVariable");
+  public static Resource textVar = resource("textVariable");
+  public static Resource typeVar = resource("typeVariable");
+  public static Resource user = resource("user");
 }
