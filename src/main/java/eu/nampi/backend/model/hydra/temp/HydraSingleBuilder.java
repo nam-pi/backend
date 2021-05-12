@@ -12,6 +12,7 @@ public class HydraSingleBuilder extends AbstractHydraBuilder {
   public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType,
       boolean optionalLabel) {
     super(jenaService, baseUri, mainType, optionalLabel);
+    dataSelect.addFilter(ef.sameTerm(VAR_MAIN, root));
   }
 
   public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType) {

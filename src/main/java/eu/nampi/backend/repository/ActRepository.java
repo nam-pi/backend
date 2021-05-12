@@ -1,13 +1,17 @@
 package eu.nampi.backend.repository;
 
+import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_LABEL;
+import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_MAIN;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
+import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.path.Path;
@@ -18,8 +22,9 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
-import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder;
+import eu.nampi.backend.model.hydra.temp.HydraCollectionBuilder;
+import eu.nampi.backend.model.hydra.temp.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
@@ -29,116 +34,114 @@ public class ActRepository extends AbstractHydraRepository {
 
   private static final Node VAR_AUTHOR = NodeFactory.createVariable("author");
   private static final Node VAR_AUTHOR_LABEL = NodeFactory.createVariable("authorLabel");
-  private static final Node VAR_AUTHORED_DATE = NodeFactory.createVariable("authoredDate");
-  private static final Node VAR_AUTHORED_DATE_TIME = NodeFactory.createVariable("authoredDateTime");
-  private static final Node VAR_INTERPRETATION = NodeFactory.createVariable("interpretation");
-  private static final Node VAR_INTERPRETATION_LABEL =
-      NodeFactory.createVariable("interpretationLabel");
-  private static final Node VAR_SOURCE_LOCATION = NodeFactory.createVariable("sourceLocation");
-  private static final Node VAR_SOURCE_LOCATION_SOURCE =
-      NodeFactory.createVariable("sourceLocationSource");
-  private static final Node VAR_SOURCE_LOCATION_SOURCE_LABEL =
-      NodeFactory.createVariable("sourceLocationSourceLabel");
-  private static final Node VAR_SOURCE_LOCATION_STRING =
-      NodeFactory.createVariable("sourceLocationString");
+  private static final Node VAR_DATE = NodeFactory.createVariable("authoredDate");
+  private static final Node VAR_DATE_TIME = NodeFactory.createVariable("authoredDateTime");
+  private static final Node VAR_INT = NodeFactory.createVariable("interpretation");
+  private static final Node VAR_INT_LABEL = NodeFactory.createVariable("interpretationLabel");
+  private static final Node VAR_LOC = NodeFactory.createVariable("sourceLocation");
+  private static final Node VAR_LOC_STRING = NodeFactory.createVariable("sourceLocationString");
+  private static final Node VAR_SRC = NodeFactory.createVariable("sourceLocationSource");
+  private static final Node VAR_SRC_LABEL = NodeFactory.createVariable("sourceLocationSourceLabel");
 
-  public Model findAll(QueryParameters params, Optional<String> author, Optional<String> source) {
-    HydraCollectionBuilder builder =
-        new HydraCollectionBuilder(endpointUri("acts"), Core.act, Api.actOrderByVar, params);
-    ExprFactory ef = builder.getExprFactory();
-    Node varMain = HydraCollectionBuilder.VAR_MAIN;
-
-    // @formatter:off
-    if(author.isPresent()) {
-      Node varAuthor = NodeFactory.createVariable("filterAuthor");
-      builder.dataWhere
-        .addWhere(varMain, Core.isAuthoredBy, varAuthor)
-        .addFilter(ef.sameTerm(varAuthor, ResourceFactory.createResource(author.get())));
-      builder.countWhere
-        .addWhere(varMain, Core.isAuthoredBy, varAuthor)
-        .addFilter(ef.sameTerm(varAuthor, ResourceFactory.createResource(author.get())));
-    }
-
-    if(source.isPresent()) {
-      Node varSource = NodeFactory.createVariable("filterSource");
-      Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.hasSourceLocation.asNode()), PathFactory.pathLink(Core.hasSource.asNode()));
-      builder.dataWhere
-        .addWhere(varMain, path, varSource)
-        .addFilter(ef.sameTerm(varSource, ResourceFactory.createResource(source.get())));
-      builder.countWhere
-        .addWhere(varMain, path, varSource)
-        .addFilter(ef.sameTerm(varSource, ResourceFactory.createResource(source.get())));
-    }
-
-    builder.dataWhere.addWhere(dataWhere(varMain)).addWhere(builder.commentWhere());
-    addData(builder, varMain);
-
-    builder.mapper
-      .add("author", Api.actAuthorVar, author.orElse(""))
-      .add("source", Api.actSourceVar, source.orElse(""));
-
-    // @formatter:on
-    return construct(builder);
-  }
+  private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
+    System.out.println(row);
+    Resource main = row.getResource(VAR_MAIN.toString());
+    // Main
+    model.add(main, RDF.type, Core.act);
+    // Label
+    model.add(main, RDFS.label, row.getLiteral(VAR_LABEL.toString()).getString());
+    // Author
+    Resource resAuthor = row.getResource(VAR_AUTHOR.toString());
+    model
+        .add(main, Core.isAuthoredBy, resAuthor)
+        .add(resAuthor, RDF.type, Core.author)
+        .add(resAuthor, RDFS.label, row.getLiteral(VAR_AUTHOR_LABEL.toString()));
+    // Date
+    Resource resDate = row.getResource(VAR_DATE.toString());
+    model
+        .add(main, Core.isAuthoredOn, resDate)
+        .add(resDate, RDF.type, Core.date)
+        .add(resDate, Core.hasXsdDateTime, row.getLiteral(VAR_DATE_TIME.toString()));
+    // Source location
+    Resource resLocation = row.getResource(VAR_LOC.toString());
+    model
+        .add(main, Core.hasSourceLocation, resLocation)
+        .add(resLocation, RDF.type, Core.sourceLocation)
+        .add(resLocation, Core.hasXsdString, row.getLiteral(VAR_LOC_STRING.toString()));
+    // Source
+    Resource resSource = row.getResource(VAR_SRC.toString());
+    model
+        .add(resLocation, Core.hasSource, resSource)
+        .add(resSource, RDF.type, Core.source)
+        .add(resSource, RDFS.label, row.getLiteral(VAR_SRC_LABEL.toString()));
+    // Interpretation
+    Resource resInterpretation = row.getResource(VAR_INT.toString());
+    model
+        .add(main, Core.hasInterpretation, resInterpretation)
+        .add(resInterpretation, RDF.type, Core.event)
+        .add(resInterpretation, RDFS.label, row.getLiteral(VAR_INT_LABEL.toString()));
+    return main;
+  };
 
   @Cacheable(
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #author, #source}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> author,
       Optional<String> source) {
-    Model model = findAll(params, author, source);
-    return serialize(model, lang, ResourceFactory.createResource(endpointUri("acts")));
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("acts"),
+        Core.act, Api.actOrderByVar, params, false, false);
+    ExprFactory ef = builder.ef;
+
+    // Add author query
+    builder.mapper.add("author", Api.actAuthorVar, author);
+    author.map(ResourceFactory::createResource).ifPresent(res -> {
+      builder.dataSelect
+          .addFilter(ef.sameTerm(VAR_AUTHOR, res));
+      builder.countWhere
+          .addWhere(VAR_MAIN, Core.isAuthoredBy, VAR_AUTHOR)
+          .addFilter(ef.sameTerm(VAR_AUTHOR, res));
+    });
+
+    // Add source query
+    builder.mapper.add("source", Api.actSourceVar, source);
+    source.map(ResourceFactory::createResource).ifPresent(res -> {
+      builder.dataSelect
+          .addFilter(ef.sameTerm(VAR_SRC, res));
+      Path path = PathFactory.pathSeq(
+          PathFactory.pathLink(Core.hasSourceLocation.asNode()),
+          PathFactory.pathLink(Core.hasSource.asNode()));
+      builder.countWhere
+          .addWhere(VAR_MAIN, path, VAR_SRC)
+          .addFilter(ef.sameTerm(VAR_SRC, res));
+    });
+
+    return build(builder, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(individualsUri(Core.act, id), Core.act);
-    builder.addWhere(dataWhere(HydraSingleBuilder.VAR_MAIN));
-    addData(builder, HydraSingleBuilder.VAR_MAIN);
-    builder.addWhere(builder.commentWhere());
-    Model model = construct(builder);
-    return serialize(model, lang, ResourceFactory.createResource(builder.iri));
+    HydraSingleBuilder builder =
+        new HydraSingleBuilder(jenaService, individualsUri(Core.act, id), Core.act);
+    return build(builder, lang);
   }
 
-  private WhereBuilder dataWhere(Node varMain) {
-    // @formatter:off
-    return new WhereBuilder()
-        .addWhere(varMain, Core.isAuthoredBy, VAR_AUTHOR)
+  private String build(AbstractHydraBuilder builder, Lang lang) {
+    builder.dataSelect
+        .addWhere(VAR_MAIN, Core.isAuthoredBy, VAR_AUTHOR)
         .addWhere(VAR_AUTHOR, RDFS.label, VAR_AUTHOR_LABEL)
-        
-        .addWhere(varMain, Core.hasInterpretation, VAR_INTERPRETATION)
-        .addWhere(VAR_INTERPRETATION, RDFS.label, VAR_INTERPRETATION_LABEL)
 
-        .addWhere(varMain, Core.hasSourceLocation, VAR_SOURCE_LOCATION)
-        .addWhere(VAR_SOURCE_LOCATION, Core.hasXsdString, VAR_SOURCE_LOCATION_STRING)
-        .addWhere(VAR_SOURCE_LOCATION, Core.hasSource, VAR_SOURCE_LOCATION_SOURCE)
-        .addWhere(VAR_SOURCE_LOCATION_SOURCE, RDFS.label, VAR_SOURCE_LOCATION_SOURCE_LABEL)
+        .addWhere(VAR_MAIN, Core.hasInterpretation, VAR_INT)
+        .addWhere(VAR_INT, RDFS.label, VAR_INT_LABEL)
 
-        .addWhere(varMain, Core.isAuthoredOn, VAR_AUTHORED_DATE)
-        .addWhere(VAR_AUTHORED_DATE, Core.hasXsdDateTime, VAR_AUTHORED_DATE_TIME);
-    // @formatter:on
+        .addWhere(VAR_MAIN, Core.hasSourceLocation, VAR_LOC)
+        .addWhere(VAR_LOC, Core.hasXsdString, VAR_LOC_STRING)
+        .addWhere(VAR_LOC, Core.hasSource, VAR_SRC)
+        .addWhere(VAR_SRC, RDFS.label, VAR_SRC_LABEL)
+
+        .addWhere(VAR_MAIN, Core.isAuthoredOn, VAR_DATE)
+        .addWhere(VAR_DATE, Core.hasXsdDateTime, VAR_DATE_TIME);
+
+    builder.build(ROW_MAPPER);
+    return serialize(builder.model, lang, builder.root);
   }
 
-  private void addData(ConstructBuilder builder, Node varMain) {
-    // @formatter:off
-    builder
-        .addConstruct(varMain, Core.isAuthoredBy, VAR_AUTHOR)
-        .addConstruct(VAR_AUTHOR, RDF.type, Core.author)
-        .addConstruct(VAR_AUTHOR, RDFS.label, VAR_AUTHOR_LABEL)
-
-        .addConstruct(varMain, Core.hasInterpretation, VAR_INTERPRETATION)
-        .addConstruct(VAR_INTERPRETATION, RDF.type, Core.event)
-        .addConstruct(VAR_INTERPRETATION, RDFS.label, VAR_INTERPRETATION_LABEL)
-
-        .addConstruct(varMain, Core.hasSourceLocation, VAR_SOURCE_LOCATION)
-        .addConstruct(VAR_SOURCE_LOCATION, RDF.type, Core.sourceLocation)
-        .addConstruct(VAR_SOURCE_LOCATION, Core.hasXsdString, VAR_SOURCE_LOCATION_STRING)
-        .addConstruct(VAR_SOURCE_LOCATION, Core.hasSource, VAR_SOURCE_LOCATION_SOURCE)
-        .addConstruct(VAR_SOURCE_LOCATION_SOURCE, RDF.type, Core.source)
-        .addConstruct(VAR_SOURCE_LOCATION_SOURCE, RDFS.label, VAR_SOURCE_LOCATION_SOURCE_LABEL)
-
-        .addConstruct(varMain, Core.isAuthoredOn, VAR_AUTHORED_DATE)
-        .addConstruct(VAR_AUTHORED_DATE, Core.hasXsdDateTime, VAR_AUTHORED_DATE_TIME)
-        .addConstruct(VAR_AUTHORED_DATE, RDF.type, Core.date);
-    // @formatter:on
-  }
 }
