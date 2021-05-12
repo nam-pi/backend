@@ -1,31 +1,22 @@
 package eu.nampi.backend.model.hydra.temp;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
-import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Hydra;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class HydraCollectionBuilder extends AbstractHydraBuilder {
-  public static final Node VAR_TOTAL_ITEMS = NodeFactory.createVariable("totalItems");
   public ParameterMapper mapper;
   public WhereBuilder countWhere = new WhereBuilder();
   protected QueryParameters params;
@@ -111,24 +102,9 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
   }
 
   private Integer count() {
-    SelectBuilder count = new SelectBuilder();
-    try {
-      count
-          .addVar("count(*)", VAR_TOTAL_ITEMS);
-    } catch (ParseException e) {
-      log.warn(e.getMessage());
-    }
-    count
+    WhereBuilder count = new WhereBuilder()
         .addWhere(VAR_MAIN, RDF.type, mainType)
         .addWhere(countWhere);
-    AtomicInteger totalItems = new AtomicInteger(0);
-    jenaService.select(count, row -> {
-      Optional<RDFNode> value = get(row, VAR_TOTAL_ITEMS);
-      totalItems
-          .set(value.map(RDFNode::asLiteral)
-              .map(Literal::getInt)
-              .orElse(0));
-    });
-    return totalItems.get();
+    return jenaService.count(count);
   }
 }
