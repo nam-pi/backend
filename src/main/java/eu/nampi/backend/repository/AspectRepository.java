@@ -41,7 +41,7 @@ public class AspectRepository extends AbstractHydraRepository {
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
-    model.add(main, RDF.type, RDFS.Class);
+    model.add(main, RDF.type, Core.aspect);
     // Label
     model.add(main, RDFS.label, row.getLiteral(VAR_LABEL.toString()).getString());
     // XSD-String
@@ -81,23 +81,22 @@ public class AspectRepository extends AbstractHydraRepository {
       builder.countWhere.addOptional(VAR_MAIN, path, varSearchString).addFilter(regex);
     });
 
-    build(builder);
-    return serialize(builder.model, lang, builder.root);
+    return build(builder, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder =
         new HydraSingleBuilder(jenaService, individualsUri(Core.aspect, id), Core.aspect);
-    build(builder);
-    return serialize(builder.model, lang, builder.root);
+    return build(builder, lang);
   }
 
-  private void build(AbstractHydraBuilder builder) {
+  private String build(AbstractHydraBuilder builder, Lang lang) {
     builder.dataSelect
         .addOptional(VAR_MAIN, Core.hasXsdString, VAR_STRING)
         .addOptional(VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
     builder.build(ROW_MAPPER);
+    return serialize(builder.model, lang, builder.root);
   }
 
 }
