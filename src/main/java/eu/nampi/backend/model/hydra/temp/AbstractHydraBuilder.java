@@ -40,7 +40,8 @@ public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
 
   public Resource root;
 
-  protected AbstractHydraBuilder(JenaService jenaService, String baseUri, Resource mainType) {
+  protected AbstractHydraBuilder(JenaService jenaService, String baseUri, Resource mainType,
+      boolean optionalLabel) {
     this.jenaService = jenaService;
     this.baseUri = baseUri;
     this.mainType = mainType;
@@ -54,6 +55,12 @@ public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
         .addPrefix("schema", SchemaOrg.getURI())
         .addPrefix("xsd", XSD.getURI())
         .addWhere(VAR_MAIN, RDF.type, mainType);
+    // Make label select optional if necessary
+    if (optionalLabel) {
+      dataSelect.addOptional(VAR_MAIN, RDFS.label, VAR_LABEL);
+    } else {
+      dataSelect.addWhere(VAR_MAIN, RDFS.label, VAR_LABEL);
+    }
     model
         .setNsPrefix("api", Api.getURI())
         .setNsPrefix("core", Core.getURI())

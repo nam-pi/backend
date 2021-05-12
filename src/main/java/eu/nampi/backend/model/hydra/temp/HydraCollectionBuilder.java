@@ -25,7 +25,7 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
   public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
       Resource orderByVar, QueryParameters params, boolean includeTextFilter,
       boolean optionalLabel) {
-    super(jenaService, baseUri, mainType);
+    super(jenaService, baseUri, mainType, optionalLabel);
     this.mapper = new ParameterMapper(baseUri, root, model);
     this.orderByVar = orderByVar;
     this.params = params;
@@ -35,13 +35,6 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
     this.model
         .add(root, Hydra.manages, manages)
         .add(manages, Hydra.object, mainType);
-
-    // Make label select optional if necessary
-    if (optionalLabel) {
-      dataSelect.addOptional(VAR_MAIN, RDFS.label, VAR_LABEL);
-    } else {
-      dataSelect.addWhere(VAR_MAIN, RDFS.label, VAR_LABEL);
-    }
 
     // Add text filter
     params.getText().filter(text -> includeTextFilter).ifPresent(text -> {
