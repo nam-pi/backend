@@ -1,5 +1,6 @@
 package eu.nampi.backend.repository;
 
+import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_MAIN;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +16,7 @@ import org.apache.jena.datatypes.xsd.impl.XSDDateType;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -48,10 +50,13 @@ public class EventRepository extends AbstractHydraRepository {
   private static final Node VAR_ASPECT_LABEL = NodeFactory.createVariable("aspectLabel");
   private static final Node VAR_ASPECT_STRING = NodeFactory.createVariable("aspectString");
   private static final Node VAR_DATE = NodeFactory.createVariable("date");
+  private static final Node VAR_DATE_OUTER = NodeFactory.createVariable("dateOuter");
   private static final Node VAR_DATE_EARLIEST = NodeFactory.createVariable("dateEarliest");
   private static final Node VAR_DATE_EXACT = NodeFactory.createVariable("dateExact");
   private static final Node VAR_DATE_LATEST = NodeFactory.createVariable("dateLatest");
   private static final Node VAR_DATE_REAL_SORT = NodeFactory.createVariable("dateRealSort");
+  private static final Node VAR_DATE_REAL_SORT_OUTER =
+      NodeFactory.createVariable("dateRealSortOuter");
   private static final Node VAR_DATE_SORT = NodeFactory.createVariable("dateSort");
   private static final Node VAR_DATE_TIME_EARLIEST = NodeFactory.createVariable("dateTimeEarliest");
   private static final Node VAR_DATE_TIME_EXACT = NodeFactory.createVariable("dateTimeExact");
@@ -63,11 +68,16 @@ public class EventRepository extends AbstractHydraRepository {
   private static final Node VAR_PLACE_LABEL = NodeFactory.createVariable("placeLabel");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
+    System.out.println(row);
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
     model.add(main, RDF.type, Core.event);
     // Label
-    model.add(main, RDFS.label, row.getLiteral(VAR_LABEL.toString()).getString());
+    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
+        .ifPresent(label -> model.add(main, RDFS.label, label));
+    // Comment
+    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).map(Literal::getString)
+        .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // Aspect
     Optional.ofNullable(row.getResource(VAR_ASPECT.toString()))
         .ifPresent(aspect -> {
@@ -117,8 +127,8 @@ public class EventRepository extends AbstractHydraRepository {
           .add(resDate, Core.hasXsdDateTime, dateTime);
     });
     // Sorting date
-    Optional.ofNullable(row.getLiteral(VAR_DATE.toString())).ifPresent(dateTime -> {
-      Resource resDate = row.getResource(VAR_DATE_REAL_SORT.toString());
+    Optional.ofNullable(row.getLiteral(VAR_DATE_OUTER.toString())).ifPresent(dateTime -> {
+      Resource resDate = row.getResource(VAR_DATE_REAL_SORT_OUTER.toString());
       model
           .add(main, Core.hasSortingDate, resDate)
           .add(resDate, RDF.type, Core.date)
@@ -138,96 +148,72 @@ public class EventRepository extends AbstractHydraRepository {
         Core.event, Api.eventOrderByVar, params);
     ExprFactory ef = builder.ef;
 
+    boolean hasDateSort = params.getOrderByClauses().containsKey("date");
+    Order order = params.getOrderByClauses().getOrderFor("date").orElse(Order.ASCENDING);
+
     // Place data
     builder.mapper.add("place", Api.eventPlaceVar, place);
     place.map(ResourceFactory::createResource).ifPresent(resPlace -> {
-      WhereBuilder where = new WhereBuilder()
+      builder.coreData
           .addWhere(placeWhere())
           .addFilter(ef.sameTerm(VAR_PLACE, resPlace));
-      builder.dataSelect.addWhere(where);
-      builder.countWhere.addWhere(where);
     });
 
-    AtomicBoolean usePerson = new AtomicBoolean(false);
+    AtomicBoolean useParticipantWhere = new AtomicBoolean(false);
     // Participant data
     builder.mapper.add("participant", Api.eventParticipantVar, participant);
     participant.map(ResourceFactory::createResource).ifPresent(resParticipant -> {
-      if (!usePerson.get()) {
-        builder.dataSelect.addWhere(participantWhere());
-        builder.countWhere.addWhere(participantWhere());
+      if (!useParticipantWhere.get()) {
+        builder.coreData.addWhere(participantWhere());
       }
-      Expr sameTerm = ef.sameTerm(VAR_PARTICIPANT, resParticipant);
-      builder.dataSelect.addFilter(sameTerm);
-      builder.countWhere.addFilter(sameTerm);
-      usePerson.set(true);
+      builder.coreData.addFilter(ef.sameTerm(VAR_PARTICIPANT, resParticipant));
+      useParticipantWhere.set(true);
     });
     // Participant type data
     builder.mapper.add("participantType", Api.eventParticipantTypeVar, participantType);
     participantType.map(ResourceFactory::createResource).ifPresent(resType -> {
-      if (!usePerson.get()) {
-        builder.dataSelect.addWhere(participantWhere());
-        builder.countWhere.addWhere(participantWhere());
+      if (!useParticipantWhere.get()) {
+        builder.coreData.addWhere(participantWhere());
       }
-      WhereBuilder where = new WhereBuilder().addWhere(VAR_PARTICIPANT, RDF.type, resType);
-      builder.dataSelect.addWhere(where);
-      builder.countWhere.addWhere(where);
-      usePerson.set(true);
+      builder.coreData.addWhere(VAR_PARTICIPANT, RDF.type, resType);
+      useParticipantWhere.set(true);
     });
     // Participation type data
     builder.mapper.add("participationType", Api.eventParticipationTypeVar, participationType);
     participationType.map(ResourceFactory::createResource).ifPresent(resType -> {
-      if (!usePerson.get()) {
-        builder.dataSelect.addWhere(participantWhere());
-        builder.countWhere.addWhere(participantWhere());
-      }
-      WhereBuilder where = new WhereBuilder().addWhere(VAR_MAIN, resType, VAR_PARTICIPANT);
-      builder.dataSelect.addWhere(where);
-      builder.countWhere.addWhere(where);
-      usePerson.set(true);
+      builder.coreData.addWhere(VAR_MAIN, resType, VAR_PARTICIPANT);
     });
 
-    AtomicBoolean useAspect = new AtomicBoolean(false);
+    AtomicBoolean useAspectWhere = new AtomicBoolean(false);
     // Aspect data
     builder.mapper.add("aspect", Api.eventAspectVar, aspect);
     aspect.map(ResourceFactory::createResource).ifPresent(resAspect -> {
-      if (!useAspect.get()) {
-        builder.dataSelect.addWhere(aspectWhere());
-        builder.countWhere.addWhere(aspectWhere());
+      if (!useAspectWhere.get()) {
+        builder.coreData.addWhere(aspectWhere());
       }
-      Expr sameTerm = ef.sameTerm(VAR_ASPECT, resAspect);
-      builder.dataSelect.addFilter(sameTerm);
-      builder.countWhere.addFilter(sameTerm);
-      useAspect.set(true);
+      builder.coreData.addFilter(ef.sameTerm(VAR_ASPECT, resAspect));
+      useAspectWhere.set(true);
     });
     // Aspect type data
     builder.mapper.add("aspectType", Api.eventAspectTypeVar, aspectType);
     aspectType.map(ResourceFactory::createResource).ifPresent(resType -> {
-      if (!useAspect.get()) {
-        builder.dataSelect.addWhere(aspectWhere());
-        builder.countWhere.addWhere(aspectWhere());
+      if (!useAspectWhere.get()) {
+        builder.coreData.addWhere(aspectWhere());
       }
-      WhereBuilder where = new WhereBuilder().addWhere(VAR_ASPECT, RDF.type, resType);
-      builder.dataSelect.addWhere(where);
-      builder.countWhere.addWhere(where);
-      useAspect.set(true);
+      builder.coreData.addWhere(VAR_ASPECT, RDF.type, resType);
+      useAspectWhere.set(true);
     });
     // Aspect use type data
     builder.mapper.add("aspectUseType", Api.eventAspectUseTypeVar, aspectUseType);
     aspectUseType.map(ResourceFactory::createResource).ifPresent(resType -> {
-      if (!useAspect.get()) {
-        builder.dataSelect.addWhere(aspectWhere());
-        builder.countWhere.addWhere(aspectWhere());
-      }
-      WhereBuilder where = new WhereBuilder().addWhere(VAR_MAIN, resType, VAR_ASPECT);
-      builder.dataSelect.addWhere(where);
-      builder.countWhere.addWhere(where);
-      useAspect.set(true);
+      builder.coreData.addWhere(VAR_MAIN, resType, VAR_ASPECT);
     });
 
     // Dates data
+    if (hasDateSort || dates.isPresent()) {
+      builder.coreData.addWhere(datesWhere(order, VAR_DATE_REAL_SORT, VAR_DATE));
+    }
     builder.mapper.add("dates", Api.eventDatesVar, dates);
-    Order order = params.getOrderByClauses().getOrderFor("date").orElse(Order.ASCENDING);
-    builder.dataSelect.addWhere(datesWhere(order));
     dates.ifPresent(datesString -> {
       DateRange dateRange = CONVERTER.convert(datesString);
       Optional<Expr> start = dateRange.getStart().map(
@@ -237,25 +223,28 @@ public class EventRepository extends AbstractHydraRepository {
           date -> ef.asExpr(ResourceFactory.createTypedLiteral(
               date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), XSDDateType.XSDdateTime)));
       if (start.isPresent() || end.isPresent()) {
-        builder.countWhere.addWhere(datesWhere(order));
         if (start.isPresent() && end.isPresent()) {
-          builder.dataSelect.addFilter(ef.ge(VAR_DATE, start.get()));
-          builder.dataSelect.addFilter(ef.le(VAR_DATE, end.get()));
-          builder.countWhere.addFilter(ef.ge(VAR_DATE, start.get()));
-          builder.countWhere.addFilter(ef.le(VAR_DATE, end.get()));
+          builder.coreData
+              .addFilter(ef.ge(VAR_DATE, start.get()))
+              .addFilter(ef.le(VAR_DATE, end.get()));
         } else if (start.isPresent() && dateRange.isRange()) {
-          builder.dataSelect.addFilter(ef.ge(VAR_DATE, start.get()));
-          builder.countWhere.addFilter(ef.ge(VAR_DATE, start.get()));
+          builder.coreData
+              .addFilter(ef.ge(VAR_DATE, start.get()));
         } else if (start.isPresent()) {
-          builder.dataSelect.addFilter(ef.sameTerm(VAR_DATE, start.get()));
-          builder.countWhere.addFilter(ef.sameTerm(VAR_DATE, start.get()));
+          builder.coreData
+              .addFilter(ef.sameTerm(VAR_DATE, start.get()));
         } else {
-          builder.dataSelect.addFilter(ef.le(VAR_DATE, end.get()));
-          builder.countWhere.addFilter(ef.le(VAR_DATE, end.get()));
+          builder.coreData
+              .addFilter(ef.le(VAR_DATE, end.get()));
         }
       }
     });
 
+    builder.extendedData
+        .addWhere(participantWhere())
+        .addOptional(aspectWhere())
+        .addOptional(placeWhere())
+        .addWhere(datesWhere(order, VAR_DATE_REAL_SORT_OUTER, VAR_DATE_OUTER));
     return build(builder, lang);
   }
 
@@ -263,12 +252,17 @@ public class EventRepository extends AbstractHydraRepository {
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder =
         new HydraSingleBuilder(jenaService, individualsUri(Core.event, id), Core.event);
-    builder.dataSelect
+    builder.coreData
         .addWhere(participantWhere())
         .addOptional(aspectWhere())
         .addOptional(placeWhere())
-        .addWhere(datesWhere(Order.ASCENDING));
+        .addWhere(datesWhere(Order.ASCENDING, VAR_DATE_REAL_SORT, VAR_DATE));
     return build(builder, lang);
+  }
+
+  private String build(AbstractHydraBuilder builder, Lang lang) {
+    builder.build(ROW_MAPPER);
+    return serialize(builder.model, lang, builder.root);
   }
 
   private WhereBuilder aspectWhere() {
@@ -278,7 +272,7 @@ public class EventRepository extends AbstractHydraRepository {
         .addOptional(VAR_ASPECT, Core.hasXsdString, VAR_ASPECT_STRING);
   }
 
-  private WhereBuilder datesWhere(Order order) {
+  private WhereBuilder datesWhere(Order order, Node varDate, Node varDateTime) {
     WhereBuilder builder = new WhereBuilder();
     ExprFactory ef = builder.getExprFactory();
     builder
@@ -293,18 +287,19 @@ public class EventRepository extends AbstractHydraRepository {
             .addWhere(VAR_DATE_LATEST, Core.hasXsdDateTime, VAR_DATE_TIME_LATEST))
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, Core.hasSortingDate, VAR_DATE_SORT)
-            .addWhere(VAR_DATE_SORT, Core.hasXsdDateTime, VAR_DATE_TIME_SORT));
-    builder.addBind(
-        ef.cond(ef.bound(VAR_DATE_SORT), ef.asVar(VAR_DATE_SORT),
-            ef.cond(ef.bound(VAR_DATE_EXACT), ef.asVar(VAR_DATE_EXACT),
-                order.equals(Order.ASCENDING)
-                    ? ef.asExpr(ef.cond(ef.bound(VAR_DATE_LATEST), ef.asVar(VAR_DATE_LATEST),
-                        ef.cond(ef.bound(VAR_DATE_EARLIEST), ef.asVar(VAR_DATE_EARLIEST),
-                            ef.bnode())))
-                    : ef.asExpr(ef.cond(ef.bound(VAR_DATE_EARLIEST), ef.asVar(VAR_DATE_EARLIEST),
-                        ef.cond(ef.bound(VAR_DATE_LATEST), ef.asVar(VAR_DATE_LATEST),
-                            ef.bnode()))))),
-        VAR_DATE_REAL_SORT)
+            .addWhere(VAR_DATE_SORT, Core.hasXsdDateTime, VAR_DATE_TIME_SORT))
+        .addBind(
+            ef.cond(ef.bound(VAR_DATE_SORT), ef.asVar(VAR_DATE_SORT),
+                ef.cond(ef.bound(VAR_DATE_EXACT), ef.asVar(VAR_DATE_EXACT),
+                    order.equals(Order.ASCENDING)
+                        ? ef.asExpr(ef.cond(ef.bound(VAR_DATE_LATEST), ef.asVar(VAR_DATE_LATEST),
+                            ef.cond(ef.bound(VAR_DATE_EARLIEST), ef.asVar(VAR_DATE_EARLIEST),
+                                ef.bnode())))
+                        : ef.asExpr(
+                            ef.cond(ef.bound(VAR_DATE_EARLIEST), ef.asVar(VAR_DATE_EARLIEST),
+                                ef.cond(ef.bound(VAR_DATE_LATEST), ef.asVar(VAR_DATE_LATEST),
+                                    ef.bnode()))))),
+            varDate)
         .addBind(
             ef.cond(ef.bound(VAR_DATE_TIME_SORT), ef.asVar(VAR_DATE_TIME_SORT),
                 ef.cond(ef.bound(VAR_DATE_TIME_EXACT), ef.asVar(VAR_DATE_TIME_EXACT),
@@ -322,7 +317,7 @@ public class EventRepository extends AbstractHydraRepository {
                                 ef.asVar(VAR_DATE_TIME_LATEST),
                                 ef.asExpr(ResourceFactory.createTypedLiteral(NEGATIVE_DEFAULT_DATE,
                                     XSDDatatype.XSDdateTime))))))),
-            VAR_DATE);
+            varDateTime);
     return builder;
   }
 
@@ -336,11 +331,5 @@ public class EventRepository extends AbstractHydraRepository {
     return new WhereBuilder()
         .addWhere(VAR_MAIN, Core.takesPlaceAt, VAR_PLACE)
         .addWhere(VAR_PLACE, RDFS.label, VAR_PLACE_LABEL);
-  }
-
-
-  private String build(AbstractHydraBuilder builder, Lang lang) {
-    builder.build(ROW_MAPPER);
-    return serialize(builder.model, lang, builder.root);
   }
 }

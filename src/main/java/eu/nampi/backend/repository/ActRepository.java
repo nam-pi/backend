@@ -1,14 +1,17 @@
 package eu.nampi.backend.repository;
 
+import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_MAIN;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -44,12 +47,15 @@ public class ActRepository extends AbstractHydraRepository {
   private static final Node VAR_SRC_LABEL = NodeFactory.createVariable("sourceLocationSourceLabel");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
-    System.out.println(row);
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
     model.add(main, RDF.type, Core.act);
     // Label
-    model.add(main, RDFS.label, row.getLiteral(VAR_LABEL.toString()).getString());
+    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
+        .ifPresent(label -> model.add(main, RDFS.label, label));
+    // Comment
+    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).map(Literal::getString)
+        .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // Author
     Resource resAuthor = row.getResource(VAR_AUTHOR.toString());
     model
@@ -88,15 +94,13 @@ public class ActRepository extends AbstractHydraRepository {
   public String findAll(QueryParameters params, Lang lang, Optional<String> author,
       Optional<String> source) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("acts"),
-        Core.act, Api.actOrderByVar, params, false, false);
+        Core.act, Api.actOrderByVar, params);
     ExprFactory ef = builder.ef;
 
     // Add author query
     builder.mapper.add("author", Api.actAuthorVar, author);
     author.map(ResourceFactory::createResource).ifPresent(res -> {
-      builder.dataSelect
-          .addFilter(ef.sameTerm(VAR_AUTHOR, res));
-      builder.countWhere
+      builder.coreData
           .addWhere(VAR_MAIN, Core.isAuthoredBy, VAR_AUTHOR)
           .addFilter(ef.sameTerm(VAR_AUTHOR, res));
     });
@@ -104,16 +108,15 @@ public class ActRepository extends AbstractHydraRepository {
     // Add source query
     builder.mapper.add("source", Api.actSourceVar, source);
     source.map(ResourceFactory::createResource).ifPresent(res -> {
-      builder.dataSelect
-          .addFilter(ef.sameTerm(VAR_SRC, res));
       Path path = PathFactory.pathSeq(
           PathFactory.pathLink(Core.hasSourceLocation.asNode()),
           PathFactory.pathLink(Core.hasSource.asNode()));
-      builder.countWhere
+      builder.coreData
           .addWhere(VAR_MAIN, path, VAR_SRC)
           .addFilter(ef.sameTerm(VAR_SRC, res));
     });
 
+    addData(builder.extendedData);
     return build(builder, lang);
   }
 
@@ -121,11 +124,17 @@ public class ActRepository extends AbstractHydraRepository {
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder =
         new HydraSingleBuilder(jenaService, individualsUri(Core.act, id), Core.act);
+    addData(builder.coreData);
     return build(builder, lang);
   }
 
   private String build(AbstractHydraBuilder builder, Lang lang) {
-    builder.dataSelect
+    builder.build(ROW_MAPPER);
+    return serialize(builder.model, lang, builder.root);
+  }
+
+  private void addData(WhereBuilder builder) {
+    builder
         .addWhere(VAR_MAIN, Core.isAuthoredBy, VAR_AUTHOR)
         .addWhere(VAR_AUTHOR, RDFS.label, VAR_AUTHOR_LABEL)
 
@@ -139,9 +148,6 @@ public class ActRepository extends AbstractHydraRepository {
 
         .addWhere(VAR_MAIN, Core.isAuthoredOn, VAR_DATE)
         .addWhere(VAR_DATE, Core.hasXsdDateTime, VAR_DATE_TIME);
-
-    builder.build(ROW_MAPPER);
-    return serialize(builder.model, lang, builder.root);
   }
 
 }

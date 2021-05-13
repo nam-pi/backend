@@ -1,18 +1,24 @@
 package eu.nampi.backend.model.hydra.temp;
 
 import java.util.function.BiFunction;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDFS;
 import eu.nampi.backend.service.JenaService;
 
 public class HydraSingleBuilder extends AbstractHydraBuilder {
 
   public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType,
       boolean optionalLabel) {
-    super(jenaService, baseUri, mainType, optionalLabel);
-    dataSelect.addFilter(ef.sameTerm(VAR_MAIN, root));
+    super(jenaService, baseUri, mainType);
+    // Add default data
+    coreData
+        .addFilter(ef.sameTerm(VAR_MAIN, root))
+        .addOptional(VAR_MAIN, RDFS.label, VAR_LABEL)
+        .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
   }
 
   public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType) {
@@ -21,7 +27,8 @@ public class HydraSingleBuilder extends AbstractHydraBuilder {
 
   @Override
   public void build(BiFunction<Model, QuerySolution, RDFNode> rowToNode) {
-    jenaService.select(dataSelect, row -> rowToNode.apply(this.model, row));
+    SelectBuilder core = new SelectBuilder().addVar("*").addWhere(coreData);
+    jenaService.select(core, row -> rowToNode.apply(this.model, row));
   }
 
 }

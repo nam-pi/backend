@@ -5,7 +5,6 @@ import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_MAIN;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
@@ -15,7 +14,6 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
@@ -49,22 +47,17 @@ public class ClassRepository extends AbstractHydraRepository {
   public String findAll(QueryParameters params, Lang lang, Optional<String> ancestor) {
 
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("classes"),
-        RDFS.Class, Api.classOrderByVar, params, true, true);
-
-    // Add data
-    builder.dataSelect
-        .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
+        RDFS.Class, Api.classOrderByVar, params);
 
     // Add ancestor query
     builder.mapper.add("ancestor", RDFS.Class, ancestor);
     ancestor.map(ResourceFactory::createResource).ifPresent(res -> {
-      Expr filter = builder.ef.sameTerm(VAR_ANCESTOR, res);
-      WhereBuilder where = new WhereBuilder()
+      builder.coreData
           .addWhere(VAR_MAIN, RDFS.subClassOf, VAR_ANCESTOR)
-          .addFilter(filter);
-      builder.dataSelect.addWhere(where);
-      builder.countWhere.addWhere(where);
+          .addFilter(builder.ef.sameTerm(VAR_ANCESTOR, res));
     });
+
+    builder.extendedData.addWhere(VAR_MAIN, RDFS.subClassOf, VAR_ANCESTOR);
 
     builder.build(ROW_MAPPER);
     return serialize(builder.model, lang, builder.root);

@@ -1,5 +1,6 @@
 package eu.nampi.backend.repository;
 
+import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_MAIN;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -40,16 +42,19 @@ public class AuthorRepository extends AbstractHydraRepository {
     // Main
     model.add(main, RDF.type, Core.author);
     // Label
-    model.add(main, RDFS.label, row.getLiteral(VAR_LABEL.toString()).getString());
+    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
+        .ifPresent(label -> model.add(main, RDFS.label, label));
+    // Comment
+    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).map(Literal::getString)
+        .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     return main;
   };
-
 
   @Cacheable(
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("authors"),
-        Core.author, Api.authorOrderByVar, params, false, false);
+        Core.author, Api.authorOrderByVar, params);
     return build(builder, lang);
   }
 
@@ -58,6 +63,11 @@ public class AuthorRepository extends AbstractHydraRepository {
     HydraSingleBuilder builder =
         new HydraSingleBuilder(jenaService, individualsUri(Core.author, id), Core.author);
     return build(builder, lang);
+  }
+
+  private String build(AbstractHydraBuilder builder, Lang lang) {
+    builder.build(ROW_MAPPER);
+    return serialize(builder.model, lang, builder.root);
   }
 
   public Optional<Author> findOne(UUID rdfId) {
@@ -98,11 +108,6 @@ public class AuthorRepository extends AbstractHydraRepository {
     author.setLabel(newLabel);
     jenaService.update(updateBuilder);
     return author;
-  }
-
-  private String build(AbstractHydraBuilder builder, Lang lang) {
-    builder.build(ROW_MAPPER);
-    return serialize(builder.model, lang, builder.root);
   }
 
 }

@@ -2,7 +2,7 @@ package eu.nampi.backend.model.hydra.temp;
 
 import java.util.Optional;
 import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
@@ -21,46 +21,24 @@ import eu.nampi.backend.vocabulary.Hydra;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
 public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
-
-  public static final Node VAR_MAIN = NodeFactory.createVariable("main");
-  public static final Node VAR_LABEL = NodeFactory.createVariable("label");
-  public static final Node VAR_COMMENT = NodeFactory.createVariable("comment");
-
   protected JenaService jenaService;
-
-  public Model model = ModelFactory.createDefaultModel();
-
-  public SelectBuilder dataSelect = new SelectBuilder();
-
-  public ExprFactory ef;
-
   protected Resource mainType;
-
   protected String baseUri;
-
+  public ExprFactory ef;
+  public Model model = ModelFactory.createDefaultModel();
   public Resource root;
+  public WhereBuilder coreData = new WhereBuilder();
+  public static final Node VAR_MAIN = NodeFactory.createVariable("main");
+  public static final Node VAR_COMMENT = NodeFactory.createVariable("comment");
+  public static final Node VAR_LABEL = NodeFactory.createVariable("label");
 
-  protected AbstractHydraBuilder(JenaService jenaService, String baseUri, Resource mainType,
-      boolean optionalLabel) {
+
+  protected AbstractHydraBuilder(JenaService jenaService, String baseUri, Resource mainType) {
     this.jenaService = jenaService;
     this.baseUri = baseUri;
     this.mainType = mainType;
     this.root = ResourceFactory.createResource(baseUri);
-    dataSelect
-        .addPrefix("api", Api.getURI())
-        .addPrefix("core", Core.getURI())
-        .addPrefix("hydra", Hydra.getURI())
-        .addPrefix("rdf", RDF.getURI())
-        .addPrefix("rdfs", RDFS.getURI())
-        .addPrefix("schema", SchemaOrg.getURI())
-        .addPrefix("xsd", XSD.getURI())
-        .addWhere(VAR_MAIN, RDF.type, mainType);
-    // Make label select optional if necessary
-    if (optionalLabel) {
-      dataSelect.addOptional(VAR_MAIN, RDFS.label, VAR_LABEL);
-    } else {
-      dataSelect.addWhere(VAR_MAIN, RDFS.label, VAR_LABEL);
-    }
+    coreData.addWhere(VAR_MAIN, RDF.type, mainType);
     model
         .setNsPrefix("api", Api.getURI())
         .setNsPrefix("core", Core.getURI())
@@ -69,7 +47,7 @@ public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
         .setNsPrefix("rdfs", RDFS.getURI())
         .setNsPrefix("schema", SchemaOrg.getURI())
         .setNsPrefix("xsd", XSD.getURI());
-    this.ef = dataSelect.getExprFactory();
+    this.ef = coreData.getExprFactory();
   }
 
   protected Optional<RDFNode> get(QuerySolution row, Node variable) {

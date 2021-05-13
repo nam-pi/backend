@@ -19,11 +19,18 @@ import org.apache.jena.rdfconnection.RDFConnectionFuseki;
 import org.apache.jena.rdfconnection.RDFConnectionRemoteBuilder;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.XSD;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
+import eu.nampi.backend.vocabulary.Api;
+import eu.nampi.backend.vocabulary.Core;
+import eu.nampi.backend.vocabulary.Hydra;
+import eu.nampi.backend.vocabulary.SchemaOrg;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -60,13 +67,14 @@ public class FusekiService implements JenaService {
   }
 
   @Override
-  @Cacheable(key = "{#whereBuilder.buildString().replaceAll(\"[\\n\\t ]\", \"\")}")
-  public int count(WhereBuilder whereBuilder) {
+  @Cacheable(
+      key = "{#whereBuilder.buildString().replaceAll(\"[\\n\\t ]\", \"\"), #distinctVariable.getName()}")
+  public int count(WhereBuilder whereBuilder, Node distinctVariable) {
     Node varCount = NodeFactory.createVariable("count");
     SelectBuilder count = new SelectBuilder();
     try {
       count
-          .addVar("count(*)", varCount);
+          .addVar("count(distinct " + distinctVariable + ")", varCount);
     } catch (ParseException e) {
       log.warn(e.getMessage());
     }
@@ -106,7 +114,16 @@ public class FusekiService implements JenaService {
   @Override
   public void select(SelectBuilder selectBuilder, Consumer<QuerySolution> rowAction) {
     try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {
-      String query = selectBuilder.buildString();
+      String query = selectBuilder
+          .addPrefix("api", Api.getURI())
+          .addPrefix("core", Core.getURI())
+          .addPrefix("hydra", Hydra.getURI())
+          .addPrefix("rdf", RDF.getURI())
+          .addPrefix("rdfs", RDFS.getURI())
+          .addPrefix("schema", SchemaOrg.getURI())
+          .addPrefix("xsd", XSD.getURI())
+          .buildString();
+
       log.debug(query);
       conn.querySelect(query, rowAction);
     }
