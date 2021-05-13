@@ -46,7 +46,7 @@ public class GroupRepository extends AbstractHydraRepository {
   @Cacheable(
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("aspects"),
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("groups"),
         Core.group, Api.groupOrderByVar, params);
     return build(builder, lang);
   }
