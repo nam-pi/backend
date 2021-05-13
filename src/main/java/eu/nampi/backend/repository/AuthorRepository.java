@@ -1,8 +1,8 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_COMMENT;
-import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_LABEL;
-import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,9 +25,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.Author;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder;
-import eu.nampi.backend.model.hydra.temp.HydraCollectionBuilder;
-import eu.nampi.backend.model.hydra.temp.HydraSingleBuilder;
+import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
+import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
+import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import lombok.extern.slf4j.Slf4j;

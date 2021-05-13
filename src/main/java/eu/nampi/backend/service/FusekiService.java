@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
@@ -55,15 +54,6 @@ public class FusekiService implements JenaService {
       RDFConnectionRemoteBuilder infCacheBuilder) {
     this.dataBuilder = dataBuilder;
     this.infCacheBuilder = infCacheBuilder;
-  }
-
-  @Override
-  public Model construct(InterfaceHydraBuilder constructBuilder) {
-    try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {
-      String query = constructBuilder.buildHydra();
-      log.debug(query);
-      return conn.queryConstruct(query);
-    }
   }
 
   @Override

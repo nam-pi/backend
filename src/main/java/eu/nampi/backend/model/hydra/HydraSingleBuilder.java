@@ -1,22 +1,34 @@
 package eu.nampi.backend.model.hydra;
 
-import org.apache.jena.graph.NodeFactory;
+import java.util.function.BiFunction;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDFS;
+import eu.nampi.backend.service.JenaService;
 
 public class HydraSingleBuilder extends AbstractHydraBuilder {
 
-  public final String iri;
-
-  public HydraSingleBuilder(String iri, Resource type) {
-    super(NodeFactory.createURI(iri), type);
-    this.iri = iri;
-    addWhere(mainWhere());
-    addFilter(ef.sameTerm(VAR_MAIN, baseNode));
-    addWhere(labelWhere());
+  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType,
+      boolean optionalLabel) {
+    super(jenaService, baseUri, mainType);
+    // Add default data
+    coreData
+        .addFilter(ef.sameTerm(VAR_MAIN, root))
+        .addOptional(VAR_MAIN, RDFS.label, VAR_LABEL)
+        .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
   }
 
-  public String buildHydra() {
-    return buildString();
+  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType) {
+    this(jenaService, baseUri, mainType, false);
+  }
+
+  @Override
+  public void build(BiFunction<Model, QuerySolution, RDFNode> rowToNode) {
+    SelectBuilder core = new SelectBuilder().addVar("*").addWhere(coreData);
+    jenaService.select(core, row -> rowToNode.apply(this.model, row));
   }
 
 }

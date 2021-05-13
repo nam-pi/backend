@@ -1,8 +1,8 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_COMMENT;
-import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_LABEL;
-import static eu.nampi.backend.model.hydra.temp.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import org.apache.jena.graph.Node;
@@ -20,7 +20,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.temp.HydraCollectionBuilder;
+import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.vocabulary.Api;
 
 @Repository
