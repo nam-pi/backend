@@ -7,6 +7,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.vocabulary.Api;
@@ -21,7 +22,8 @@ public class EntrypointRepository extends AbstractHydraRepository {
 
   public String get(Lang lang) {
     Model model = ModelFactory.createDefaultModel();
-    model.setNsPrefix("api", Api.getURI());
+    model.setNsPrefix("api", Api.getURI()).setNsPrefix("rdfs", RDFS.getURI())
+        .setNsPrefix("core", Core.getURI()).setNsPrefix("rdf", RDF.getURI());
     Resource ep = ResourceFactory.createResource(endpointUri());
     model.add(ep, RDF.type, Api.entrypoint);
     model.add(ep, Hydra.title, "The NAMPI API");
@@ -49,6 +51,14 @@ public class EntrypointRepository extends AbstractHydraRepository {
     model.add(authorsBnode, Hydra.object, Core.author);
     model.add(authorsBnode, Hydra.property, RDF.type);
     model.add(authors, Hydra.manages, authorsBnode);
+
+    Resource classes = ResourceFactory.createResource(endpointUri("classes"));
+    model.add(ep, Hydra.collection, classes);
+    model.add(classes, RDF.type, Hydra.collection);
+    Resource classesBnode = ResourceFactory.createResource();
+    model.add(classesBnode, Hydra.object, RDFS.Class);
+    model.add(classesBnode, Hydra.property, RDF.type);
+    model.add(classes, Hydra.manages, classesBnode);
 
     Resource events = ResourceFactory.createResource(endpointUri("events"));
     model.add(ep, Hydra.collection, events);

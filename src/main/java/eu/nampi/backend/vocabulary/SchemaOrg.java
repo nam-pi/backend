@@ -28,8 +28,6 @@ public class SchemaOrg {
     return ResourceFactory.createProperty(uri, local);
   }
 
-  public static final Property EntryPoint = property("EntryPoint");
-
   public static final Property familyName = property("familyName");
 
   public static final Property givenName = property("givenName");

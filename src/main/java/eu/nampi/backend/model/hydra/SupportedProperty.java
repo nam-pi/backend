@@ -1,6 +1,5 @@
 package eu.nampi.backend.model.hydra;
 
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -36,7 +35,7 @@ public class SupportedProperty extends AbstractHydraNode {
     add(property, RDFS.range, range);
   }
 
-  public void addPropertyType(Property type) {
+  public void addPropertyType(Resource type) {
     add(this.property, RDF.type, type);
   }
 

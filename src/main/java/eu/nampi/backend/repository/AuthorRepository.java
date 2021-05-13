@@ -1,27 +1,33 @@
 package eu.nampi.backend.repository;
 
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.Author;
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
-import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import lombok.extern.slf4j.Slf4j;
@@ -31,28 +37,37 @@ import lombok.extern.slf4j.Slf4j;
 @CacheConfig(cacheNames = "authors")
 public class AuthorRepository extends AbstractHydraRepository {
 
-  @Autowired
-  private JenaService jenaService;
-
-  public Model findAll(QueryParameters params) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(endpointUri("authors"), Core.author,
-        Api.authorOrderByVar, params);
-    return construct(builder);
-  }
+  private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
+    Resource main = row.getResource(VAR_MAIN.toString());
+    // Main
+    model.add(main, RDF.type, Core.author);
+    // Label
+    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
+        .ifPresent(label -> model.add(main, RDFS.label, label));
+    // Comment
+    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).map(Literal::getString)
+        .ifPresent(comment -> model.add(main, RDFS.comment, comment));
+    return main;
+  };
 
   @Cacheable(
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
-    Model model = findAll(params);
-    return serialize(model, lang, ResourceFactory.createResource(endpointUri("authors")));
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("authors"),
+        Core.author, Api.authorOrderByVar, params);
+    return build(builder, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder =
-        new HydraSingleBuilder(individualsUri(Core.author, id), Core.author);
-    Model model = construct(builder);
-    return serialize(model, lang, ResourceFactory.createResource(builder.iri));
+        new HydraSingleBuilder(jenaService, individualsUri(Core.author, id), Core.author);
+    return build(builder, lang);
+  }
+
+  private String build(AbstractHydraBuilder builder, Lang lang) {
+    builder.build(ROW_MAPPER);
+    return serialize(builder.model, lang, builder.root);
   }
 
   public Optional<Author> findOne(UUID rdfId) {

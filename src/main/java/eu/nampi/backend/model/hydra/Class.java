@@ -1,7 +1,6 @@
 package eu.nampi.backend.model.hydra;
 
-import org.apache.jena.rdf.model.Property;
-
+import org.apache.jena.rdf.model.Resource;
 import eu.nampi.backend.vocabulary.Hydra;
 
 public class Class extends AbstractHydraNode {
@@ -10,11 +9,11 @@ public class Class extends AbstractHydraNode {
     super(idUrl, title, Hydra.Class);
   }
 
-  public Class(Property idProperty, String title) {
+  public Class(Resource idProperty, String title) {
     super(idProperty.getURI(), title, Hydra.Class);
   }
 
-  public Class(String idUrl, String title, Property type) {
+  public Class(String idUrl, String title, Resource type) {
     super(idUrl, title, type);
   }
 

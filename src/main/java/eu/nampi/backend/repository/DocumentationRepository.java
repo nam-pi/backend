@@ -36,6 +36,7 @@ public class DocumentationRepository extends AbstractHydraRepository {
     addActClass(doc);
     addAspectClass(doc);
     addAuthorClass(doc);
+    addClassClass(doc);
     addDateClass(doc);
     addEventClass(doc);
     addGroupClass(doc);
@@ -90,6 +91,15 @@ public class DocumentationRepository extends AbstractHydraRepository {
     author.addSupportedProperty(new SupportedProperty(RDFS.label, XSD.xstring,
         RDFS.label.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, author);
+  }
+
+  private void addClassClass(Class doc) {
+    Class clss = new Class(RDFS.Class, RDFS.Class.getLocalName());
+    clss.addSupportedProperty(new SupportedProperty(RDFS.label, XSD.xstring,
+        RDFS.label.getLocalName(), true, false, false));
+    clss.addSupportedProperty(new SupportedProperty(RDFS.comment, XSD.xstring,
+        RDFS.comment.getLocalName(), true, false, false));
+    doc.add(Hydra.supportedClass, clss);
   }
 
   private void addDateClass(Class doc) {
@@ -192,12 +202,14 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Collection acts = new Collection(Api.actCollection, Core.act);
     Collection aspects = new Collection(Api.aspectCollection, Core.aspect);
     Collection authors = new Collection(Api.authorCollection, Core.author);
+    Collection classes = new Collection(Api.classCollection, RDFS.Class);
     Collection events = new Collection(Api.eventCollection, Core.event);
     Collection groups = new Collection(Api.groupCollection, Core.group);
     Collection persons = new Collection(Api.personCollection, Core.person);
     Collection places = new Collection(Api.placeCollection, Core.place);
     Collection sources = new Collection(Api.sourceCollection, Core.source);
-    doc.add(Hydra.supportedClass, acts, aspects, authors, events, groups, persons, places, sources);
+    doc.add(Hydra.supportedClass, acts, aspects, authors, classes, events, groups, persons, places,
+        sources);
   }
 
 }

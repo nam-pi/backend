@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import eu.nampi.backend.exception.NotFoundException;
-import eu.nampi.backend.model.hydra.InterfaceHydraBuilder;
 import eu.nampi.backend.service.JenaService;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
@@ -33,11 +32,7 @@ public abstract class AbstractHydraRepository {
   private String dataBaseUrl;
 
   @Autowired
-  private JenaService jenaService;
-
-  protected Model construct(InterfaceHydraBuilder builder) {
-    return jenaService.construct(builder);
-  }
+  protected JenaService jenaService;
 
   protected String createFrame(Model model, Resource startId) {
     return "{\"@context\": " + extractContext(model) + ", \"@id\": \"" + startId.toString() + "\"}";

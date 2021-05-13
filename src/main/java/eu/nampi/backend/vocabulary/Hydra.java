@@ -31,11 +31,11 @@ public class Hydra {
     return ResourceFactory.createProperty(uri, local);
   }
 
-  public static final Property Resource = property("Resource");
+  public static final Resource Resource = resource("Resource");
 
   public static final Property collection = property("collection");
 
-  public static final Property Collection = property("Collection");
+  public static final Resource Collection = resource("Collection");
 
   public static final Property member = property("member");
 
@@ -49,17 +49,17 @@ public class Hydra {
 
   public static final Property previous = property("previous");
 
-  public static final Property PartialCollectionView = property("PartialCollectionView");
+  public static final Resource PartialCollectionView = resource("PartialCollectionView");
 
   public static final Property view = property("view");
 
   public static final Property search = property("search");
 
-  public static final Property IriTemplate = property("IriTemplate");
+  public static final Resource IriTemplate = resource("IriTemplate");
 
   public static final Property template = property("template");
 
-  public static final Property IriTemplateMapping = property("IriTemplateMapping");
+  public static final Resource IriTemplateMapping = resource("IriTemplateMapping");
 
   public static final Property mapping = property("mapping");
 
@@ -81,7 +81,7 @@ public class Hydra {
 
   public static final Property variableRepresentation = property("variableRepresentation");
 
-  public static final Property BasicRepresentation = property("BasicRepresentation");
+  public static final Resource BasicRepresentation = resource("BasicRepresentation");
 
   public static final Property title = property("title");
 
@@ -89,9 +89,9 @@ public class Hydra {
 
   public static final Property supportedClass = property("supportedClass");
 
-  public static final Property Class = property("Class");
+  public static final Resource Class = resource("Class");
 
-  public static final Property ApiDocumentation = property("ApiDocumentation");
+  public static final Resource ApiDocumentation = resource("ApiDocumentation");
 
   public static final Property entrypoint = property("entrypoint");
 
@@ -105,12 +105,12 @@ public class Hydra {
 
   public static final Property SupportedProperty = property("SupportedProperty");
 
-  public static final Property Link = property("Link");
+  public static final Resource Link = resource("Link");
 
   public static final Property method = property("method");
 
   public static final Property supportedOperation = property("supportedOperation");
 
-  public static final Property Operation = property("Operation");
+  public static final Resource Operation = resource("Operation");
 
 }

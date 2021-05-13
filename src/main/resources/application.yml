@@ -39,8 +39,10 @@ spring:
       - acts
       - aspects
       - authors
+      - classes
       - events
       - groups
+      - jena
       - persons
       - places
       - sources
