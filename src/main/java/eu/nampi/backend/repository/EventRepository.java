@@ -68,7 +68,6 @@ public class EventRepository extends AbstractHydraRepository {
   private static final Node VAR_PLACE_LABEL = NodeFactory.createVariable("placeLabel");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
-    System.out.println(row);
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
     model.add(main, RDF.type, Core.event);
