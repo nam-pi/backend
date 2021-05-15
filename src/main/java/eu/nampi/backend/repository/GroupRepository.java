@@ -25,7 +25,6 @@ import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
 @CacheConfig(cacheNames = "groups")
@@ -45,7 +44,7 @@ public class GroupRepository extends AbstractHydraRepository {
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // SameAs
     Optional.ofNullable(row.getResource(VAR_SAME_AS.toString())).map(Resource::getURI)
-        .ifPresent(string -> model.add(main, SchemaOrg.sameAs, string));
+        .ifPresent(string -> model.add(main, Core.sameAs, string));
     return main;
   };
 
@@ -54,7 +53,7 @@ public class GroupRepository extends AbstractHydraRepository {
   public String findAll(QueryParameters params, Lang lang) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("groups"),
         Core.group, Api.groupOrderByVar, params);
-    builder.extendedData.addOptional(VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
+    builder.extendedData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
     return build(builder, lang);
   }
 
@@ -62,7 +61,7 @@ public class GroupRepository extends AbstractHydraRepository {
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder =
         new HydraSingleBuilder(jenaService, individualsUri(Core.group, id), Core.group);
-    builder.coreData.addOptional(VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
+    builder.coreData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
     return build(builder, lang);
   }
 

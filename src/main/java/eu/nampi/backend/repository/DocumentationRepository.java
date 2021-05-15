@@ -79,10 +79,10 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Class aspect = new Class(Core.aspect, Core.aspect.getLocalName());
     aspect.addSupportedProperty(new SupportedProperty(RDFS.label, XSD.xstring,
         RDFS.label.getLocalName(), true, false, false));
-    aspect.addSupportedProperty(new SupportedProperty(Core.hasXsdString, XSD.xstring,
-        Core.hasXsdString.getLocalName(), true, false, false));
-    aspect.addSupportedProperty(new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL,
-        SchemaOrg.sameAs.getLocalName(), true, false, false));
+    aspect.addSupportedProperty(new SupportedProperty(Core.hasText, XSD.xstring,
+        Core.hasText.getLocalName(), true, false, false));
+    aspect.addSupportedProperty(new SupportedProperty(Core.sameAs, SchemaOrg.URL,
+        Core.sameAs.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, aspect);
   }
 
@@ -104,8 +104,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
 
   private void addDateClass(Class doc) {
     Class date = new Class(Core.date, Core.date.getLocalName());
-    date.addSupportedProperty(new SupportedProperty(Core.hasXsdDateTime, XSD.dateTime,
-        Core.hasXsdDateTime.getLocalName(), true, false, false));
+    date.addSupportedProperty(new SupportedProperty(Core.hasDateTime, XSD.dateTime,
+        Core.hasDateTime.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, date);
   }
 
@@ -134,8 +134,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Class group = new Class(Core.group, Core.group.getLocalName());
     group.addSupportedProperty(new SupportedProperty(RDFS.label, XSD.xstring,
         RDFS.label.getLocalName(), true, false, false));
-    group.addSupportedProperty(new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL,
-        SchemaOrg.sameAs.getLocalName(), true, false, false));
+    group.addSupportedProperty(new SupportedProperty(Core.sameAs, SchemaOrg.URL,
+        Core.sameAs.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, group);
   }
 
@@ -143,8 +143,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Class person = new Class(Core.person, Core.person.getLocalName());
     person.addSupportedProperty(new SupportedProperty(RDFS.label, XSD.xstring,
         RDFS.label.getLocalName(), true, false, false));
-    person.addSupportedProperty(new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL,
-        SchemaOrg.sameAs.getLocalName(), true, false, false));
+    person.addSupportedProperty(new SupportedProperty(Core.sameAs, SchemaOrg.URL,
+        Core.sameAs.getLocalName(), true, false, false));
     person.addSupportedProperty(new SupportedProperty(Core.isBornIn, Core.event,
         Core.isBornIn.getLocalName(), true, false, false));
     person.addSupportedProperty(new SupportedProperty(Core.diesIn, Core.event,
@@ -156,8 +156,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Class place = new Class(Core.place, Core.place.getLocalName());
     place.addSupportedProperty(new SupportedProperty(RDFS.label, XSD.xstring,
         RDFS.label.getLocalName(), true, false, false));
-    place.addSupportedProperty(new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL,
-        SchemaOrg.sameAs.getLocalName(), true, false, false));
+    place.addSupportedProperty(new SupportedProperty(Core.sameAs, SchemaOrg.URL,
+        Core.sameAs.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, place);
   }
 
@@ -165,8 +165,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Class source = new Class(Core.source, Core.source.getLocalName());
     source.addSupportedProperty(new SupportedProperty(RDFS.label, XSD.xstring,
         RDFS.label.getLocalName(), true, false, false));
-    source.addSupportedProperty(new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL,
-        SchemaOrg.sameAs.getLocalName(), true, false, false));
+    source.addSupportedProperty(new SupportedProperty(Core.sameAs, SchemaOrg.URL,
+        Core.sameAs.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, source);
   }
 
@@ -174,8 +174,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
     Class sourceLocation = new Class(Core.sourceLocation, Core.sourceLocation.getLocalName());
     sourceLocation.addSupportedProperty(new SupportedProperty(Core.hasSource, Core.source,
         Core.hasSource.getLocalName(), true, false, false));
-    sourceLocation.addSupportedProperty(new SupportedProperty(Core.hasXsdString, XSD.xstring,
-        Core.hasXsdString.getLocalName(), true, false, false));
+    sourceLocation.addSupportedProperty(new SupportedProperty(Core.hasText, XSD.xstring,
+        Core.hasText.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, sourceLocation);
   }
 
@@ -193,8 +193,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
         SchemaOrg.identifier.getNameSpace(), true, false, false));
     user.addSupportedProperty(new SupportedProperty(SchemaOrg.email, XSD.xstring,
         SchemaOrg.email.getLocalName(), true, false, false));
-    user.addSupportedProperty(new SupportedProperty(SchemaOrg.sameAs, SchemaOrg.URL,
-        SchemaOrg.sameAs.getLocalName(), true, false, false));
+    user.addSupportedProperty(new SupportedProperty(Core.sameAs, SchemaOrg.URL,
+        Core.sameAs.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, user);
   }
 

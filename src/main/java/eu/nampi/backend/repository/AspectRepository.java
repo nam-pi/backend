@@ -30,7 +30,6 @@ import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
 @CacheConfig(cacheNames = "aspects")
@@ -51,10 +50,10 @@ public class AspectRepository extends AbstractHydraRepository {
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // XSD-String
     Optional.ofNullable(row.getLiteral(VAR_STRING.toString())).map(Literal::getString)
-        .ifPresent(string -> model.add(main, Core.hasXsdString, string));
+        .ifPresent(string -> model.add(main, Core.hasText, string));
     // SameAs
     Optional.ofNullable(row.getResource(VAR_SAME_AS.toString())).map(Resource::getURI)
-        .ifPresent(string -> model.add(main, SchemaOrg.sameAs, string));
+        .ifPresent(string -> model.add(main, Core.sameAs, string));
     return main;
   };
 
@@ -79,7 +78,7 @@ public class AspectRepository extends AbstractHydraRepository {
       Node varSearchString = NodeFactory.createVariable("searchString");
       Path path = PathFactory.pathAlt(
           PathFactory.pathLink(RDFS.label.asNode()),
-          PathFactory.pathLink(Core.hasXsdString.asNode()));
+          PathFactory.pathLink(Core.hasText.asNode()));
       builder.coreData
           .addOptional(VAR_MAIN, path, varSearchString)
           .addFilter(ef.regex(varSearchString, params.getText().get(), "i"));
@@ -104,8 +103,8 @@ public class AspectRepository extends AbstractHydraRepository {
 
   private void addData(WhereBuilder builder) {
     builder
-        .addOptional(VAR_MAIN, Core.hasXsdString, VAR_STRING)
-        .addOptional(VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
+        .addOptional(VAR_MAIN, Core.hasText, VAR_STRING)
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
   }
 
 }
