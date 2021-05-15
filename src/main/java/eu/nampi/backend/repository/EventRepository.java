@@ -86,7 +86,7 @@ public class EventRepository extends AbstractHydraRepository {
           Optional.ofNullable(row.getLiteral(VAR_ASPECT_LABEL.toString()))
               .ifPresent(label -> model.add(aspect, RDFS.label, label));
           Optional.ofNullable(row.getLiteral(VAR_ASPECT_STRING.toString()))
-              .ifPresent(str -> model.add(aspect, Core.hasXsdString, str));
+              .ifPresent(str -> model.add(aspect, Core.hasText, str));
         });
     // Participant
     Optional.ofNullable(row.getResource(VAR_PARTICIPANT.toString()))
@@ -107,7 +107,7 @@ public class EventRepository extends AbstractHydraRepository {
       model
           .add(main, Core.takesPlaceOn, resDate)
           .add(resDate, RDF.type, Core.date)
-          .add(resDate, Core.hasXsdDateTime, dateTime);
+          .add(resDate, Core.hasDateTime, dateTime);
     });
     // Earliest date
     Optional.ofNullable(row.getLiteral(VAR_DATE_TIME_EARLIEST.toString())).ifPresent(dateTime -> {
@@ -115,7 +115,7 @@ public class EventRepository extends AbstractHydraRepository {
       model
           .add(main, Core.takesPlaceNotEarlierThan, resDate)
           .add(resDate, RDF.type, Core.date)
-          .add(resDate, Core.hasXsdDateTime, dateTime);
+          .add(resDate, Core.hasDateTime, dateTime);
     });
     // Latest date
     Optional.ofNullable(row.getLiteral(VAR_DATE_TIME_LATEST.toString())).ifPresent(dateTime -> {
@@ -123,7 +123,7 @@ public class EventRepository extends AbstractHydraRepository {
       model
           .add(main, Core.takesPlaceNotLaterThan, resDate)
           .add(resDate, RDF.type, Core.date)
-          .add(resDate, Core.hasXsdDateTime, dateTime);
+          .add(resDate, Core.hasDateTime, dateTime);
     });
     // Sorting date
     Optional.ofNullable(row.getLiteral(VAR_DATE_OUTER.toString())).ifPresent(dateTime -> {
@@ -131,7 +131,7 @@ public class EventRepository extends AbstractHydraRepository {
       model
           .add(main, Core.hasSortingDate, resDate)
           .add(resDate, RDF.type, Core.date)
-          .add(resDate, Core.hasXsdDateTime, dateTime);
+          .add(resDate, Core.hasDateTime, dateTime);
     });
     return main;
   };
@@ -268,7 +268,7 @@ public class EventRepository extends AbstractHydraRepository {
     return new WhereBuilder()
         .addWhere(VAR_MAIN, Core.usesAspect, VAR_ASPECT)
         .addWhere(VAR_ASPECT, RDFS.label, VAR_ASPECT_LABEL)
-        .addOptional(VAR_ASPECT, Core.hasXsdString, VAR_ASPECT_STRING);
+        .addOptional(VAR_ASPECT, Core.hasText, VAR_ASPECT_STRING);
   }
 
   private WhereBuilder datesWhere(Order order, Node varDate, Node varDateTime) {
@@ -277,16 +277,16 @@ public class EventRepository extends AbstractHydraRepository {
     builder
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, Core.takesPlaceOn, VAR_DATE_EXACT)
-            .addWhere(VAR_DATE_EXACT, Core.hasXsdDateTime, VAR_DATE_TIME_EXACT))
+            .addWhere(VAR_DATE_EXACT, Core.hasDateTime, VAR_DATE_TIME_EXACT))
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, Core.takesPlaceNotEarlierThan, VAR_DATE_EARLIEST)
-            .addWhere(VAR_DATE_EARLIEST, Core.hasXsdDateTime, VAR_DATE_TIME_EARLIEST))
+            .addWhere(VAR_DATE_EARLIEST, Core.hasDateTime, VAR_DATE_TIME_EARLIEST))
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, Core.takesPlaceNotLaterThan, VAR_DATE_LATEST)
-            .addWhere(VAR_DATE_LATEST, Core.hasXsdDateTime, VAR_DATE_TIME_LATEST))
+            .addWhere(VAR_DATE_LATEST, Core.hasDateTime, VAR_DATE_TIME_LATEST))
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, Core.hasSortingDate, VAR_DATE_SORT)
-            .addWhere(VAR_DATE_SORT, Core.hasXsdDateTime, VAR_DATE_TIME_SORT))
+            .addWhere(VAR_DATE_SORT, Core.hasDateTime, VAR_DATE_TIME_SORT))
         .addBind(
             ef.cond(ef.bound(VAR_DATE_SORT), ef.asVar(VAR_DATE_SORT),
                 ef.cond(ef.bound(VAR_DATE_EXACT), ef.asVar(VAR_DATE_EXACT),

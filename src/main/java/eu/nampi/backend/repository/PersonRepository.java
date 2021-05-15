@@ -27,7 +27,6 @@ import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
 @CacheConfig(cacheNames = "persons")
@@ -50,7 +49,7 @@ public class PersonRepository extends AbstractHydraRepository {
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // SameAs
     Optional.ofNullable(row.getResource(VAR_SAME_AS.toString())).map(Resource::getURI)
-        .ifPresent(string -> model.add(main, SchemaOrg.sameAs, string));
+        .ifPresent(string -> model.add(main, Core.sameAs, string));
     // Birth
     addEvent(model, row, main, PREF_BIRTH, Core.isBornIn);
     addEvent(model, row, main, PREF_DEATH, Core.diesIn);
@@ -70,25 +69,25 @@ public class PersonRepository extends AbstractHydraRepository {
               .ifPresent(resDate -> model
                   .add(evt, Core.takesPlaceAt, resDate)
                   .add(resDate, RDF.type, Core.date)
-                  .add(resDate, Core.hasXsdDateTime,
+                  .add(resDate, Core.hasDateTime,
                       row.getLiteral(varDateTimeExact(base).toString())));
           Optional.ofNullable(row.getResource(varDateNotEarlier(base).toString()))
               .ifPresent(resDate -> model
                   .add(evt, Core.takesPlaceNotEarlierThan, resDate)
                   .add(resDate, RDF.type, Core.date)
-                  .add(resDate, Core.hasXsdDateTime,
+                  .add(resDate, Core.hasDateTime,
                       row.getLiteral(varDateTimeNotEarlier(base).toString())));
           Optional.ofNullable(row.getResource(varDateNotLater(base).toString()))
               .ifPresent(resDate -> model
                   .add(evt, Core.takesPlaceNotLaterThan, resDate)
                   .add(resDate, RDF.type, Core.date)
-                  .add(resDate, Core.hasXsdDateTime,
+                  .add(resDate, Core.hasDateTime,
                       row.getLiteral(varDateTimeNotLater(base).toString())));
           Optional.ofNullable(row.getResource(varDateSort(base).toString()))
               .ifPresent(resDate -> model
                   .add(evt, Core.hasSortingDate, resDate)
                   .add(resDate, RDF.type, Core.date)
-                  .add(resDate, Core.hasXsdDateTime,
+                  .add(resDate, Core.hasDateTime,
                       row.getLiteral(varDateTimeSort(base).toString())));
         });
   }
@@ -119,7 +118,7 @@ public class PersonRepository extends AbstractHydraRepository {
     return new WhereBuilder()
         .addWhere(eventWhere(PREF_BIRTH, Core.isBornIn))
         .addWhere(eventWhere(PREF_DEATH, Core.diesIn))
-        .addOptional(VAR_MAIN, SchemaOrg.sameAs, VAR_SAME_AS);
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
   }
 
   private WhereBuilder eventWhere(String base, Property type) {
@@ -130,17 +129,17 @@ public class PersonRepository extends AbstractHydraRepository {
             .addWhere(var, RDFS.label, varEventLabel(base))
             .addOptional(new WhereBuilder()
                 .addWhere(var, Core.takesPlaceOn, varDateExact(base))
-                .addWhere(varDateExact(base), Core.hasXsdDateTime, varDateTimeExact(base)))
+                .addWhere(varDateExact(base), Core.hasDateTime, varDateTimeExact(base)))
             .addOptional(new WhereBuilder()
                 .addWhere(var, Core.takesPlaceNotEarlierThan, varDateNotEarlier(base))
-                .addWhere(varDateNotEarlier(base), Core.hasXsdDateTime,
+                .addWhere(varDateNotEarlier(base), Core.hasDateTime,
                     varDateTimeNotEarlier(base)))
             .addOptional(new WhereBuilder()
                 .addWhere(var, Core.takesPlaceNotLaterThan, varDateNotLater(base))
-                .addWhere(varDateNotLater(base), Core.hasXsdDateTime, varDateTimeNotLater(base)))
+                .addWhere(varDateNotLater(base), Core.hasDateTime, varDateTimeNotLater(base)))
             .addOptional(new WhereBuilder()
                 .addWhere(var, Core.hasSortingDate, varDateSort(base))
-                .addWhere(varDateSort(base), Core.hasXsdDateTime, varDateTimeSort(base))));
+                .addWhere(varDateSort(base), Core.hasDateTime, varDateTimeSort(base))));
   }
 
   private static Node varDateExact(String base) {

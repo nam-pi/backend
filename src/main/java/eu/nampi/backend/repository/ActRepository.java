@@ -67,13 +67,13 @@ public class ActRepository extends AbstractHydraRepository {
     model
         .add(main, Core.isAuthoredOn, resDate)
         .add(resDate, RDF.type, Core.date)
-        .add(resDate, Core.hasXsdDateTime, row.getLiteral(VAR_DATE_TIME.toString()));
+        .add(resDate, Core.hasDateTime, row.getLiteral(VAR_DATE_TIME.toString()));
     // Source location
     Resource resLocation = row.getResource(VAR_LOC.toString());
     model
         .add(main, Core.hasSourceLocation, resLocation)
         .add(resLocation, RDF.type, Core.sourceLocation)
-        .add(resLocation, Core.hasXsdString, row.getLiteral(VAR_LOC_STRING.toString()));
+        .add(resLocation, Core.hasText, row.getLiteral(VAR_LOC_STRING.toString()));
     // Source
     Resource resSource = row.getResource(VAR_SRC.toString());
     model
@@ -142,12 +142,12 @@ public class ActRepository extends AbstractHydraRepository {
         .addWhere(VAR_INT, RDFS.label, VAR_INT_LABEL)
 
         .addWhere(VAR_MAIN, Core.hasSourceLocation, VAR_LOC)
-        .addWhere(VAR_LOC, Core.hasXsdString, VAR_LOC_STRING)
+        .addWhere(VAR_LOC, Core.hasText, VAR_LOC_STRING)
         .addWhere(VAR_LOC, Core.hasSource, VAR_SRC)
         .addWhere(VAR_SRC, RDFS.label, VAR_SRC_LABEL)
 
         .addWhere(VAR_MAIN, Core.isAuthoredOn, VAR_DATE)
-        .addWhere(VAR_DATE, Core.hasXsdDateTime, VAR_DATE_TIME);
+        .addWhere(VAR_DATE, Core.hasDateTime, VAR_DATE_TIME);
   }
 
 }
