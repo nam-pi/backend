@@ -43,8 +43,8 @@ public class ActRepository extends AbstractHydraRepository {
   private static final Node VAR_INT_LABEL = NodeFactory.createVariable("interpretationLabel");
   private static final Node VAR_LOC = NodeFactory.createVariable("sourceLocation");
   private static final Node VAR_LOC_STRING = NodeFactory.createVariable("sourceLocationString");
-  private static final Node VAR_SRC = NodeFactory.createVariable("sourceLocationSource");
-  private static final Node VAR_SRC_LABEL = NodeFactory.createVariable("sourceLocationSourceLabel");
+  private static final Node VAR_SRC = NodeFactory.createVariable("source");
+  private static final Node VAR_SRC_LABEL = NodeFactory.createVariable("sourceLabel");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
@@ -142,7 +142,7 @@ public class ActRepository extends AbstractHydraRepository {
         .addWhere(VAR_INT, RDFS.label, VAR_INT_LABEL)
 
         .addWhere(VAR_MAIN, Core.hasSourceLocation, VAR_LOC)
-        .addWhere(VAR_LOC, Core.hasText, VAR_LOC_STRING)
+        .addWhere(VAR_LOC, Core.hasValue, VAR_LOC_STRING)
         .addWhere(VAR_LOC, Core.hasSource, VAR_SRC)
         .addWhere(VAR_SRC, RDFS.label, VAR_SRC_LABEL)
 

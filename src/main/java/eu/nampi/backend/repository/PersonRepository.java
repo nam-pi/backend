@@ -37,7 +37,6 @@ public class PersonRepository extends AbstractHydraRepository {
   private static final String PREF_DEATH = "death";
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
-    System.out.println(row);
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
     model.add(main, RDF.type, Core.person);
