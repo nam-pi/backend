@@ -3,6 +3,7 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +49,7 @@ public class EventRepository extends AbstractHydraRepository {
 
   private static final Node VAR_ASPECT = NodeFactory.createVariable("aspect");
   private static final Node VAR_ASPECT_LABEL = NodeFactory.createVariable("aspectLabel");
+  private static final Node VAR_ASPECT_TYPE = NodeFactory.createVariable("aspectType");
   private static final Node VAR_ASPECT_STRING = NodeFactory.createVariable("aspectString");
   private static final Node VAR_DATE = NodeFactory.createVariable("date");
   private static final Node VAR_DATE_OUTER = NodeFactory.createVariable("dateOuter");
@@ -64,13 +66,19 @@ public class EventRepository extends AbstractHydraRepository {
   private static final Node VAR_DATE_TIME_SORT = NodeFactory.createVariable("dateTimeSort");
   private static final Node VAR_PARTICIPANT = NodeFactory.createVariable("participant");
   private static final Node VAR_PARTICIPANT_LABEL = NodeFactory.createVariable("participantLabel");
+  private static final Node VAR_PARTICIPANT_TYPE = NodeFactory.createVariable("participantType");
   private static final Node VAR_PLACE = NodeFactory.createVariable("place");
+  private static final Node VAR_PLACE_TYPE = NodeFactory.createVariable("placeType");
   private static final Node VAR_PLACE_LABEL = NodeFactory.createVariable("placeLabel");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
-    model.add(main, RDF.type, Core.event);
+    Optional.ofNullable(row.getResource(VAR_TYPE.toString())).ifPresentOrElse(type -> {
+      model.add(main, RDF.type, type);
+    }, () -> {
+      model.add(main, RDF.type, Core.event);
+    });
     // Label
     Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
         .ifPresent(label -> model.add(main, RDFS.label, label));
@@ -80,26 +88,36 @@ public class EventRepository extends AbstractHydraRepository {
     // Aspect
     Optional.ofNullable(row.getResource(VAR_ASPECT.toString()))
         .ifPresent(aspect -> {
-          model
-              .add(main, Core.usesAspect, aspect)
-              .add(aspect, RDF.type, Core.aspect);
+          model.add(main, Core.usesAspect, aspect);
           Optional.ofNullable(row.getLiteral(VAR_ASPECT_LABEL.toString()))
               .ifPresent(label -> model.add(aspect, RDFS.label, label));
           Optional.ofNullable(row.getLiteral(VAR_ASPECT_STRING.toString()))
               .ifPresent(str -> model.add(aspect, Core.hasText, str));
+          Optional.ofNullable(row.getResource(VAR_ASPECT_TYPE.toString())).ifPresentOrElse(
+              type -> model.add(aspect, RDF.type, type),
+              () -> model.add(aspect, RDF.type, Core.aspect));
         });
     // Participant
     Optional.ofNullable(row.getResource(VAR_PARTICIPANT.toString()))
-        .ifPresent(agent -> model
-            .add(main, Core.hasParticipant, agent)
-            .add(agent, RDF.type, Core.agent)
-            .add(agent, RDFS.label, row.getLiteral(VAR_PARTICIPANT_LABEL.toString())));
+        .ifPresent(agent -> {
+          model
+              .add(main, Core.hasParticipant, agent)
+              .add(agent, RDFS.label, row.getLiteral(VAR_PARTICIPANT_LABEL.toString()));
+          Optional.ofNullable(row.getResource(VAR_PARTICIPANT_TYPE.toString())).ifPresentOrElse(
+              type -> model.add(agent, RDF.type, type),
+              () -> model.add(agent, RDF.type, Core.agent));
+        });
     // Place
     Optional.ofNullable(row.getResource(VAR_PLACE.toString()))
-        .ifPresent(place -> model
-            .add(main, Core.takesPlaceAt, place)
-            .add(place, RDF.type, Core.place)
-            .add(place, RDFS.label, row.getLiteral(VAR_PLACE_LABEL.toString())));
+        .ifPresent(place -> {
+          model
+              .add(main, Core.takesPlaceAt, place)
+              .add(place, RDFS.label, row.getLiteral(VAR_PLACE_LABEL.toString()));
+          Optional.ofNullable(row.getResource(VAR_PLACE_TYPE.toString())).ifPresentOrElse(
+              type -> model.add(place, RDF.type, type),
+              () -> model.add(place, RDF.type, Core.place));
+        });
+
     // Exact date
     Optional.ofNullable(row.getLiteral(VAR_DATE_TIME_EXACT.toString())).ifPresent(dateTime -> {
       Resource resDate = row.getResource(VAR_DATE_EXACT
@@ -154,7 +172,7 @@ public class EventRepository extends AbstractHydraRepository {
     builder.mapper.add("place", Api.eventPlaceVar, place);
     place.map(ResourceFactory::createResource).ifPresent(resPlace -> {
       builder.coreData
-          .addWhere(placeWhere())
+          .addWhere(placeWhere(false))
           .addFilter(ef.sameTerm(VAR_PLACE, resPlace));
     });
 
@@ -163,7 +181,7 @@ public class EventRepository extends AbstractHydraRepository {
     builder.mapper.add("participant", Api.eventParticipantVar, participant);
     participant.map(ResourceFactory::createResource).ifPresent(resParticipant -> {
       if (!useParticipantWhere.get()) {
-        builder.coreData.addWhere(participantWhere());
+        builder.coreData.addWhere(participantWhere(false));
       }
       builder.coreData.addFilter(ef.sameTerm(VAR_PARTICIPANT, resParticipant));
       useParticipantWhere.set(true);
@@ -172,7 +190,7 @@ public class EventRepository extends AbstractHydraRepository {
     builder.mapper.add("participantType", Api.eventParticipantTypeVar, participantType);
     participantType.map(ResourceFactory::createResource).ifPresent(resType -> {
       if (!useParticipantWhere.get()) {
-        builder.coreData.addWhere(participantWhere());
+        builder.coreData.addWhere(participantWhere(false));
       }
       builder.coreData.addWhere(VAR_PARTICIPANT, RDF.type, resType);
       useParticipantWhere.set(true);
@@ -188,7 +206,7 @@ public class EventRepository extends AbstractHydraRepository {
     builder.mapper.add("aspect", Api.eventAspectVar, aspect);
     aspect.map(ResourceFactory::createResource).ifPresent(resAspect -> {
       if (!useAspectWhere.get()) {
-        builder.coreData.addWhere(aspectWhere());
+        builder.coreData.addWhere(aspectWhere(false));
       }
       builder.coreData.addFilter(ef.sameTerm(VAR_ASPECT, resAspect));
       useAspectWhere.set(true);
@@ -197,7 +215,7 @@ public class EventRepository extends AbstractHydraRepository {
     builder.mapper.add("aspectType", Api.eventAspectTypeVar, aspectType);
     aspectType.map(ResourceFactory::createResource).ifPresent(resType -> {
       if (!useAspectWhere.get()) {
-        builder.coreData.addWhere(aspectWhere());
+        builder.coreData.addWhere(aspectWhere(false));
       }
       builder.coreData.addWhere(VAR_ASPECT, RDF.type, resType);
       useAspectWhere.set(true);
@@ -240,10 +258,10 @@ public class EventRepository extends AbstractHydraRepository {
     });
 
     builder.extendedData
-        .addWhere(participantWhere())
-        .addOptional(aspectWhere())
-        .addOptional(placeWhere())
-        .addWhere(datesWhere(order, VAR_DATE_REAL_SORT_OUTER, VAR_DATE_OUTER));
+        .addWhere(datesWhere(order, VAR_DATE_REAL_SORT_OUTER, VAR_DATE_OUTER))
+        .addWhere(participantWhere(false))
+        .addOptional(aspectWhere(false))
+        .addOptional(placeWhere(false));
     return build(builder, lang);
   }
 
@@ -252,10 +270,10 @@ public class EventRepository extends AbstractHydraRepository {
     HydraSingleBuilder builder =
         new HydraSingleBuilder(jenaService, individualsUri(Core.event, id), Core.event);
     builder.coreData
-        .addWhere(participantWhere())
-        .addOptional(aspectWhere())
-        .addOptional(placeWhere())
-        .addWhere(datesWhere(Order.ASCENDING, VAR_DATE_REAL_SORT, VAR_DATE));
+        .addWhere(datesWhere(Order.ASCENDING, VAR_DATE_REAL_SORT, VAR_DATE))
+        .addWhere(participantWhere(true))
+        .addOptional(aspectWhere(true))
+        .addOptional(placeWhere(true));
     return build(builder, lang);
   }
 
@@ -264,11 +282,15 @@ public class EventRepository extends AbstractHydraRepository {
     return serialize(builder.model, lang, builder.root);
   }
 
-  private WhereBuilder aspectWhere() {
-    return new WhereBuilder()
+  private WhereBuilder aspectWhere(boolean withTypes) {
+    WhereBuilder builder = new WhereBuilder()
         .addWhere(VAR_MAIN, Core.usesAspect, VAR_ASPECT)
         .addWhere(VAR_ASPECT, RDFS.label, VAR_ASPECT_LABEL)
         .addOptional(VAR_ASPECT, Core.hasText, VAR_ASPECT_STRING);
+    if (withTypes) {
+      builder.addWhere(VAR_ASPECT, RDF.type, VAR_ASPECT_TYPE);
+    }
+    return builder;
   }
 
   private WhereBuilder datesWhere(Order order, Node varDate, Node varDateTime) {
@@ -314,21 +336,31 @@ public class EventRepository extends AbstractHydraRepository {
                             ef.asVar(VAR_DATE_TIME_EARLIEST),
                             ef.cond(ef.bound(VAR_DATE_TIME_LATEST),
                                 ef.asVar(VAR_DATE_TIME_LATEST),
-                                ef.asExpr(ResourceFactory.createTypedLiteral(NEGATIVE_DEFAULT_DATE,
-                                    XSDDatatype.XSDdateTime))))))),
+                                ef.asExpr(
+                                    ResourceFactory.createTypedLiteral(NEGATIVE_DEFAULT_DATE,
+                                        XSDDatatype.XSDdateTime))))))),
             varDateTime);
     return builder;
   }
 
-  private WhereBuilder participantWhere() {
-    return new WhereBuilder()
+  private WhereBuilder participantWhere(boolean withTypes) {
+    WhereBuilder builder = new WhereBuilder()
         .addWhere(VAR_MAIN, Core.hasParticipant, VAR_PARTICIPANT)
         .addWhere(VAR_PARTICIPANT, RDFS.label, VAR_PARTICIPANT_LABEL);
+    if (withTypes) {
+
+      builder.addWhere(VAR_PARTICIPANT, RDF.type, VAR_PARTICIPANT_TYPE);
+    }
+    return builder;
   }
 
-  private WhereBuilder placeWhere() {
-    return new WhereBuilder()
+  private WhereBuilder placeWhere(boolean withTypes) {
+    WhereBuilder builder = new WhereBuilder()
         .addWhere(VAR_MAIN, Core.takesPlaceAt, VAR_PLACE)
         .addWhere(VAR_PLACE, RDFS.label, VAR_PLACE_LABEL);
+    if (withTypes) {
+      builder.addWhere(VAR_PLACE, RDF.type, VAR_PLACE_TYPE);
+    }
+    return builder;
   }
 }
