@@ -64,6 +64,9 @@ public class EventRepository extends AbstractHydraRepository {
   private static final Node VAR_DATE_TIME_EXACT = NodeFactory.createVariable("dateTimeExact");
   private static final Node VAR_DATE_TIME_LATEST = NodeFactory.createVariable("dateTimeLatest");
   private static final Node VAR_DATE_TIME_SORT = NodeFactory.createVariable("dateTimeSort");
+  private static final Node VAR_MAIN_PARTICIPANT = NodeFactory.createVariable("mainParticipant");
+  private static final Node VAR_MAIN_PARTICIPANT_LABEL =
+      NodeFactory.createVariable("mainParticipantLabel");
   private static final Node VAR_PARTICIPANT = NodeFactory.createVariable("participant");
   private static final Node VAR_PARTICIPANT_LABEL = NodeFactory.createVariable("participantLabel");
   private static final Node VAR_PARTICIPANT_TYPE = NodeFactory.createVariable("participantType");
@@ -107,6 +110,10 @@ public class EventRepository extends AbstractHydraRepository {
               type -> model.add(agent, RDF.type, type),
               () -> model.add(agent, RDF.type, Core.agent));
         });
+    // Main participant
+    Optional.ofNullable(row.getResource(VAR_MAIN_PARTICIPANT.toString()))
+        .ifPresent(participant -> model.add(main, Core.hasMainParticipant, participant)
+            .add(participant, RDFS.label, row.getLiteral(VAR_MAIN_PARTICIPANT_LABEL.toString())));
     // Place
     Optional.ofNullable(row.getResource(VAR_PLACE.toString()))
         .ifPresent(place -> {
@@ -346,9 +353,10 @@ public class EventRepository extends AbstractHydraRepository {
   private WhereBuilder participantWhere(boolean withTypes) {
     WhereBuilder builder = new WhereBuilder()
         .addWhere(VAR_MAIN, Core.hasParticipant, VAR_PARTICIPANT)
-        .addWhere(VAR_PARTICIPANT, RDFS.label, VAR_PARTICIPANT_LABEL);
+        .addWhere(VAR_PARTICIPANT, RDFS.label, VAR_PARTICIPANT_LABEL)
+        .addWhere(VAR_MAIN, Core.hasMainParticipant, VAR_MAIN_PARTICIPANT)
+        .addWhere(VAR_MAIN_PARTICIPANT, RDFS.label, VAR_MAIN_PARTICIPANT_LABEL);
     if (withTypes) {
-
       builder.addWhere(VAR_PARTICIPANT, RDF.type, VAR_PARTICIPANT_TYPE);
     }
     return builder;
