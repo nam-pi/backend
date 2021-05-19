@@ -3,6 +3,7 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -35,7 +36,11 @@ public class GroupRepository extends AbstractHydraRepository {
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
-    model.add(main, RDF.type, Core.group);
+    Optional.ofNullable(row.getResource(VAR_TYPE.toString())).ifPresentOrElse(type -> {
+      model.add(main, RDF.type, type);
+    }, () -> {
+      model.add(main, RDF.type, Core.group);
+    });
     // Label
     Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
         .ifPresent(label -> model.add(main, RDFS.label, label));
