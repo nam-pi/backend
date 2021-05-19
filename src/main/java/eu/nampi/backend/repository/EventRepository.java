@@ -24,6 +24,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
@@ -70,6 +71,8 @@ public class EventRepository extends AbstractHydraRepository {
   private static final Node VAR_PARTICIPANT = NodeFactory.createVariable("participant");
   private static final Node VAR_PARTICIPANT_LABEL = NodeFactory.createVariable("participantLabel");
   private static final Node VAR_PARTICIPANT_TYPE = NodeFactory.createVariable("participantType");
+  private static final Node VAR_PARTICIPATION_TYPE =
+      NodeFactory.createVariable("participationType");
   private static final Node VAR_PLACE = NodeFactory.createVariable("place");
   private static final Node VAR_PLACE_TYPE = NodeFactory.createVariable("placeType");
   private static final Node VAR_PLACE_LABEL = NodeFactory.createVariable("placeLabel");
@@ -106,6 +109,10 @@ public class EventRepository extends AbstractHydraRepository {
           model
               .add(main, Core.hasParticipant, agent)
               .add(agent, RDFS.label, row.getLiteral(VAR_PARTICIPANT_LABEL.toString()));
+          Optional.ofNullable(row.getResource(VAR_PARTICIPATION_TYPE.toString()))
+              .map(type -> ResourceFactory.createProperty(type.getURI())).ifPresentOrElse(
+                  type -> model.add(main, type, agent),
+                  () -> model.add(main, Core.hasParticipant, agent));
           Optional.ofNullable(row.getResource(VAR_PARTICIPANT_TYPE.toString())).ifPresentOrElse(
               type -> model.add(agent, RDF.type, type),
               () -> model.add(agent, RDF.type, Core.agent));
@@ -290,12 +297,18 @@ public class EventRepository extends AbstractHydraRepository {
   }
 
   private WhereBuilder aspectWhere(boolean withTypes) {
-    WhereBuilder builder = new WhereBuilder()
+    WhereBuilder builder = new WhereBuilder();
+    ExprFactory ef = builder.getExprFactory();
+    builder
         .addWhere(VAR_MAIN, Core.usesAspect, VAR_ASPECT)
         .addWhere(VAR_ASPECT, RDFS.label, VAR_ASPECT_LABEL)
         .addOptional(VAR_ASPECT, Core.hasText, VAR_ASPECT_STRING);
     if (withTypes) {
-      builder.addWhere(VAR_ASPECT, RDF.type, VAR_ASPECT_TYPE);
+      builder
+          .addWhere(VAR_ASPECT, RDF.type, VAR_ASPECT_TYPE)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_TYPE), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_TYPE), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_TYPE), RDF.getURI())));
     }
     return builder;
   }
@@ -351,23 +364,37 @@ public class EventRepository extends AbstractHydraRepository {
   }
 
   private WhereBuilder participantWhere(boolean withTypes) {
-    WhereBuilder builder = new WhereBuilder()
+    WhereBuilder builder = new WhereBuilder();
+    ExprFactory ef = builder.getExprFactory();
+    builder
         .addWhere(VAR_MAIN, Core.hasParticipant, VAR_PARTICIPANT)
         .addWhere(VAR_PARTICIPANT, RDFS.label, VAR_PARTICIPANT_LABEL)
         .addWhere(VAR_MAIN, Core.hasMainParticipant, VAR_MAIN_PARTICIPANT)
         .addWhere(VAR_MAIN_PARTICIPANT, RDFS.label, VAR_MAIN_PARTICIPANT_LABEL);
     if (withTypes) {
-      builder.addWhere(VAR_PARTICIPANT, RDF.type, VAR_PARTICIPANT_TYPE);
+      builder
+          .addWhere(VAR_MAIN, VAR_PARTICIPATION_TYPE, VAR_PARTICIPANT)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_PARTICIPATION_TYPE), OWL.getURI())))
+          .addWhere(VAR_PARTICIPANT, RDF.type, VAR_PARTICIPANT_TYPE)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_PARTICIPANT_TYPE), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_PARTICIPANT_TYPE), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_PARTICIPANT_TYPE), RDF.getURI())));
     }
     return builder;
   }
 
   private WhereBuilder placeWhere(boolean withTypes) {
-    WhereBuilder builder = new WhereBuilder()
+    WhereBuilder builder = new WhereBuilder();
+    ExprFactory ef = builder.getExprFactory();
+    builder
         .addWhere(VAR_MAIN, Core.takesPlaceAt, VAR_PLACE)
         .addWhere(VAR_PLACE, RDFS.label, VAR_PLACE_LABEL);
     if (withTypes) {
-      builder.addWhere(VAR_PLACE, RDF.type, VAR_PLACE_TYPE);
+      builder
+          .addWhere(VAR_PLACE, RDF.type, VAR_PLACE_TYPE)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_PLACE_TYPE), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_PLACE_TYPE), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_PLACE_TYPE), RDF.getURI())));
     }
     return builder;
   }
