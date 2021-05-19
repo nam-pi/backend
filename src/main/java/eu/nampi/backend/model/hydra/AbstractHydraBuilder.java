@@ -11,6 +11,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
@@ -31,6 +32,7 @@ public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
   public static final Node VAR_MAIN = NodeFactory.createVariable("main");
   public static final Node VAR_COMMENT = NodeFactory.createVariable("comment");
   public static final Node VAR_LABEL = NodeFactory.createVariable("label");
+  public static final Node VAR_TYPE = NodeFactory.createVariable("type");
 
 
   protected AbstractHydraBuilder(JenaService jenaService, String baseUri, Resource mainType) {
@@ -43,6 +45,7 @@ public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
         .setNsPrefix("api", Api.getURI())
         .setNsPrefix("core", Core.getURI())
         .setNsPrefix("hydra", Hydra.getURI())
+        .setNsPrefix("owl", OWL.getURI())
         .setNsPrefix("rdf", RDF.getURI())
         .setNsPrefix("rdfs", RDFS.getURI())
         .setNsPrefix("schema", SchemaOrg.getURI())
