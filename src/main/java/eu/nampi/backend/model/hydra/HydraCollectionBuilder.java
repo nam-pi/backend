@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
@@ -92,7 +93,8 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
     // Setup the root hydra collection
     this.model
         .add(this.root, RDF.type, Hydra.Collection)
-        .addLiteral(root, Hydra.totalItems, ResourceFactory.createTypedLiteral(totalItems));
+        .addLiteral(root, Hydra.totalItems,
+            ResourceFactory.createTypedLiteral(String.valueOf(totalItems), XSDDatatype.XSDinteger));
 
     // Query the data using the jena service and add the content provided by the row mapper function
     // to the model
