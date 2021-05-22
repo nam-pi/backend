@@ -71,7 +71,7 @@ public class PersonRepository extends AbstractHydraRepository {
               .ifPresent(label -> model.add(evt, RDFS.label, label));
           Optional.ofNullable(row.getResource(varDateExact(base).toString()))
               .ifPresent(resDate -> model
-                  .add(evt, Core.takesPlaceAt, resDate)
+                  .add(evt, Core.takesPlaceOn, resDate)
                   .add(resDate, RDF.type, Core.date)
                   .add(resDate, Core.hasDateTime,
                       row.getLiteral(varDateTimeExact(base).toString())));
