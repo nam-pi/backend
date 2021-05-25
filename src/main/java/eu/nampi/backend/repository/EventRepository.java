@@ -207,11 +207,11 @@ public class EventRepository extends AbstractHydraRepository {
   };
 
   @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place}")
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place, #author}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates,
       Optional<String> aspect, Optional<String> aspectType, Optional<String> aspectUseType,
       Optional<String> participant, Optional<String> participantType,
-      Optional<String> participationType, Optional<String> place) {
+      Optional<String> participationType, Optional<String> place, Optional<String> author) {
 
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("events"),
         Core.event, Api.eventOrderByVar, params);
@@ -276,6 +276,14 @@ public class EventRepository extends AbstractHydraRepository {
     builder.mapper.add("aspectUseType", Api.eventAspectUseTypeVar, aspectUseType);
     aspectUseType.map(ResourceFactory::createResource).ifPresent(resType -> {
       builder.coreData.addWhere(VAR_MAIN, resType, VAR_ASPECT);
+    });
+
+    // Author data
+    builder.mapper.add("author", Api.eventAuthorVar, author);
+    author.map(ResourceFactory::createResource).ifPresent(resAuthor -> {
+      builder.coreData
+          .addWhere(actWhere(false))
+          .addFilter(ef.sameTerm(VAR_AUTHOR, resAuthor));
     });
 
     // Dates data

@@ -46,6 +46,7 @@ public class Api {
   public static Resource eventAspectTypeVar = resource("eventAspectTypeVariable");
   public static Resource eventAspectUseTypeVar = resource("eventAspectUseTypeVariable");
   public static Resource eventAspectVar = resource("eventAspectVariable");
+  public static Resource eventAuthorVar = resource("eventAuthorVariable");
   public static Resource eventCollection = resource("eventCollection");
   public static Resource eventDatesVar = resource("eventDatesVariable");
   public static Resource eventOrderByVar = resource("eventOrderByVariable");
