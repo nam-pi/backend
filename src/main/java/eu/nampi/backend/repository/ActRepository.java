@@ -19,6 +19,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
@@ -42,7 +43,10 @@ public class ActRepository extends AbstractHydraRepository {
   private static final Node VAR_INT = NodeFactory.createVariable("interpretation");
   private static final Node VAR_INT_LABEL = NodeFactory.createVariable("interpretationLabel");
   private static final Node VAR_LOC = NodeFactory.createVariable("sourceLocation");
-  private static final Node VAR_LOC_STRING = NodeFactory.createVariable("sourceLocationString");
+  private static final Node VAR_LOC_TEXT = NodeFactory.createVariable("sourceLocationText");
+  private static final Node VAR_LOC_TEXT_TYPE =
+      NodeFactory.createVariable("sourceLocationTextType");
+  private static final Node VAR_LOC_TYPE = NodeFactory.createVariable("sourceLocationType");
   private static final Node VAR_SRC = NodeFactory.createVariable("source");
   private static final Node VAR_SRC_LABEL = NodeFactory.createVariable("sourceLabel");
 
@@ -70,10 +74,16 @@ public class ActRepository extends AbstractHydraRepository {
         .add(resDate, Core.hasDateTime, row.getLiteral(VAR_DATE_TIME.toString()));
     // Source location
     Resource resLocation = row.getResource(VAR_LOC.toString());
+    Literal litLocationText = row.getLiteral(VAR_LOC_TEXT.toString());
     model
         .add(main, Core.hasSourceLocation, resLocation)
-        .add(resLocation, RDF.type, Core.sourceLocation)
-        .add(resLocation, Core.hasText, row.getLiteral(VAR_LOC_STRING.toString()));
+        .add(resLocation, Core.hasText, litLocationText);
+    Optional.ofNullable(row.getResource(VAR_LOC_TYPE.toString())).ifPresentOrElse(
+        type -> model.add(resLocation, RDF.type, type),
+        () -> model.add(resLocation, RDF.type, Core.sourceLocation));
+    Optional.ofNullable(row.getResource(VAR_LOC_TEXT_TYPE.toString()))
+        .map(type -> ResourceFactory.createProperty(type.getURI())).ifPresent(
+            type -> model.add(resLocation, type, litLocationText));
     // Source
     Resource resSource = row.getResource(VAR_SRC.toString());
     model
@@ -116,7 +126,7 @@ public class ActRepository extends AbstractHydraRepository {
           .addFilter(ef.sameTerm(VAR_SRC, res));
     });
 
-    addData(builder.extendedData);
+    addData(builder.extendedData, false);
     return build(builder, lang);
   }
 
@@ -124,7 +134,7 @@ public class ActRepository extends AbstractHydraRepository {
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder =
         new HydraSingleBuilder(jenaService, individualsUri(Core.act, id), Core.act);
-    addData(builder.coreData);
+    addData(builder.coreData, true);
     return build(builder, lang);
   }
 
@@ -133,21 +143,31 @@ public class ActRepository extends AbstractHydraRepository {
     return serialize(builder.model, lang, builder.root);
   }
 
-  private void addData(WhereBuilder builder) {
+  private void addData(WhereBuilder builder, boolean withTypes) {
+    ExprFactory ef = builder.getExprFactory();
     builder
         .addWhere(VAR_MAIN, Core.isAuthoredBy, VAR_AUTHOR)
         .addWhere(VAR_AUTHOR, RDFS.label, VAR_AUTHOR_LABEL)
-
         .addWhere(VAR_MAIN, Core.hasInterpretation, VAR_INT)
         .addWhere(VAR_INT, RDFS.label, VAR_INT_LABEL)
-
         .addWhere(VAR_MAIN, Core.hasSourceLocation, VAR_LOC)
-        .addWhere(VAR_LOC, Core.hasValue, VAR_LOC_STRING)
+        .addWhere(VAR_LOC, Core.hasValue, VAR_LOC_TEXT)
         .addWhere(VAR_LOC, Core.hasSource, VAR_SRC)
         .addWhere(VAR_SRC, RDFS.label, VAR_SRC_LABEL)
-
         .addWhere(VAR_MAIN, Core.isAuthoredOn, VAR_DATE)
         .addWhere(VAR_DATE, Core.hasDateTime, VAR_DATE_TIME);
+    if (withTypes) {
+      builder
+          .addWhere(VAR_LOC, RDF.type, VAR_LOC_TYPE)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TYPE), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TYPE), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TYPE), RDF.getURI())))
+          .addWhere(VAR_LOC, VAR_LOC_TEXT_TYPE, VAR_LOC_TEXT)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), RDF.getURI())))
+          .addFilter(ef.not(ef.sameTerm(VAR_LOC_TEXT_TYPE, Core.hasValue)));
+    }
   }
 
 }
