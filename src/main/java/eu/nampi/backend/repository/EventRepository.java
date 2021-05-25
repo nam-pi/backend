@@ -48,15 +48,20 @@ public class EventRepository extends AbstractHydraRepository {
 
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
+  private static final Node VAR_ACT = NodeFactory.createVariable("act");
+  private static final Node VAR_ACT_DATE = NodeFactory.createVariable("actDate");
+  private static final Node VAR_ACT_DATE_TIME = NodeFactory.createVariable("actDateTime");
   private static final Node VAR_ASPECT = NodeFactory.createVariable("aspect");
   private static final Node VAR_ASPECT_LABEL = NodeFactory.createVariable("aspectLabel");
-  private static final Node VAR_ASPECT_TYPE = NodeFactory.createVariable("aspectType");
   private static final Node VAR_ASPECT_STRING = NodeFactory.createVariable("aspectString");
+  private static final Node VAR_ASPECT_TYPE = NodeFactory.createVariable("aspectType");
+  private static final Node VAR_AUTHOR = NodeFactory.createVariable("author");
+  private static final Node VAR_AUTHOR_LABEL = NodeFactory.createVariable("authorLabel");
   private static final Node VAR_DATE = NodeFactory.createVariable("date");
-  private static final Node VAR_DATE_OUTER = NodeFactory.createVariable("dateOuter");
   private static final Node VAR_DATE_EARLIEST = NodeFactory.createVariable("dateEarliest");
   private static final Node VAR_DATE_EXACT = NodeFactory.createVariable("dateExact");
   private static final Node VAR_DATE_LATEST = NodeFactory.createVariable("dateLatest");
+  private static final Node VAR_DATE_OUTER = NodeFactory.createVariable("dateOuter");
   private static final Node VAR_DATE_REAL_SORT = NodeFactory.createVariable("dateRealSort");
   private static final Node VAR_DATE_REAL_SORT_OUTER =
       NodeFactory.createVariable("dateRealSortOuter");
@@ -65,6 +70,10 @@ public class EventRepository extends AbstractHydraRepository {
   private static final Node VAR_DATE_TIME_EXACT = NodeFactory.createVariable("dateTimeExact");
   private static final Node VAR_DATE_TIME_LATEST = NodeFactory.createVariable("dateTimeLatest");
   private static final Node VAR_DATE_TIME_SORT = NodeFactory.createVariable("dateTimeSort");
+  private static final Node VAR_LOCATION = NodeFactory.createVariable("location");
+  private static final Node VAR_LOCATION_TEXT = NodeFactory.createVariable("locationText");
+  private static final Node VAR_LOCATION_TEXT_TYPE = NodeFactory.createVariable("locationTextType");
+  private static final Node VAR_LOCATION_TYPE = NodeFactory.createVariable("locationType");
   private static final Node VAR_MAIN_PARTICIPANT = NodeFactory.createVariable("mainParticipant");
   private static final Node VAR_MAIN_PARTICIPANT_LABEL =
       NodeFactory.createVariable("mainParticipantLabel");
@@ -74,8 +83,10 @@ public class EventRepository extends AbstractHydraRepository {
   private static final Node VAR_PARTICIPATION_TYPE =
       NodeFactory.createVariable("participationType");
   private static final Node VAR_PLACE = NodeFactory.createVariable("place");
-  private static final Node VAR_PLACE_TYPE = NodeFactory.createVariable("placeType");
   private static final Node VAR_PLACE_LABEL = NodeFactory.createVariable("placeLabel");
+  private static final Node VAR_PLACE_TYPE = NodeFactory.createVariable("placeType");
+  private static final Node VAR_SOURCE = NodeFactory.createVariable("source");
+  private static final Node VAR_SOURCE_LABEL = NodeFactory.createVariable("sourceLocation");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
@@ -91,6 +102,33 @@ public class EventRepository extends AbstractHydraRepository {
     // Comment
     Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).map(Literal::getString)
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
+    // Act
+    Resource act = row.getResource(VAR_ACT.toString());
+    Resource author = row.getResource(VAR_AUTHOR.toString());
+    Resource date = row.getResource(VAR_ACT_DATE.toString());
+    Resource location = row.getResource(VAR_LOCATION.toString());
+    Resource source = row.getResource(VAR_SOURCE.toString());
+    Literal locationText = row.getLiteral(VAR_LOCATION_TEXT.toString());
+    model
+        .add(main, Core.isInterpretationOf, act)
+        .add(act, RDF.type, Core.act)
+        .add(act, Core.isAuthoredBy, author)
+        .add(author, RDF.type, Core.author)
+        .add(author, RDFS.label, row.getLiteral(VAR_AUTHOR_LABEL.toString()))
+        .add(act, Core.isAuthoredOn, date)
+        .add(date, RDF.type, Core.date)
+        .add(date, Core.hasDateTime, row.getLiteral(VAR_ACT_DATE_TIME.toString()))
+        .add(act, Core.hasSourceLocation, location)
+        .add(location, Core.hasText, locationText)
+        .add(location, Core.hasSource, source)
+        .add(source, RDF.type, Core.source)
+        .add(source, RDFS.label, row.getLiteral(VAR_SOURCE_LABEL.toString()));
+    Optional.ofNullable(row.getResource(VAR_LOCATION_TYPE.toString())).ifPresentOrElse(
+        type -> model.add(location, RDF.type, type),
+        () -> model.add(location, RDF.type, Core.sourceLocation));
+    Optional.ofNullable(row.getResource(VAR_LOCATION_TEXT_TYPE.toString()))
+        .map(type -> ResourceFactory.createProperty(type.getURI())).ifPresent(
+            type -> model.add(location, type, locationText));
     // Aspect
     Optional.ofNullable(row.getResource(VAR_ASPECT.toString()))
         .ifPresent(aspect -> {
@@ -273,6 +311,7 @@ public class EventRepository extends AbstractHydraRepository {
 
     builder.extendedData
         .addWhere(datesWhere(order, VAR_DATE_REAL_SORT_OUTER, VAR_DATE_OUTER))
+        .addWhere(actWhere(false))
         .addWhere(participantWhere(false))
         .addOptional(aspectWhere(false))
         .addOptional(placeWhere(false));
@@ -285,6 +324,7 @@ public class EventRepository extends AbstractHydraRepository {
         new HydraSingleBuilder(jenaService, individualsUri(Core.event, id), Core.event);
     builder.coreData
         .addWhere(datesWhere(Order.ASCENDING, VAR_DATE_REAL_SORT, VAR_DATE))
+        .addWhere(actWhere(true))
         .addWhere(participantWhere(true))
         .addOptional(aspectWhere(true))
         .addOptional(placeWhere(true));
@@ -294,6 +334,34 @@ public class EventRepository extends AbstractHydraRepository {
   private String build(AbstractHydraBuilder builder, Lang lang) {
     builder.build(ROW_MAPPER);
     return serialize(builder.model, lang, builder.root);
+  }
+
+  private WhereBuilder actWhere(boolean withTypes) {
+    WhereBuilder builder = new WhereBuilder();
+    ExprFactory ef = builder.getExprFactory();
+    builder
+        .addWhere(VAR_MAIN, Core.isInterpretationOf, VAR_ACT)
+        .addWhere(VAR_ACT, Core.isAuthoredBy, VAR_AUTHOR)
+        .addWhere(VAR_AUTHOR, RDFS.label, VAR_AUTHOR_LABEL)
+        .addWhere(VAR_ACT, Core.isAuthoredOn, VAR_ACT_DATE)
+        .addWhere(VAR_ACT_DATE, Core.hasDateTime, VAR_ACT_DATE_TIME)
+        .addWhere(VAR_ACT, Core.hasSourceLocation, VAR_LOCATION)
+        .addWhere(VAR_LOCATION, Core.hasText, VAR_LOCATION_TEXT)
+        .addWhere(VAR_LOCATION, Core.hasSource, VAR_SOURCE)
+        .addWhere(VAR_SOURCE, RDFS.label, VAR_SOURCE_LABEL);
+    if (withTypes) {
+      builder
+          .addWhere(VAR_LOCATION, RDF.type, VAR_LOCATION_TYPE)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TYPE), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TYPE), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TYPE), RDF.getURI())))
+          .addWhere(VAR_LOCATION, VAR_LOCATION_TEXT_TYPE, VAR_LOCATION_TEXT)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TEXT_TYPE), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TEXT_TYPE), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TEXT_TYPE), RDF.getURI())))
+          .addFilter(ef.not(ef.sameTerm(VAR_LOCATION_TEXT_TYPE, Core.hasValue)));
+    }
+    return builder;
   }
 
   private WhereBuilder aspectWhere(boolean withTypes) {
