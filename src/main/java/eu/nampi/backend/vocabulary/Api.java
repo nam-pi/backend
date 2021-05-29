@@ -31,6 +31,10 @@ public class Api {
     return ResourceFactory.createProperty(uri, local);
   }
 
+  public static Property descendantOf = property("descendantOf");
+  public static Resource hierarchy = property("hierarchy");
+  public static Property hierarchyRoot = property("hierarchyRoot");
+
   public static Resource actAuthorVar = resource("actAuthorVariable");
   public static Resource actCollection = resource("actCollection");
   public static Resource actOrderByVar = resource("actOrderByVariable");
