@@ -44,8 +44,12 @@ public class Api {
   public static Resource aspectParticipantVar = resource("aspectParticipantVariable");
   public static Resource authorCollection = resource("authorCollection");
   public static Resource authorOrderByVar = resource("authorOrderByVariable");
+  @Deprecated
   public static Resource classCollection = resource("classCollection");
+  @Deprecated
   public static Resource classOrderByVar = resource("classOrderByVariable");
+  public static Resource typeCollection = resource("typeCollection");
+  public static Resource typeOrderByVar = resource("typeOrderByVariable");
   public static Resource entrypoint = resource("entrypoint");
   public static Resource eventAspectTypeVar = resource("eventAspectTypeVariable");
   public static Resource eventAspectUseTypeVar = resource("eventAspectUseTypeVariable");

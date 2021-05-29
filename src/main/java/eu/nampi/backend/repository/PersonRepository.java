@@ -11,7 +11,6 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
-import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -46,14 +45,14 @@ public class PersonRepository extends AbstractHydraRepository {
       model.add(main, RDF.type, Core.person);
     });
     // Label
-    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
+    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString()))
         .ifPresent(label -> model.add(main, RDFS.label, label));
     // Comment
-    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).map(Literal::getString)
+    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // SameAs
-    Optional.ofNullable(row.getResource(VAR_SAME_AS.toString())).map(Resource::getURI)
-        .ifPresent(string -> model.add(main, Core.sameAs, string));
+    Optional.ofNullable(row.getResource(VAR_SAME_AS.toString()))
+        .ifPresent(iri -> model.add(main, Core.sameAs, iri));
     // Birth
     addEvent(model, row, main, PREF_BIRTH, Core.isBornIn);
     addEvent(model, row, main, PREF_DEATH, Core.diesIn);

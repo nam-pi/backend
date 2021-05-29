@@ -52,14 +52,6 @@ public class EntrypointRepository extends AbstractHydraRepository {
     model.add(authorsBnode, Hydra.property, RDF.type);
     model.add(authors, Hydra.manages, authorsBnode);
 
-    Resource classes = ResourceFactory.createResource(endpointUri("classes"));
-    model.add(ep, Hydra.collection, classes);
-    model.add(classes, RDF.type, Hydra.collection);
-    Resource classesBnode = ResourceFactory.createResource();
-    model.add(classesBnode, Hydra.object, RDFS.Class);
-    model.add(classesBnode, Hydra.property, RDF.type);
-    model.add(classes, Hydra.manages, classesBnode);
-
     Resource events = ResourceFactory.createResource(endpointUri("events"));
     model.add(ep, Hydra.collection, events);
     model.add(events, RDF.type, Hydra.collection);
@@ -99,6 +91,14 @@ public class EntrypointRepository extends AbstractHydraRepository {
     model.add(sourcesBnode, Hydra.object, Core.source);
     model.add(sourcesBnode, Hydra.property, RDF.type);
     model.add(sources, Hydra.manages, sourcesBnode);
+
+    Resource types = ResourceFactory.createResource(endpointUri("types"));
+    model.add(ep, Hydra.collection, types);
+    model.add(types, RDF.type, Hydra.collection);
+    Resource typesBnode = ResourceFactory.createResource();
+    model.add(typesBnode, Hydra.object, RDFS.Resource);
+    model.add(typesBnode, Hydra.property, RDF.type);
+    model.add(types, Hydra.manages, typesBnode);
 
     userRepository.getCurrentUser().ifPresent(u -> {
       Property user = ResourceFactory.createProperty(endpointUri("user"));

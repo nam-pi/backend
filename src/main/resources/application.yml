@@ -39,7 +39,6 @@ spring:
       - acts
       - aspects
       - authors
-      - classes
       - events
       - groups
       - hierarchies
@@ -47,6 +46,7 @@ spring:
       - persons
       - places
       - sources
+      - types
   main:
     allow-bean-definition-overriding: true
   profiles:

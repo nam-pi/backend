@@ -11,26 +11,25 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.repository.ClassRepository;
+import eu.nampi.backend.repository.TypeRepository;
 
 @RestController
-public class ClassController extends AbstractRdfController {
+public class TypesController extends AbstractRdfController {
 
   @Autowired
-  ClassRepository classRepository;
+  TypeRepository typeRepository;
 
-  @GetMapping(value = "/classes", produces = {"application/ld+json", "text/turtle",
+  @GetMapping(value = "/types", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> getPlaces(@RequestHeader("accept") Lang lang,
+  public ResponseEntity<String> getTypes(@RequestHeader("accept") Lang lang,
       @RequestParam("page") Optional<Integer> page,
       @RequestParam("pageIndex") Optional<Integer> pageIndex,
       @RequestParam("limit") Optional<Integer> limit,
       @RequestParam("offset") Optional<Integer> offset,
       @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
-      @RequestParam("type") Optional<String> type, @RequestParam("text") Optional<String> text,
-      @RequestParam("ancestor") Optional<String> ancestor) {
-    QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
-    String result = classRepository.findAll(params, lang, ancestor);
+      @RequestParam("type") String type) {
+    QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, Optional.of(type), Optional.empty());
+    String result = typeRepository.findAll(params, lang);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 

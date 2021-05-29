@@ -97,10 +97,10 @@ public class EventRepository extends AbstractHydraRepository {
       model.add(main, RDF.type, Core.event);
     });
     // Label
-    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
+    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString()))
         .ifPresent(label -> model.add(main, RDFS.label, label));
     // Comment
-    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).map(Literal::getString)
+    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // Act
     Resource act = row.getResource(VAR_ACT.toString());

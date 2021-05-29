@@ -55,10 +55,10 @@ public class ActRepository extends AbstractHydraRepository {
     // Main
     model.add(main, RDF.type, Core.act);
     // Label
-    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
+    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString()))
         .ifPresent(label -> model.add(main, RDFS.label, label));
     // Comment
-    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).map(Literal::getString)
+    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // Author
     Resource resAuthor = row.getResource(VAR_AUTHOR.toString());
