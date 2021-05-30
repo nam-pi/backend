@@ -20,16 +20,19 @@ import eu.nampi.backend.vocabulary.Hydra;
 
 public class HydraCollectionBuilder extends AbstractHydraBuilder {
   private Resource orderByVar;
+  private boolean includeTypeAndText;
   protected QueryParameters params;
   public ParameterMapper mapper;
   public WhereBuilder extendedData = new WhereBuilder();
 
   public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
-      Resource orderByVar, QueryParameters params, boolean includeTextFilter) {
+      Resource orderByVar, QueryParameters params, boolean includeTextFilter,
+      boolean includeTypeAndText) {
     super(jenaService, baseUri, mainType);
     this.mapper = new ParameterMapper(baseUri, root, model);
     this.orderByVar = orderByVar;
     this.params = params;
+    this.includeTypeAndText = includeTypeAndText;
 
     // Set up manages node
     Resource manages = ResourceFactory.createResource();
@@ -48,7 +51,7 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
         .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
 
     // Add default text filter
-    params.getText().filter(text -> includeTextFilter).ifPresent(text -> {
+    params.getText().filter(text -> includeTextFilter && includeTypeAndText).ifPresent(text -> {
       if (!orderByLabel) {
         coreData.addWhere(VAR_MAIN, RDFS.label, VAR_LABEL);
       }
@@ -57,14 +60,20 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
     });
 
     // Add type filter
-    params.getType().map(ResourceFactory::createResource).ifPresent(res -> {
-      coreData.addWhere(VAR_MAIN, RDF.type, res);
-    });
+    params.getType().filter(type -> includeTypeAndText).map(ResourceFactory::createResource)
+        .ifPresent(res -> {
+          coreData.addWhere(VAR_MAIN, RDF.type, res);
+        });
+  }
+
+  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
+      Resource orderByVar, QueryParameters params, boolean includeTextFilter) {
+    this(jenaService, baseUri, mainType, orderByVar, params, includeTextFilter, true);
   }
 
   public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
       Resource orderByVar, QueryParameters params) {
-    this(jenaService, baseUri, mainType, orderByVar, params, true);
+    this(jenaService, baseUri, mainType, orderByVar, params, true, true);
   }
 
   @Override
@@ -107,9 +116,12 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
         .add("offset", Hydra.offset, params.getOffset())
         .add("orderBy", orderByVar, params.getOrderByClauses().toQueryString())
         .add("pageIndex", Hydra.pageIndex, Optional.empty())
-        .add("text", Api.textVar, params.getText())
-        .add("type", RDF.type, params.getType())
-        .insertTemplate()
+        .add("type", RDF.type, params.getType());
+    if (includeTypeAndText) {
+      this.mapper
+          .add("text", Api.textVar, params.getText());
+    }
+    this.mapper.insertTemplate()
         .insertView(totalItems);
   }
 }

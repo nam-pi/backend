@@ -10,7 +10,6 @@ import java.util.function.BiFunction;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
-import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -42,14 +41,14 @@ public class SourceRepository extends AbstractHydraRepository {
       model.add(main, RDF.type, Core.source);
     });
     // Label
-    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).map(Literal::getString)
+    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString()))
         .ifPresent(label -> model.add(main, RDFS.label, label));
     // Comment
-    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).map(Literal::getString)
+    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // SameAs
-    Optional.ofNullable(row.getResource(VAR_SAME_AS.toString())).map(Resource::getURI)
-        .ifPresent(string -> model.add(main, Core.sameAs, string));
+    Optional.ofNullable(row.getResource(VAR_SAME_AS.toString()))
+        .ifPresent(iri -> model.add(main, Core.sameAs, iri));
     return main;
   };
 

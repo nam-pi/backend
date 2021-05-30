@@ -39,15 +39,15 @@ services:
     image: quay.io/keycloak/keycloak:12.0.4
     restart: always
     environment:
-      DB_VENDOR: POSTGRES
       DB_ADDR: postgres
       DB_DATABASE: ${KEYCLOAK_PG_DB:-keycloak}
-      DB_USER: ${KEYCLOAK_PG_USER:-keycloak}
-      DB_SCHEMA: public
       DB_PASSWORD: ${KEYCLOAK_PG_PASSWORD}
+      DB_SCHEMA: public
+      DB_USER: ${KEYCLOAK_PG_USER:-keycloak}
+      DB_VENDOR: POSTGRES
       KEYCLOAK_FRONTEND_URL: ${KEYCLOAK_FRONTEND_URL}
-      KEYCLOAK_USER: ${KEYCLOAK_USER:-admin}
       KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+      KEYCLOAK_USER: ${KEYCLOAK_USER:-admin}
     depends_on:
       - postgres
 
@@ -56,19 +56,22 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
+        APPLICATION_PORT: ${APPLICATION_PORT:-8080}
         CORE_OWL_URL: https://purl.org/nampi/owl/core
-        DATA_URL: http://fuseki:3030/data
         DATA_BASE_URL: ${DATA_BASE_URL}
+        DATA_URL: http://fuseki:3030/data
+        DEFAULT_LIMIT: ${DEFAULT_LIMIT:-20}
         INF_CACHE_URL: http://fuseki:3030/inf_cache
         JAVA_VERSION: 11
+        KEYCLOAK_RDF_ID_ATTRIBUTE: ${KEYCLOAK_RDF_ID_ATTRIBUTE:-rdf-id}
         KEYCLOAK_REALM: ${KEYCLOAK_REALM}
         KEYCLOAK_RESOURCE: ${KEYCLOAK_RESOURCE}
         KEYCLOAK_URL: http://keycloak:8080/auth
         LOGGING_LEVEL: ${LOGGING_LEVEL:-INFO}
         OTHER_OWL_URLS: ${OTHER_OWL_URLS}
         PROFILE: ${PROFILE:-prod}
-        REDIS_URL: redis
-        REDIS_PORT: 6379
+        REDIS_PORT: ${REDIS_PORT:-6379}
+        REDIS_URL: ${REDIS_URL:-redis}
     restart: always
     depends_on:
       - keycloak

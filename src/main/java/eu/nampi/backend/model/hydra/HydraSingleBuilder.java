@@ -13,10 +13,8 @@ import eu.nampi.backend.service.JenaService;
 
 public class HydraSingleBuilder extends AbstractHydraBuilder {
 
-  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType,
-      boolean optionalLabel) {
+  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType) {
     super(jenaService, baseUri, mainType);
-    // Add default data
     coreData
         .addFilter(ef.sameTerm(VAR_MAIN, root))
         .addWhere(VAR_MAIN, RDF.type, VAR_TYPE)
@@ -27,13 +25,11 @@ public class HydraSingleBuilder extends AbstractHydraBuilder {
         .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
   }
 
-  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType) {
-    this(jenaService, baseUri, mainType, false);
-  }
-
   @Override
   public void build(BiFunction<Model, QuerySolution, RDFNode> rowToNode) {
-    SelectBuilder core = new SelectBuilder().addVar("*").addWhere(coreData);
+    SelectBuilder core = new SelectBuilder()
+        .addVar("*")
+        .addWhere(coreData);
     jenaService.select(core, row -> rowToNode.apply(this.model, row));
   }
 
