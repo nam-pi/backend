@@ -19,7 +19,7 @@ nampi:
   data-base-url: ${DATA_BASE_URL:}
   dataset-url-data: ${DATA_URL}
   dataset-url-inf-cache: ${INF_CACHE_URL}
-  default-limit: ${DEFAULT_LIMIT:25}
+  default-limit: ${DEFAULT_LIMIT:20}
   keycloak-rdf-id-attribute: ${KEYCLOAK-RDF-ID-ATTRIBUTE:rdf-id}
   other-owl-urls: ${OTHER_OWL_URLS:}
 
