@@ -39,9 +39,8 @@ public class HierarchyRepository extends AbstractHydraRepository {
   @Cacheable(key = "{#lang, #iri}")
   public String findHierarchy(Lang lang, String iri) {
     HydraSingleBuilder builder =
-        new HydraSingleBuilder(jenaService, iri, RDFS.Resource);
+        new HydraSingleBuilder(jenaService, iri, RDFS.Resource, false);
     ExprFactory ef = builder.ef;
-    Expr notSame = ef.not(ef.sameTerm(VAR_CHILD, VAR_PARENT));
     Expr childNotRdf = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDF.getURI()));
     Expr childNotRdfs = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDFS.getURI()));
     Expr childNotOwl = ef.not(ef.strstarts(ef.str(VAR_CHILD), OWL.getURI()));
@@ -55,7 +54,6 @@ public class HierarchyRepository extends AbstractHydraRepository {
             .addFilter(childNotRdfs)
             .addFilter(childNotOwl)
             .addWhere(VAR_CHILD, RDFS.subClassOf, VAR_PARENT)
-            .addFilter(notSame)
             .addFilter(parentNotRdf)
             .addFilter(parentNotRdfs)
             .addFilter(parentNotOwl))
@@ -65,7 +63,6 @@ public class HierarchyRepository extends AbstractHydraRepository {
             .addFilter(childNotRdfs)
             .addFilter(childNotOwl)
             .addWhere(VAR_CHILD, RDFS.subPropertyOf, VAR_PARENT)
-            .addFilter(notSame)
             .addFilter(parentNotRdf)
             .addFilter(parentNotRdfs)
             .addFilter(parentNotOwl))
@@ -75,7 +72,6 @@ public class HierarchyRepository extends AbstractHydraRepository {
             .addFilter(childNotRdfs)
             .addFilter(childNotOwl)
             .addWhere(VAR_CHILD, RDFS.subClassOf, VAR_PARENT)
-            .addFilter(notSame)
             .addFilter(parentNotRdf)
             .addFilter(parentNotRdfs)
             .addFilter(parentNotOwl))
@@ -93,10 +89,14 @@ public class HierarchyRepository extends AbstractHydraRepository {
       Resource child = row.getResource(VAR_CHILD.toString());
       Resource parent = row.getResource(VAR_PARENT.toString());
       model.add(main, RDF.type, RDFS.Resource);
-      model.add(main, Api.descendantOf, child);
-      model.add(child, RDF.type, RDFS.Resource);
-      model.add(child, Api.descendantOf, parent);
-      model.add(parent, RDF.type, RDFS.Resource);
+      if (!main.equals(child)) {
+        model.add(main, Api.descendantOf, child);
+        model.add(child, RDF.type, RDFS.Resource);
+      }
+      if (!child.equals(parent)) {
+        model.add(child, Api.descendantOf, parent);
+        model.add(parent, RDF.type, RDFS.Resource);
+      }
       Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).ifPresent(literal -> {
         model.add(main, RDFS.label, literal);
       });

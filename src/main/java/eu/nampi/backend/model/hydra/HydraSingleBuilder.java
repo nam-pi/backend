@@ -13,16 +13,25 @@ import eu.nampi.backend.service.JenaService;
 
 public class HydraSingleBuilder extends AbstractHydraBuilder {
 
-  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType) {
+  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType,
+      boolean filterBasic) {
     super(jenaService, baseUri, mainType);
     coreData
         .addFilter(ef.sameTerm(VAR_MAIN, root))
-        .addWhere(VAR_MAIN, RDF.type, VAR_TYPE)
-        .addFilter(ef.not(ef.strstarts(ef.str(VAR_TYPE), OWL.getURI())))
-        .addFilter(ef.not(ef.strstarts(ef.str(VAR_TYPE), RDFS.getURI())))
-        .addFilter(ef.not(ef.strstarts(ef.str(VAR_TYPE), RDF.getURI())))
+        .addWhere(VAR_MAIN, RDF.type, VAR_TYPE);
+    if (filterBasic) {
+      coreData
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_TYPE), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_TYPE), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_TYPE), RDF.getURI())));
+    }
+    coreData
         .addOptional(VAR_MAIN, RDFS.label, VAR_LABEL)
         .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
+  }
+
+  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType) {
+    this(jenaService, baseUri, mainType, true);
   }
 
   @Override
