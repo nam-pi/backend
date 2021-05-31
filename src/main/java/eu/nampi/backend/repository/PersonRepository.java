@@ -15,7 +15,10 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
@@ -96,10 +99,21 @@ public class PersonRepository extends AbstractHydraRepository {
   }
 
   @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
-  public String findAll(QueryParameters params, Lang lang) {
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #aspect}")
+  public String findAll(QueryParameters params, Lang lang, Optional<String> aspect) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("persons"),
         Core.person, Api.personOrderByVar, params);
+
+
+    // Add aspect query
+    builder.mapper.add("aspect", Api.personAspectVar, aspect);
+    aspect.map(ResourceFactory::createResource).ifPresent(resAspect -> {
+      Path path = PathFactory.pathSeq(
+          PathFactory.pathLink(Core.hasAspectChangedIn.asNode()),
+          PathFactory.pathLink(Core.usesAspect.asNode()));
+      builder.coreData.addWhere(VAR_MAIN, path, resAspect);
+    });
+
     builder.extendedData.addWhere(dataWhere());
     return build(builder, lang);
   }
