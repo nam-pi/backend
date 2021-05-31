@@ -29,9 +29,10 @@ public class PersonController extends AbstractRdfController {
       @RequestParam("limit") Optional<Integer> limit,
       @RequestParam("offset") Optional<Integer> offset,
       @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
-      @RequestParam("type") Optional<String> type, @RequestParam("text") Optional<String> text) {
+      @RequestParam("type") Optional<String> type, @RequestParam("text") Optional<String> text,
+      @RequestParam("aspect") Optional<String> aspect) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
-    String result = personRepository.findAll(params, lang);
+    String result = personRepository.findAll(params, lang, aspect);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
