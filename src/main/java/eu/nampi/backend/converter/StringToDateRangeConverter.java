@@ -5,9 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.springframework.core.convert.converter.Converter;
-
 import eu.nampi.backend.model.DateRange;
 
 public class StringToDateRangeConverter implements Converter<String, DateRange> {
@@ -20,7 +18,8 @@ public class StringToDateRangeConverter implements Converter<String, DateRange> 
   private Optional<LocalDateTime> parse(String year, String month, String day) {
     Optional<LocalDateTime> date = Optional.empty();
     if (year != null) {
-      String dateString = String.format("%s-%s-%s 00:00", year, month == null ? "01" : month, day == null ? "01" : day);
+      String dateString = String.format("%s-%s-%s 00:00", year, month == null ? "01" : month,
+          day == null ? "01" : day);
       date = Optional.of(LocalDateTime.parse(dateString, FORMATTER));
     }
     return date;
@@ -33,6 +32,7 @@ public class StringToDateRangeConverter implements Converter<String, DateRange> 
     Optional<LocalDateTime> end = Optional.empty();
     boolean isRange = false;
     while (matcher.find()) {
+      isRange = Optional.ofNullable(matcher.group(5)).isPresent();
       String year1 = matcher.group(1);
       String month1 = matcher.group(3);
       String day1 = matcher.group(4);
