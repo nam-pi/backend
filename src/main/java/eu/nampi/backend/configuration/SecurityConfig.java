@@ -9,6 +9,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -38,35 +39,19 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
   @Override
   protected void configure(final HttpSecurity http) throws Exception {
     super.configure(http);
+    //@formatter:off
     http.addFilter(corsFilter().getFilter()).authorizeRequests()
-        .antMatchers(
-            "/",
-            "/act/**",
-            "/acts/**",
-            "/aspect/**",
-            "/aspects/**",
-            "/author/**",
-            "/authors/**",
-            "/doc",
-            "/event/**",
-            "/events/**",
-            "/group/**",
-            "/groups/**",
-            "/hierarchy/**",
-            "/person/**",
-            "/persons/**",
-            "/place/**",
-            "/places/**",
-            "/source/**",
-            "/sources/**",
-            "/types/**")
-        .permitAll().antMatchers("/user/**").hasRole("USER").anyRequest().authenticated();
+      .antMatchers(HttpMethod.POST, "/**").hasRole("AUTHOR")
+      .antMatchers(HttpMethod.GET, "/user/**").hasRole("USER")
+      .antMatchers(HttpMethod.GET, "/**").permitAll()
+      .anyRequest().authenticated();
+    //@formatter:on
+    http.csrf().disable(); // Todo implement correct CSRF handling
   }
 
   @Override
   protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-    KeycloakAuthenticationProvider keycloakAuthenticationProvider =
-        keycloakAuthenticationProvider();
+    KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
     auth.authenticationProvider(keycloakAuthenticationProvider);
   }
 
@@ -88,8 +73,7 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     CorsConfiguration config = new CorsConfiguration().applyPermitDefaultValues();
     config.addExposedHeader("Link");
     source.registerCorsConfiguration("/**", config);
-    FilterRegistrationBean<CorsFilter> bean =
-        new FilterRegistrationBean<CorsFilter>(new CorsFilter(source));
+    FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(new CorsFilter(source));
     bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
     return bean;
   }

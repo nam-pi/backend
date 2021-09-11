@@ -3,8 +3,11 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
+
 import java.util.Optional;
 import java.util.function.BiFunction;
+
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
@@ -22,7 +25,9 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.utils.HydraUtils;
 import eu.nampi.backend.vocabulary.Api;
 
 @Repository
@@ -36,10 +41,14 @@ public class HierarchyRepository extends AbstractHydraRepository {
   private static final Node VAR_PARENT_LABEL = NodeFactory.createVariable("parentLabel");
   private static final Node VAR_PARENT_COMMENT = NodeFactory.createVariable("parentComment");
 
+  public boolean isSubtype(Resource parent, Resource child) {
+    AskBuilder builder = new AskBuilder().addWhere(child, RDFS.subClassOf, parent);
+    return jenaService.ask(builder);
+  }
+
   @Cacheable(key = "{#lang, #iri}")
   public String findHierarchy(Lang lang, String iri) {
-    HydraSingleBuilder builder =
-        new HydraSingleBuilder(jenaService, iri, RDFS.Resource, false);
+    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, iri, RDFS.Resource, false);
     ExprFactory ef = builder.ef;
     Expr childNotRdf = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDF.getURI()));
     Expr childNotRdfs = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDFS.getURI()));
@@ -48,41 +57,20 @@ public class HierarchyRepository extends AbstractHydraRepository {
     Expr parentNotRdfs = ef.not(ef.strstarts(ef.str(VAR_PARENT), RDFS.getURI()));
     Expr parentNotOwl = ef.not(ef.strstarts(ef.str(VAR_PARENT), OWL.getURI()));
     builder.coreData
-        .addOptional(new WhereBuilder()
-            .addWhere(VAR_MAIN, RDFS.subClassOf, VAR_CHILD)
-            .addFilter(childNotRdf)
-            .addFilter(childNotRdfs)
-            .addFilter(childNotOwl)
-            .addWhere(VAR_CHILD, RDFS.subClassOf, VAR_PARENT)
-            .addFilter(parentNotRdf)
-            .addFilter(parentNotRdfs)
-            .addFilter(parentNotOwl))
-        .addOptional(new WhereBuilder()
-            .addWhere(VAR_MAIN, RDFS.subPropertyOf, VAR_CHILD)
-            .addFilter(childNotRdf)
-            .addFilter(childNotRdfs)
-            .addFilter(childNotOwl)
-            .addWhere(VAR_CHILD, RDFS.subPropertyOf, VAR_PARENT)
-            .addFilter(parentNotRdf)
-            .addFilter(parentNotRdfs)
-            .addFilter(parentNotOwl))
-        .addOptional(new WhereBuilder()
-            .addWhere(VAR_MAIN, RDF.type, VAR_CHILD)
-            .addFilter(childNotRdf)
-            .addFilter(childNotRdfs)
-            .addFilter(childNotOwl)
-            .addWhere(VAR_CHILD, RDFS.subClassOf, VAR_PARENT)
-            .addFilter(parentNotRdf)
-            .addFilter(parentNotRdfs)
-            .addFilter(parentNotOwl))
-        .addOptional(VAR_CHILD, RDFS.label, VAR_CHILD_LABEL)
-        .addOptional(VAR_CHILD, RDFS.comment, VAR_CHILD_COMMENT)
+        .addOptional(new WhereBuilder().addWhere(VAR_MAIN, RDFS.subClassOf, VAR_CHILD).addFilter(childNotRdf)
+            .addFilter(childNotRdfs).addFilter(childNotOwl).addWhere(VAR_CHILD, RDFS.subClassOf, VAR_PARENT)
+            .addFilter(parentNotRdf).addFilter(parentNotRdfs).addFilter(parentNotOwl))
+        .addOptional(new WhereBuilder().addWhere(VAR_MAIN, RDFS.subPropertyOf, VAR_CHILD).addFilter(childNotRdf)
+            .addFilter(childNotRdfs).addFilter(childNotOwl).addWhere(VAR_CHILD, RDFS.subPropertyOf, VAR_PARENT)
+            .addFilter(parentNotRdf).addFilter(parentNotRdfs).addFilter(parentNotOwl))
+        .addOptional(new WhereBuilder().addWhere(VAR_MAIN, RDF.type, VAR_CHILD).addFilter(childNotRdf)
+            .addFilter(childNotRdfs).addFilter(childNotOwl).addWhere(VAR_CHILD, RDFS.subClassOf, VAR_PARENT)
+            .addFilter(parentNotRdf).addFilter(parentNotRdfs).addFilter(parentNotOwl))
+        .addOptional(VAR_CHILD, RDFS.label, VAR_CHILD_LABEL).addOptional(VAR_CHILD, RDFS.comment, VAR_CHILD_COMMENT)
         .addOptional(VAR_PARENT, RDFS.label, VAR_PARENT_LABEL)
         .addOptional(VAR_PARENT, RDFS.comment, VAR_PARENT_COMMENT);
     Resource base = ResourceFactory.createResource(endpointUri("hierarchy"));
-    builder.model
-        .add(base, RDF.type, Api.hierarchy)
-        .add(base, Api.hierarchyRoot, builder.root);
+    builder.model.add(base, RDF.type, Api.hierarchy).add(base, Api.hierarchyRoot, builder.root);
     // Create the row mapper using the base and root (==main) resources
     BiFunction<Model, QuerySolution, RDFNode> rowMapper = (model, row) -> {
       Resource main = row.getResource(VAR_MAIN.toString());
@@ -119,7 +107,7 @@ public class HierarchyRepository extends AbstractHydraRepository {
     };
 
     builder.build(rowMapper);
-    return serialize(builder.model, lang, base);
+    return HydraUtils.serialize(builder.model, lang, base);
   }
 
 }

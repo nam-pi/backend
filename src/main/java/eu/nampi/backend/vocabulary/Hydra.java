@@ -113,4 +113,7 @@ public class Hydra {
 
   public static final Resource Operation = resource("Operation");
 
+  public static final Resource Status = resource("Status");
+
+  public static final Property statusCode = property("statusCode");
 }

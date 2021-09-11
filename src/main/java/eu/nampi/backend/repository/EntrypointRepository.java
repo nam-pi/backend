@@ -10,6 +10,8 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import eu.nampi.backend.utils.HydraUtils;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
@@ -22,8 +24,8 @@ public class EntrypointRepository extends AbstractHydraRepository {
 
   public String get(Lang lang) {
     Model model = ModelFactory.createDefaultModel();
-    model.setNsPrefix("api", Api.getURI()).setNsPrefix("rdfs", RDFS.getURI())
-        .setNsPrefix("core", Core.getURI()).setNsPrefix("rdf", RDF.getURI());
+    model.setNsPrefix("api", Api.getURI()).setNsPrefix("rdfs", RDFS.getURI()).setNsPrefix("core", Core.getURI())
+        .setNsPrefix("rdf", RDF.getURI());
     Resource ep = ResourceFactory.createResource(endpointUri());
     model.add(ep, RDF.type, Api.entrypoint);
     model.add(ep, Hydra.title, "The NAMPI API");
@@ -105,7 +107,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
       model.add(ep, user, Api.user);
     });
 
-    return serialize(model, lang, ResourceFactory.createResource(endpointUri()));
+    return HydraUtils.serialize(model, lang, ResourceFactory.createResource(endpointUri()));
   }
 
 }

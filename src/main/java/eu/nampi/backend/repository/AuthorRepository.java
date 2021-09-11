@@ -4,10 +4,12 @@ import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
+
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
+
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -23,11 +25,13 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+
 import eu.nampi.backend.model.Author;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
 import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.utils.HydraUtils;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import lombok.extern.slf4j.Slf4j;
@@ -46,32 +50,29 @@ public class AuthorRepository extends AbstractHydraRepository {
       model.add(main, RDF.type, Core.author);
     });
     // Label
-    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString()))
-        .ifPresent(label -> model.add(main, RDFS.label, label));
+    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).ifPresent(label -> model.add(main, RDFS.label, label));
     // Comment
     Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     return main;
   };
 
-  @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
+  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("authors"),
-        Core.author, Api.authorOrderByVar, params);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("authors"), Core.author,
+        Api.authorOrderByVar, params);
     return build(builder, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder =
-        new HydraSingleBuilder(jenaService, individualsUri(Core.author, id), Core.author);
+    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, individualsUri(Core.author, id), Core.author);
     return build(builder, lang);
   }
 
   private String build(AbstractHydraBuilder builder, Lang lang) {
     builder.build(ROW_MAPPER);
-    return serialize(builder.model, lang, builder.root);
+    return HydraUtils.serialize(builder.model, lang, builder.root);
   }
 
   public Optional<Author> findOne(UUID rdfId) {
@@ -79,8 +80,8 @@ public class AuthorRepository extends AbstractHydraRepository {
     SelectBuilder selectBuilder = new SelectBuilder();
     String iri = individualsUri(Core.author, rdfId);
     try {
-      selectBuilder.addValueVar("?l").addWhere("?a", RDF.type, Core.author)
-          .addWhere("?a", RDFS.label, "?l").addFilter("?a = <" + iri + ">");
+      selectBuilder.addValueVar("?l").addWhere("?a", RDF.type, Core.author).addWhere("?a", RDFS.label, "?l")
+          .addFilter("?a = <" + iri + ">");
     } catch (ParseException e) {
       log.warn(e.getMessage());
     }
@@ -94,8 +95,8 @@ public class AuthorRepository extends AbstractHydraRepository {
   public Author addOne(UUID rdfId, String label) {
     String iri = individualsUri(Core.author, rdfId);
     Resource authorRes = ResourceFactory.createResource(iri);
-    UpdateBuilder updateBuilder = new UpdateBuilder().addInsert(authorRes, RDF.type, Core.author)
-        .addInsert(authorRes, RDFS.label, label);
+    UpdateBuilder updateBuilder = new UpdateBuilder().addInsert(authorRes, RDF.type, Core.author).addInsert(authorRes,
+        RDFS.label, label);
     jenaService.update(updateBuilder);
     return new Author(iri, rdfId, label);
   }
@@ -104,8 +105,8 @@ public class AuthorRepository extends AbstractHydraRepository {
     UpdateBuilder updateBuilder = new UpdateBuilder();
     try {
       updateBuilder.addDelete("?a", RDFS.label, "?l").addInsert("?a", RDFS.label, newLabel)
-          .addWhere(new WhereBuilder().addWhere("?a", RDF.type, Core.author)
-              .addWhere("?a", RDFS.label, "?l").addFilter("?a = <" + author.getIri() + ">"));
+          .addWhere(new WhereBuilder().addWhere("?a", RDF.type, Core.author).addWhere("?a", RDFS.label, "?l")
+              .addFilter("?a = <" + author.getIri() + ">"));
     } catch (ParseException e) {
       log.error(e.getMessage());
     }
