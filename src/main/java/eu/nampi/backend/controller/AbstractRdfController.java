@@ -4,6 +4,8 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -19,7 +21,7 @@ public abstract class AbstractRdfController {
   private static final int NO_OFFSET = 0;
 
   protected QueryParameters getParameters(Optional<Integer> page, Optional<Integer> pageIndex, Optional<Integer> limit,
-      Optional<Integer> offset, Optional<OrderByClauses> orderBy, Optional<String> type, Optional<String> text) {
+      Optional<Integer> offset, Optional<OrderByClauses> orderBy, Optional<Resource> type, Optional<Literal> text) {
     HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
     String baseUrl = request.getRequestURL().toString();
     String relativePath = request.getRequestURI();

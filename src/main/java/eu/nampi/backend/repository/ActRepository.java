@@ -91,20 +91,20 @@ public class ActRepository extends AbstractHydraRepository {
   };
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #author, #source}")
-  public String findAll(QueryParameters params, Lang lang, Optional<String> author, Optional<String> source) {
+  public String findAll(QueryParameters params, Lang lang, Optional<Resource> author, Optional<Resource> source) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("acts"), Core.act,
         Api.actOrderByVar, params);
     ExprFactory ef = builder.ef;
 
     // Add author query
     builder.mapper.add("author", Api.actAuthorVar, author);
-    author.map(ResourceFactory::createResource).ifPresent(res -> {
+    author.ifPresent(res -> {
       builder.coreData.addWhere(VAR_MAIN, Core.isAuthoredBy, VAR_AUTHOR).addFilter(ef.sameTerm(VAR_AUTHOR, res));
     });
 
     // Add source query
     builder.mapper.add("source", Api.actSourceVar, source);
-    source.map(ResourceFactory::createResource).ifPresent(res -> {
+    source.ifPresent(res -> {
       Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.hasSourceLocation.asNode()),
           PathFactory.pathLink(Core.hasSource.asNode()));
       builder.coreData.addWhere(VAR_MAIN, path, VAR_SRC).addFilter(ef.sameTerm(VAR_SRC, res));

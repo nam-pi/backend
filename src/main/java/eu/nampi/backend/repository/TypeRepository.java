@@ -12,7 +12,6 @@ import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
@@ -51,8 +50,7 @@ public class TypeRepository extends AbstractHydraRepository {
     // Try to get results as class
     HydraCollectionBuilder classesBuilder = new HydraCollectionBuilder(jenaService, endpointUri("types"), RDFS.Resource,
         Api.typeOrderByVar, params, false, false);
-    classesBuilder.coreData.addWhere(VAR_MAIN, RDFS.subClassOf,
-        params.getType().map(ResourceFactory::createResource).orElseThrow());
+    classesBuilder.coreData.addWhere(VAR_MAIN, RDFS.subClassOf, params.getType().orElseThrow());
     classesBuilder.build(ROW_MAPPER);
     StmtIterator iterator = classesBuilder.model.listStatements(classesBuilder.root, Hydra.totalItems, (RDFNode) null);
     while (iterator.hasNext()) {
@@ -64,8 +62,7 @@ public class TypeRepository extends AbstractHydraRepository {
     // Try to get results as property
     HydraCollectionBuilder propertiesBuilder = new HydraCollectionBuilder(jenaService, endpointUri("types"),
         RDFS.Resource, Api.typeOrderByVar, params, false, false);
-    propertiesBuilder.coreData.addWhere(VAR_MAIN, RDFS.subPropertyOf,
-        params.getType().map(ResourceFactory::createResource).orElseThrow());
+    propertiesBuilder.coreData.addWhere(VAR_MAIN, RDFS.subPropertyOf, params.getType().orElseThrow());
     propertiesBuilder.build(ROW_MAPPER);
     return HydraUtils.serialize(propertiesBuilder.model, lang, propertiesBuilder.root);
   }

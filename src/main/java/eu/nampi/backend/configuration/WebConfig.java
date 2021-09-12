@@ -8,6 +8,7 @@ import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.converter.StringToLangConverter;
 import eu.nampi.backend.converter.StringToLiteralConverter;
 import eu.nampi.backend.converter.StringToOrderByClausesConverter;
+import eu.nampi.backend.converter.StringToPropertyConverter;
 import eu.nampi.backend.converter.StringToResourceConverter;
 
 @Configuration
@@ -19,6 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
     registry.addConverter(new StringToLangConverter());
     registry.addConverter(new StringToLiteralConverter());
     registry.addConverter(new StringToOrderByClausesConverter());
+    registry.addConverter(new StringToPropertyConverter());
     registry.addConverter(new StringToResourceConverter());
   }
 }

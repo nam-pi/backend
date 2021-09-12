@@ -32,8 +32,8 @@ public class AspectController extends AbstractRdfController {
   public ResponseEntity<String> getAspects(@RequestHeader("accept") Lang lang,
       @RequestParam("page") Optional<Integer> page, @RequestParam("pageIndex") Optional<Integer> pageIndex,
       @RequestParam("limit") Optional<Integer> limit, @RequestParam("offset") Optional<Integer> offset,
-      @RequestParam("orderBy") Optional<OrderByClauses> orderBy, @RequestParam("type") Optional<String> type,
-      @RequestParam("text") Optional<String> text, @RequestParam("participant") Optional<String> participant) {
+      @RequestParam("orderBy") Optional<OrderByClauses> orderBy, @RequestParam("type") Optional<Resource> type,
+      @RequestParam("text") Optional<Literal> text, @RequestParam("participant") Optional<Resource> participant) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
     String result = aspectRepository.findAll(params, lang, participant);
     return new ResponseEntity<String>(result, HttpStatus.OK);

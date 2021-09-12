@@ -2,6 +2,7 @@ package eu.nampi.backend.model.hydra;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
+
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
@@ -13,6 +14,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Api;
@@ -25,9 +27,8 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
   public ParameterMapper mapper;
   public WhereBuilder extendedData = new WhereBuilder();
 
-  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
-      Resource orderByVar, QueryParameters params, boolean includeTextFilter,
-      boolean includeTypeAndText) {
+  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType, Resource orderByVar,
+      QueryParameters params, boolean includeTextFilter, boolean includeTypeAndText) {
     super(jenaService, baseUri, mainType);
     this.mapper = new ParameterMapper(baseUri, root, model);
     this.orderByVar = orderByVar;
@@ -36,9 +37,7 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
 
     // Set up manages node
     Resource manages = ResourceFactory.createResource();
-    this.model
-        .add(root, Hydra.manages, manages)
-        .add(manages, Hydra.object, mainType);
+    this.model.add(root, Hydra.manages, manages).add(manages, Hydra.object, mainType);
 
     boolean orderByLabel = this.params.getOrderByClauses().containsKey("label");
     if (orderByLabel) {
@@ -46,9 +45,7 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
     }
 
     // Add default data
-    extendedData
-        .addOptional(VAR_MAIN, RDFS.label, VAR_LABEL)
-        .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
+    extendedData.addOptional(VAR_MAIN, RDFS.label, VAR_LABEL).addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
 
     // Add default text filter
     params.getText().filter(text -> includeTextFilter && includeTypeAndText).ifPresent(text -> {
@@ -60,19 +57,18 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
     });
 
     // Add type filter
-    params.getType().filter(type -> includeTypeAndText).map(ResourceFactory::createResource)
-        .ifPresent(res -> {
-          coreData.addWhere(VAR_MAIN, RDF.type, res);
-        });
+    params.getType().filter(type -> includeTypeAndText).ifPresent(res -> {
+      coreData.addWhere(VAR_MAIN, RDF.type, res);
+    });
   }
 
-  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
-      Resource orderByVar, QueryParameters params, boolean includeTextFilter) {
+  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType, Resource orderByVar,
+      QueryParameters params, boolean includeTextFilter) {
     this(jenaService, baseUri, mainType, orderByVar, params, includeTextFilter, true);
   }
 
-  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
-      Resource orderByVar, QueryParameters params) {
+  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType, Resource orderByVar,
+      QueryParameters params) {
     this(jenaService, baseUri, mainType, orderByVar, params, true, true);
   }
 
@@ -82,46 +78,29 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
     int totalItems = jenaService.count(coreData, VAR_MAIN);
 
     // Finalize the core select
-    SelectBuilder coreSelect = new SelectBuilder()
-        .setDistinct(true)
-        .addVar(VAR_MAIN)
-        .addWhere(coreData);
+    SelectBuilder coreSelect = new SelectBuilder().setDistinct(true).addVar(VAR_MAIN).addWhere(coreData);
 
-    this.params
-        .getOrderByClauses()
-        .appendAllTo(coreSelect);
-    coreSelect
-        .addOrderBy(VAR_MAIN)
-        .setOffset(params.getOffset())
-        .setLimit(params.getLimit());
+    this.params.getOrderByClauses().appendAllTo(coreSelect);
+    coreSelect.addOrderBy(VAR_MAIN).setOffset(params.getOffset()).setLimit(params.getLimit());
 
-    SelectBuilder finalSelect = new SelectBuilder()
-        .addSubQuery(coreSelect)
-        .addWhere(extendedData);
+    SelectBuilder finalSelect = new SelectBuilder().addSubQuery(coreSelect).addWhere(extendedData);
 
     // Setup the root hydra collection
-    this.model
-        .add(this.root, RDF.type, Hydra.Collection)
-        .addLiteral(root, Hydra.totalItems,
-            ResourceFactory.createTypedLiteral(String.valueOf(totalItems), XSDDatatype.XSDinteger));
+    this.model.add(this.root, RDF.type, Hydra.Collection).addLiteral(root, Hydra.totalItems,
+        ResourceFactory.createTypedLiteral(String.valueOf(totalItems), XSDDatatype.XSDinteger));
 
-    // Query the data using the jena service and add the content provided by the row mapper function
+    // Query the data using the jena service and add the content provided by the row
+    // mapper function
     // to the model
-    jenaService.select(finalSelect, row -> this.model
-        .add(root, Hydra.member, rowToNode.apply(this.model, row)));
+    jenaService.select(finalSelect, row -> this.model.add(root, Hydra.member, rowToNode.apply(this.model, row)));
 
     // Set up the search and view nodes with the main query parameters
-    this.mapper
-        .add("limit", Hydra.limit, params.getLimit())
-        .add("offset", Hydra.offset, params.getOffset())
+    this.mapper.add("limit", Hydra.limit, params.getLimit()).add("offset", Hydra.offset, params.getOffset())
         .add("orderBy", orderByVar, params.getOrderByClauses().toQueryString())
-        .add("pageIndex", Hydra.pageIndex, Optional.empty())
-        .add("type", RDF.type, params.getType());
+        .add("pageIndex", Hydra.pageIndex, Optional.empty()).add("type", RDF.type, params.getType());
     if (includeTypeAndText) {
-      this.mapper
-          .add("text", Api.textVar, params.getText());
+      this.mapper.add("text", Api.textVar, params.getText());
     }
-    this.mapper.insertTemplate()
-        .insertView(totalItems);
+    this.mapper.insertTemplate().insertView(totalItems);
   }
 }

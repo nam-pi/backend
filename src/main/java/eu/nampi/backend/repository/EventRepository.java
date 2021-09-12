@@ -21,6 +21,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -180,10 +181,10 @@ public class EventRepository extends AbstractHydraRepository {
   };
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place, #author}")
-  public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<String> aspect,
-      Optional<String> aspectType, Optional<String> aspectUseType, Optional<String> participant,
-      Optional<String> participantType, Optional<String> participationType, Optional<String> place,
-      Optional<String> author) {
+  public String findAll(QueryParameters params, Lang lang, Optional<String> dates, Optional<Resource> aspect,
+      Optional<Resource> aspectType, Optional<Property> aspectUseType, Optional<Resource> participant,
+      Optional<Resource> participantType, Optional<Property> participationType, Optional<Resource> place,
+      Optional<Resource> author) {
 
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("events"), Core.event,
         Api.eventOrderByVar, params);
@@ -194,14 +195,14 @@ public class EventRepository extends AbstractHydraRepository {
 
     // Place data
     builder.mapper.add("place", Api.eventPlaceVar, place);
-    place.map(ResourceFactory::createResource).ifPresent(resPlace -> {
+    place.ifPresent(resPlace -> {
       builder.coreData.addWhere(placeWhere(false)).addFilter(ef.sameTerm(VAR_PLACE, resPlace));
     });
 
     AtomicBoolean useParticipantWhere = new AtomicBoolean(false);
     // Participant data
     builder.mapper.add("participant", Api.eventParticipantVar, participant);
-    participant.map(ResourceFactory::createResource).ifPresent(resParticipant -> {
+    participant.ifPresent(resParticipant -> {
       if (!useParticipantWhere.get()) {
         builder.coreData.addWhere(participantWhere(false));
       }
@@ -210,7 +211,7 @@ public class EventRepository extends AbstractHydraRepository {
     });
     // Participant type data
     builder.mapper.add("participantType", Api.eventParticipantTypeVar, participantType);
-    participantType.map(ResourceFactory::createResource).ifPresent(resType -> {
+    participantType.ifPresent(resType -> {
       if (!useParticipantWhere.get()) {
         builder.coreData.addWhere(participantWhere(false));
       }
@@ -219,14 +220,14 @@ public class EventRepository extends AbstractHydraRepository {
     });
     // Participation type data
     builder.mapper.add("participationType", Api.eventParticipationTypeVar, participationType);
-    participationType.map(ResourceFactory::createResource).ifPresent(resType -> {
+    participationType.ifPresent(resType -> {
       builder.coreData.addWhere(VAR_MAIN, resType, VAR_PARTICIPANT);
     });
 
     AtomicBoolean useAspectWhere = new AtomicBoolean(false);
     // Aspect data
     builder.mapper.add("aspect", Api.eventAspectVar, aspect);
-    aspect.map(ResourceFactory::createResource).ifPresent(resAspect -> {
+    aspect.ifPresent(resAspect -> {
       if (!useAspectWhere.get()) {
         builder.coreData.addWhere(aspectWhere(false));
       }
@@ -235,7 +236,7 @@ public class EventRepository extends AbstractHydraRepository {
     });
     // Aspect type data
     builder.mapper.add("aspectType", Api.eventAspectTypeVar, aspectType);
-    aspectType.map(ResourceFactory::createResource).ifPresent(resType -> {
+    aspectType.ifPresent(resType -> {
       if (!useAspectWhere.get()) {
         builder.coreData.addWhere(aspectWhere(false));
       }
@@ -244,13 +245,13 @@ public class EventRepository extends AbstractHydraRepository {
     });
     // Aspect use type data
     builder.mapper.add("aspectUseType", Api.eventAspectUseTypeVar, aspectUseType);
-    aspectUseType.map(ResourceFactory::createResource).ifPresent(resType -> {
+    aspectUseType.ifPresent(resType -> {
       builder.coreData.addWhere(VAR_MAIN, resType, VAR_ASPECT);
     });
 
     // Author data
     builder.mapper.add("author", Api.eventAuthorVar, author);
-    author.map(ResourceFactory::createResource).ifPresent(resAuthor -> {
+    author.ifPresent(resAuthor -> {
       builder.coreData.addWhere(actWhere(false)).addFilter(ef.sameTerm(VAR_AUTHOR, resAuthor));
     });
 

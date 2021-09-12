@@ -71,14 +71,14 @@ public class AspectRepository extends AbstractHydraRepository {
   };
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #participant}")
-  public String findAll(QueryParameters params, Lang lang, Optional<String> participant) {
+  public String findAll(QueryParameters params, Lang lang, Optional<Resource> participant) {
     HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(COLLECTION_ENDPOINT_NAME),
         Core.aspect, Api.aspectOrderByVar, params, false);
     ExprFactory ef = builder.ef;
 
     // Add participant query
     builder.mapper.add("participant", Api.aspectParticipantVar, participant);
-    participant.map(ResourceFactory::createResource).ifPresent(resParticipant -> {
+    participant.ifPresent(resParticipant -> {
       Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.aspectIsUsedIn.asNode()),
           PathFactory.pathLink(Core.hasParticipant.asNode()));
       builder.coreData.addWhere(VAR_MAIN, path, resParticipant);
