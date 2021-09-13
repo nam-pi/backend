@@ -39,14 +39,14 @@ public class AspectController extends AbstractRdfController {
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
-  @GetMapping(value = "/aspect/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+  @GetMapping(value = "/aspects/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
       "application/n-triples" })
   public ResponseEntity<String> getAspect(@RequestHeader("accept") Lang lang, @PathVariable UUID id) {
     String result = aspectRepository.findOne(lang, id);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
-  @PostMapping(value = "/aspect", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+  @PostMapping(value = "/aspects", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
       "application/n-triples" })
   public ResponseEntity<String> postAspect(@RequestHeader("accept") Lang lang,
       @RequestParam("type") Optional<Resource> type, @RequestParam("label") Optional<Literal> label,

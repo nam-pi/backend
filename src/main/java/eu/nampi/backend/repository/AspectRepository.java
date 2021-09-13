@@ -42,8 +42,7 @@ import eu.nampi.backend.vocabulary.Core;
 @CacheConfig(cacheNames = "aspects")
 public class AspectRepository extends AbstractHydraRepository {
 
-  private static final String COLLECTION_ENDPOINT_NAME = "aspects";
-  private static final String SINGLE_ENDPOINT_NAME = "aspect";
+  private static final String ENDPOINT_NAME = "aspects";
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
   private static final Node VAR_STRING = NodeFactory.createVariable("string");
 
@@ -72,8 +71,8 @@ public class AspectRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #participant}")
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> participant) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(COLLECTION_ENDPOINT_NAME),
-        Core.aspect, Api.aspectOrderByVar, params, false);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.aspect,
+        Api.aspectOrderByVar, params, false);
     ExprFactory ef = builder.ef;
 
     // Add participant query
@@ -99,7 +98,8 @@ public class AspectRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, individualsUri(Core.aspect, id), Core.aspect);
+    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
+        Core.aspect);
     addData(builder.coreData);
     return build(builder, lang);
   }
@@ -120,7 +120,7 @@ public class AspectRepository extends AbstractHydraRepository {
       throw new IllegalArgumentException(
           String.format("'%s' is not a subtype of '%s'.", type.toString(), Core.aspect.toString()));
     }
-    Resource aspect = ResourceFactory.createResource(endpointUri(SINGLE_ENDPOINT_NAME, id.toString()));
+    Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id.toString()));
     UpdateBuilder builder = new UpdateBuilder().addInsert(aspect, RDF.type, type);
     label.ifPresent(l -> builder.addInsert(aspect, RDFS.label, l));
     text.ifPresent(t -> builder.addInsert(aspect, Core.hasText, t));

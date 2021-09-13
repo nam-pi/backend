@@ -41,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @CacheConfig(cacheNames = "authors")
 public class AuthorRepository extends AbstractHydraRepository {
 
+  private static final String ENDPOINT_NAME = "authors";
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
@@ -59,14 +60,15 @@ public class AuthorRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("authors"), Core.author,
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.author,
         Api.authorOrderByVar, params);
     return build(builder, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, individualsUri(Core.author, id), Core.author);
+    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
+        Core.author);
     return build(builder, lang);
   }
 

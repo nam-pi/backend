@@ -37,7 +37,7 @@ public class PlaceController extends AbstractRdfController {
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
-  @GetMapping(value = "/place/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+  @GetMapping(value = "/places/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
       "application/n-triples" })
   public ResponseEntity<String> getEvent(@RequestHeader("accept") Lang lang, @PathVariable UUID id) {
     String result = placeRepository.findOne(lang, id);

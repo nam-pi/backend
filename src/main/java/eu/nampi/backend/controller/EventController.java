@@ -45,7 +45,7 @@ public class EventController extends AbstractRdfController {
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
-  @GetMapping(value = "/event/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+  @GetMapping(value = "/events/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
       "application/n-triples" })
   public ResponseEntity<String> getEvent(@RequestHeader("accept") Lang lang, @PathVariable UUID id) {
     String result = eventRepository.findOne(lang, id);

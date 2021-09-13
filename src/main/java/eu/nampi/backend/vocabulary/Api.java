@@ -76,4 +76,5 @@ public class Api {
   public static Resource textVar = resource("textVariable");
   public static Resource typeVar = resource("typeVariable");
   public static Resource user = resource("user");
+  public static Property isAuthor = property("is_author");
 }

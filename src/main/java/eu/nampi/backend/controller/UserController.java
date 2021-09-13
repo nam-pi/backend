@@ -9,6 +9,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+
 import eu.nampi.backend.repository.UserRepository;
 
 @RestController
@@ -17,13 +18,11 @@ public class UserController {
   @Autowired
   UserRepository userRepository;
 
-  @GetMapping(value = "/user",
-      produces = {"application/ld+json", "text/turtle", "application/rdf+xml",
-          "application/n-triples"})
+  @GetMapping(value = "/users/current", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+      "application/n-triples" })
   @Secured("ROLE_USER")
   public ResponseEntity<String> currentUser(@RequestHeader("accept") Lang lang) {
-    return userRepository.getCurrentUser(lang)
-        .map(result -> new ResponseEntity<String>(result, HttpStatus.OK))
+    return userRepository.getCurrentUser(lang).map(result -> new ResponseEntity<String>(result, HttpStatus.OK))
         .orElseThrow(AccessDeniedException::new);
 
   }

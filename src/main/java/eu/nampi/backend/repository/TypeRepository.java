@@ -30,6 +30,7 @@ import eu.nampi.backend.vocabulary.Hydra;
 @CacheConfig(cacheNames = "types")
 public class TypeRepository extends AbstractHydraRepository {
 
+  private static final String ENDPOINT_NAME = "types";
   Pattern totalItemsRegex = Pattern.compile("\"totalItems\":\"(\\d*)\"");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
@@ -48,8 +49,8 @@ public class TypeRepository extends AbstractHydraRepository {
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type}")
   public String findAll(QueryParameters params, Lang lang) {
     // Try to get results as class
-    HydraCollectionBuilder classesBuilder = new HydraCollectionBuilder(jenaService, endpointUri("types"), RDFS.Resource,
-        Api.typeOrderByVar, params, false, false);
+    HydraCollectionBuilder classesBuilder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME),
+        RDFS.Resource, Api.typeOrderByVar, params, false, false);
     classesBuilder.coreData.addWhere(VAR_MAIN, RDFS.subClassOf, params.getType().orElseThrow());
     classesBuilder.build(ROW_MAPPER);
     StmtIterator iterator = classesBuilder.model.listStatements(classesBuilder.root, Hydra.totalItems, (RDFNode) null);

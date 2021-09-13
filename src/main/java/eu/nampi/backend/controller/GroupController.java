@@ -37,7 +37,7 @@ public class GroupController extends AbstractRdfController {
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
-  @GetMapping(value = "/group/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+  @GetMapping(value = "/groups/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
       "application/n-triples" })
   public ResponseEntity<String> getEvent(@RequestHeader("accept") Lang lang, @PathVariable UUID id) {
     String result = groupRepository.findOne(lang, id);

@@ -38,7 +38,7 @@ public class ActController extends AbstractRdfController {
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
-  @GetMapping(value = "/act/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
+  @GetMapping(value = "/acts/{id}", produces = { "application/ld+json", "text/turtle", "application/rdf+xml",
       "application/n-triples" })
   public ResponseEntity<String> getEvent(@RequestHeader("accept") Lang lang, @PathVariable UUID id) {
     String result = actRepository.findOne(lang, id);

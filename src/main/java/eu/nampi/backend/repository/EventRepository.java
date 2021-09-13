@@ -53,6 +53,7 @@ public class EventRepository extends AbstractHydraRepository {
 
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
+  private static final String ENDPOINT_NAME = "events";
   private static final Node VAR_ACT = NodeFactory.createVariable("act");
   private static final Node VAR_ACT_DATE = NodeFactory.createVariable("actDate");
   private static final Node VAR_ACT_DATE_TIME = NodeFactory.createVariable("actDateTime");
@@ -186,7 +187,7 @@ public class EventRepository extends AbstractHydraRepository {
       Optional<Resource> participantType, Optional<Property> participationType, Optional<Resource> place,
       Optional<Resource> author) {
 
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("events"), Core.event,
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.event,
         Api.eventOrderByVar, params);
     ExprFactory ef = builder.ef;
 
@@ -286,7 +287,8 @@ public class EventRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, individualsUri(Core.event, id), Core.event);
+    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
+        Core.event);
     builder.coreData.addWhere(datesWhere(Order.ASCENDING, VAR_DATE_REAL_SORT, VAR_DATE)).addWhere(actWhere(true))
         .addWhere(participantWhere(true)).addOptional(aspectWhere(true)).addOptional(placeWhere(true));
     return build(builder, lang);

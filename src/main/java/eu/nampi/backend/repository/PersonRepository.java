@@ -38,6 +38,7 @@ import eu.nampi.backend.vocabulary.Core;
 @CacheConfig(cacheNames = "persons")
 public class PersonRepository extends AbstractHydraRepository {
 
+  private static final String ENDPOINT_NAME = "persons";
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
   private static final String PREF_BIRTH = "birth";
   private static final String PREF_DEATH = "death";
@@ -85,7 +86,7 @@ public class PersonRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #aspect}")
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> aspect) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("persons"), Core.person,
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.person,
         Api.personOrderByVar, params);
 
     // Add aspect query
@@ -102,7 +103,8 @@ public class PersonRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, individualsUri(Core.person, id), Core.person);
+    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
+        Core.person);
     builder.coreData.addWhere(dataWhere());
     return build(builder, lang);
   }

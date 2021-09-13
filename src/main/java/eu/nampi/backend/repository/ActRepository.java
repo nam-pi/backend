@@ -40,6 +40,7 @@ import eu.nampi.backend.vocabulary.Core;
 @CacheConfig(cacheNames = "acts")
 public class ActRepository extends AbstractHydraRepository {
 
+  private static final String ENDPOINT_NAME = "acts";
   private static final Node VAR_AUTHOR = NodeFactory.createVariable("author");
   private static final Node VAR_AUTHOR_LABEL = NodeFactory.createVariable("authorLabel");
   private static final Node VAR_DATE = NodeFactory.createVariable("authoredDate");
@@ -92,7 +93,7 @@ public class ActRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #author, #source}")
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> author, Optional<Resource> source) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("acts"), Core.act,
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.act,
         Api.actOrderByVar, params);
     ExprFactory ef = builder.ef;
 
@@ -116,7 +117,8 @@ public class ActRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, individualsUri(Core.act, id), Core.act);
+    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
+        Core.act);
     addData(builder.coreData, true);
     return build(builder, lang);
   }

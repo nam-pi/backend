@@ -34,6 +34,7 @@ import eu.nampi.backend.vocabulary.Core;
 @CacheConfig(cacheNames = "sources")
 public class SourceRepository extends AbstractHydraRepository {
 
+  private static final String ENDPOINT_NAME = "sources";
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
@@ -56,7 +57,7 @@ public class SourceRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri("sources"), Core.source,
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.source,
         Api.sourceOrderByVar, params);
     builder.extendedData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
     return build(builder, lang);
@@ -64,7 +65,8 @@ public class SourceRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, individualsUri(Core.source, id), Core.source);
+    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
+        Core.source);
     builder.coreData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
     return build(builder, lang);
   }

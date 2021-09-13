@@ -31,6 +31,7 @@ import eu.nampi.backend.vocabulary.SchemaOrg;
 @Repository
 public class UserRepository extends AbstractHydraRepository {
 
+  private static final String ENDPOINT_NAME = "users";
   @Value("${nampi.keycloak-rdf-id-attribute}")
   String keycloakRdfIdAttribute;
 
@@ -62,13 +63,13 @@ public class UserRepository extends AbstractHydraRepository {
 
   public Optional<String> getCurrentUser(Lang lang) {
     return getCurrentUser().map(u -> {
-      String uri = endpointUri("user");
-      Resource userResource = ResourceFactory.createResource(uri);
+      Resource userResource = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, "current"));
       Model model = ModelFactory.createDefaultModel();
       model.setNsPrefix("api", Api.getURI()).setNsPrefix("core", Core.getURI());
       model.add(userResource, RDF.type, Api.user);
       if (u.getAuthorities().contains("ROLE_AUTHOR")) {
-        model.add(userResource, Core.sameAs, ResourceFactory.createResource(individualsUri(Core.author, u.getRdfId())));
+        model.add(userResource, Api.isAuthor,
+            ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, u.getRdfId().toString())));
       }
       model.add(userResource, RDFS.label, u.getLabel());
       model.add(userResource, SchemaOrg.givenName, u.getGivenName());
