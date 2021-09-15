@@ -30,7 +30,6 @@ import eu.nampi.backend.model.hydra.HydraSingleBuilder;
 import eu.nampi.backend.utils.HydraUtils;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
-import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @CacheConfig(cacheNames = "authors")
