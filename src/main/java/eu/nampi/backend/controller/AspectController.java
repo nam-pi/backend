@@ -59,9 +59,10 @@ public class AspectController extends AbstractRdfController {
       @RequestHeader("accept") Lang lang,
       @RequestParam("type") Resource type,
       @RequestParam("label[]") List<Literal> label,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text) {
-    String newAspect =
-        aspectRepository.insert(lang, type, label, text == null ? new ArrayList<>() : text);
+    String newAspect = aspectRepository.insert(lang, type, label,
+        comment == null ? new ArrayList<>() : comment, text == null ? new ArrayList<>() : text);
     return new ResponseEntity<String>(newAspect, HttpStatus.CREATED);
   }
 
@@ -72,9 +73,10 @@ public class AspectController extends AbstractRdfController {
       @PathVariable UUID id,
       @RequestParam("type") Resource type,
       @RequestParam("label[]") List<Literal> label,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text) {
-    String newAspect =
-        aspectRepository.update(lang, id, type, label, text == null ? new ArrayList<>() : text);
+    String newAspect = aspectRepository.update(lang, id, type, label,
+        comment == null ? new ArrayList<>() : comment, text == null ? new ArrayList<>() : text);
     return new ResponseEntity<String>(newAspect, HttpStatus.OK);
   }
 }

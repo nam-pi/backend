@@ -121,7 +121,8 @@ public class AspectRepository extends AbstractHydraRepository {
         .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
   }
 
-  public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> texts) {
+  public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
+      List<Literal> texts) {
     UUID id = UUID.randomUUID();
     Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id.toString()));
     if (!hierarchyRepository.isSubtype(Core.aspect, type)) {
@@ -131,34 +132,35 @@ public class AspectRepository extends AbstractHydraRepository {
     UpdateBuilder builder = new UpdateBuilder()
         .addInsert(aspect, RDF.type, type);
     labels.forEach(label -> builder.addInsert(aspect, RDFS.label, label));
+    comments.forEach(labelcomment -> builder.addInsert(aspect, RDFS.comment, labelcomment));
     texts.forEach(text -> builder.addInsert(aspect, Core.hasText, text));
     jenaService.update(builder);
     return findOne(lang, id);
   }
 
   public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
-      List<Literal> texts) {
+      List<Literal> comments, List<Literal> texts) {
     Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id));
     if (!hierarchyRepository.isSubtype(Core.aspect, type)) {
       throw new IllegalArgumentException(
           String.format("'%s' is not a subtype of '%s'.", type.toString(), Core.aspect.toString()));
     }
-    Node varAspect = NodeFactory.createVariable("aspect");
-    Node varType = NodeFactory.createVariable("type");
-    Node varLabel = NodeFactory.createVariable("label");
     Node varText = NodeFactory.createVariable("text");
     UpdateBuilder builder = new UpdateBuilder();
     ExprFactory ef = builder.getExprFactory();
     builder
-        .addDelete(varAspect, RDF.type, varType)
-        .addDelete(varAspect, RDFS.label, varLabel)
-        .addDelete(varAspect, Core.hasText, varText)
-        .addInsert(varAspect, RDF.type, type)
-        .addFilter(ef.sameTerm(varAspect, aspect))
-        .addWhere(varAspect, RDF.type, varType)
-        .addWhere(varAspect, RDFS.label, varLabel)
-        .addOptional(varAspect, Core.hasText, varText);
-    labels.forEach(label -> builder.addInsert(varAspect, RDFS.label, label));
+        .addDelete(VAR_MAIN, RDF.type, VAR_TYPE)
+        .addDelete(VAR_MAIN, RDFS.label, VAR_LABEL)
+        .addDelete(VAR_MAIN, RDFS.comment, VAR_COMMENT)
+        .addDelete(VAR_MAIN, Core.hasText, varText)
+        .addInsert(VAR_MAIN, RDF.type, type)
+        .addFilter(ef.sameTerm(VAR_MAIN, aspect))
+        .addWhere(VAR_MAIN, RDF.type, VAR_TYPE)
+        .addWhere(VAR_MAIN, RDFS.label, VAR_LABEL)
+        .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT)
+        .addOptional(VAR_MAIN, Core.hasText, varText);
+    labels.forEach(label -> builder.addInsert(VAR_MAIN, RDFS.label, label));
+    comments.forEach(labelcomment -> builder.addInsert(aspect, RDFS.comment, labelcomment));
     texts.forEach(text -> builder.addInsert(aspect, Core.hasText, text));
     jenaService.update(builder);
     return findOne(lang, id);
