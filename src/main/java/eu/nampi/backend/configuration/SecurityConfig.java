@@ -39,19 +39,20 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
   @Override
   protected void configure(final HttpSecurity http) throws Exception {
     super.configure(http);
-    //@formatter:off
-    http.addFilter(corsFilter().getFilter()).authorizeRequests()
-      .antMatchers(HttpMethod.POST, "/**").hasRole("AUTHOR")
-      .antMatchers(HttpMethod.GET, "/users/**").hasRole("USER")
-      .antMatchers(HttpMethod.GET, "/**").permitAll()
-      .anyRequest().authenticated();
-    //@formatter:on
+    http
+        .addFilter(corsFilter().getFilter())
+        .authorizeRequests()
+        .antMatchers(HttpMethod.POST, "/**").hasRole("AUTHOR")
+        .antMatchers(HttpMethod.GET, "/users/**").hasRole("USER")
+        .antMatchers(HttpMethod.GET, "/**").permitAll()
+        .anyRequest().authenticated();
     http.csrf().disable(); // Todo implement correct CSRF handling
   }
 
   @Override
   protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-    KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
+    KeycloakAuthenticationProvider keycloakAuthenticationProvider =
+        keycloakAuthenticationProvider();
     auth.authenticationProvider(keycloakAuthenticationProvider);
   }
 
@@ -73,7 +74,8 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     CorsConfiguration config = new CorsConfiguration().applyPermitDefaultValues();
     config.addExposedHeader("Link");
     source.registerCorsConfiguration("/**", config);
-    FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(new CorsFilter(source));
+    FilterRegistrationBean<CorsFilter> bean =
+        new FilterRegistrationBean<CorsFilter>(new CorsFilter(source));
     bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
     return bean;
   }

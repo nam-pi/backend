@@ -23,5 +23,4 @@ public class ConfigProperties {
   String keycloakRdfIdAttribute;
 
   List<String> otherOwlUrls;
-
 }

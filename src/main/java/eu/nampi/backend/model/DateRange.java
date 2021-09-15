@@ -3,7 +3,6 @@ package eu.nampi.backend.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Optional;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -20,5 +19,4 @@ public class DateRange implements Serializable {
   Optional<LocalDateTime> end;
 
   boolean isRange;
-
 }

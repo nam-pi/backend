@@ -4,11 +4,9 @@ import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
-
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
-
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
@@ -21,7 +19,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
@@ -40,33 +37,38 @@ public class GroupRepository extends AbstractHydraRepository {
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
-    Optional.ofNullable(row.getResource(VAR_TYPE.toString())).ifPresentOrElse(type -> {
-      model.add(main, RDF.type, type);
-    }, () -> {
-      model.add(main, RDF.type, Core.group);
-    });
+    Optional
+        .ofNullable(row.getResource(VAR_TYPE.toString()))
+        .ifPresentOrElse(type -> model.add(main, RDF.type, type),
+            () -> model.add(main, RDF.type, Core.group));
     // Label
-    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).ifPresent(label -> model.add(main, RDFS.label, label));
+    Optional
+        .ofNullable(row.getLiteral(VAR_LABEL.toString()))
+        .ifPresent(label -> model.add(main, RDFS.label, label));
     // Comment
-    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString()))
+    Optional
+        .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // SameAs
-    Optional.ofNullable(row.getResource(VAR_SAME_AS.toString())).ifPresent(iri -> model.add(main, Core.sameAs, iri));
+    Optional
+        .ofNullable(row.getResource(VAR_SAME_AS.toString()))
+        .ifPresent(iri -> model.add(main, Core.sameAs, iri));
     return main;
   };
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.group,
-        Api.groupOrderByVar, params);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService,
+        endpointUri(ENDPOINT_NAME), Core.group, Api.groupOrderByVar, params);
     builder.extendedData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
     return build(builder, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
-        Core.group);
+    HydraSingleBuilder builder =
+        new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()), Core.group);
     builder.coreData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
     return build(builder, lang);
   }
@@ -75,5 +77,4 @@ public class GroupRepository extends AbstractHydraRepository {
     builder.build(ROW_MAPPER);
     return HydraUtils.serialize(builder.model, lang, builder.root);
   }
-
 }

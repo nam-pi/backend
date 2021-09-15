@@ -33,5 +33,4 @@ public class User {
 
   @NonNull
   private UUID rdfId;
-
 }

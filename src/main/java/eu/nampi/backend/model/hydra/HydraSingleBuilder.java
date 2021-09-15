@@ -41,5 +41,4 @@ public class HydraSingleBuilder extends AbstractHydraBuilder {
         .addWhere(coreData);
     jenaService.select(core, row -> rowToNode.apply(this.model, row));
   }
-
 }

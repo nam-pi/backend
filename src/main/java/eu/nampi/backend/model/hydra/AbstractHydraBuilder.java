@@ -56,5 +56,4 @@ public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
   protected Optional<RDFNode> get(QuerySolution row, Node variable) {
     return Optional.ofNullable(row.get(variable.getName()));
   }
-
 }

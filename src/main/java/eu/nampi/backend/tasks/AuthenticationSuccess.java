@@ -21,23 +21,29 @@ public class AuthenticationSuccess implements ApplicationListener<Authentication
 
   @Override
   public void onApplicationEvent(AuthenticationSuccessEvent event) {
-    boolean notAuthor = event.getAuthentication().getAuthorities().stream()
-        .map(a -> a.getAuthority()).noneMatch(r -> r.equals("ROLE_AUTHOR"));
+    boolean notAuthor = event
+        .getAuthentication()
+        .getAuthorities()
+        .stream()
+        .map(a -> a.getAuthority())
+        .noneMatch(r -> r.equals("ROLE_AUTHOR"));
     if (notAuthor) {
       return;
     }
-    userRepository.getCurrentUser().ifPresent(u -> {
-      authorRepository.findOne(u.getRdfId()).ifPresentOrElse(a -> {
-        if (!a.getLabel().equals(u.getLabel())) {
-          // Label has changed in Keycloak
-          Author updated = authorRepository.updateLabel(a, u.getLabel());
-          log.debug("Updated label to {} for author {}", u.getLabel(), updated);
-        }
-      }, () -> {
-        // Add new author
-        Author newAuthor = authorRepository.addOne(u.getRdfId(), u.getLabel());
-        log.debug("Added new author {}", newAuthor);
-      });
-    });
+    userRepository
+        .getCurrentUser()
+        .ifPresent(u -> authorRepository
+            .findOne(u.getRdfId())
+            .ifPresentOrElse(a -> {
+              if (!a.getLabel().equals(u.getLabel())) {
+                // Label has changed in Keycloak
+                Author updated = authorRepository.updateLabel(a, u.getLabel());
+                log.debug("Updated label to {} for author {}", u.getLabel(), updated);
+              }
+            }, () -> {
+              // Add new author
+              Author newAuthor = authorRepository.addOne(u.getRdfId(), u.getLabel());
+              log.debug("Added new author {}", newAuthor);
+            }));
   }
 }

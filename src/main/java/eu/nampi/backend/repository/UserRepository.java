@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.model.User;
 import eu.nampi.backend.utils.HydraUtils;
 import eu.nampi.backend.vocabulary.Api;
@@ -41,13 +39,15 @@ public class UserRepository extends AbstractHydraRepository {
       return Optional.empty();
     } else {
       @SuppressWarnings("unchecked")
-      KeycloakPrincipal<KeycloakSecurityContext> principal = (KeycloakPrincipal<KeycloakSecurityContext>) origPrincipal;
+      KeycloakPrincipal<KeycloakSecurityContext> principal =
+          (KeycloakPrincipal<KeycloakSecurityContext>) origPrincipal;
       KeycloakSecurityContext context = principal.getKeycloakSecurityContext();
       AccessToken accessToken = context.getToken();
       Authentication auth = SecurityContextHolder.getContext().getAuthentication();
       List<String> authorities = new ArrayList<>();
       if (auth != null) {
-        authorities = auth.getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.toList());
+        authorities =
+            auth.getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.toList());
       }
       UUID id = UUID.fromString(accessToken.getSubject());
       UUID rdfId = id;
@@ -55,9 +55,10 @@ public class UserRepository extends AbstractHydraRepository {
       if (customClaims.containsKey(keycloakRdfIdAttribute)) {
         rdfId = UUID.fromString((String) customClaims.get(keycloakRdfIdAttribute));
       }
-      String label = accessToken.getName().isEmpty() ? accessToken.getPreferredUsername() : accessToken.getName();
-      return Optional.of(new User(id, accessToken.getPreferredUsername(), accessToken.getEmail(), authorities,
-          accessToken.getFamilyName(), accessToken.getGivenName(), label, rdfId));
+      String label = accessToken.getName().isEmpty() ? accessToken.getPreferredUsername()
+          : accessToken.getName();
+      return Optional.of(new User(id, accessToken.getPreferredUsername(), accessToken.getEmail(),
+          authorities, accessToken.getFamilyName(), accessToken.getGivenName(), label, rdfId));
     }
   }
 

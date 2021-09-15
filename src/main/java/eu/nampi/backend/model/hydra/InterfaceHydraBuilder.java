@@ -8,5 +8,4 @@ import org.apache.jena.rdf.model.RDFNode;
 public interface InterfaceHydraBuilder {
 
   public void build(BiFunction<Model, QuerySolution, RDFNode> rowToNode);
-
 }

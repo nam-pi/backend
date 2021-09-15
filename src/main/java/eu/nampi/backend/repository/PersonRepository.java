@@ -4,11 +4,9 @@ import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
-
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
-
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -25,7 +23,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
@@ -46,49 +43,75 @@ public class PersonRepository extends AbstractHydraRepository {
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
     // Main
-    Optional.ofNullable(row.getResource(VAR_TYPE.toString())).ifPresentOrElse(type -> {
-      model.add(main, RDF.type, type);
-    }, () -> {
-      model.add(main, RDF.type, Core.person);
-    });
+    Optional
+        .ofNullable(row.getResource(VAR_TYPE.toString()))
+        .ifPresentOrElse(type -> model.add(main, RDF.type, type),
+            () -> model.add(main, RDF.type, Core.person));
     // Label
-    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).ifPresent(label -> model.add(main, RDFS.label, label));
+    Optional
+        .ofNullable(row.getLiteral(VAR_LABEL.toString()))
+        .ifPresent(label -> model.add(main, RDFS.label, label));
     // Comment
-    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString()))
+    Optional
+        .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // SameAs
-    Optional.ofNullable(row.getResource(VAR_SAME_AS.toString())).ifPresent(iri -> model.add(main, Core.sameAs, iri));
+    Optional
+        .ofNullable(row.getResource(VAR_SAME_AS.toString()))
+        .ifPresent(iri -> model.add(main, Core.sameAs, iri));
     // Birth
     addEvent(model, row, main, PREF_BIRTH, Core.isBornIn);
     addEvent(model, row, main, PREF_DEATH, Core.diesIn);
     return main;
   };
 
-  private static final void addEvent(Model model, QuerySolution row, Resource main, String base, Property type) {
-    Optional.ofNullable(row.getResource(NodeFactory.createVariable(base).toString())).ifPresent(evt -> {
-      model.add(main, type, evt).add(evt, RDF.type, Core.event);
-      Optional.ofNullable(row.getLiteral(varEventLabel(base).toString()))
-          .ifPresent(label -> model.add(evt, RDFS.label, label));
-      Optional.ofNullable(row.getResource(varDateExact(base).toString()))
-          .ifPresent(resDate -> model.add(evt, Core.takesPlaceOn, resDate).add(resDate, RDF.type, Core.date)
-              .add(resDate, Core.hasDateTime, row.getLiteral(varDateTimeExact(base).toString())));
-      Optional.ofNullable(row.getResource(varDateNotEarlier(base).toString()))
-          .ifPresent(resDate -> model.add(evt, Core.takesPlaceNotEarlierThan, resDate).add(resDate, RDF.type, Core.date)
-              .add(resDate, Core.hasDateTime, row.getLiteral(varDateTimeNotEarlier(base).toString())));
-      Optional.ofNullable(row.getResource(varDateNotLater(base).toString()))
-          .ifPresent(resDate -> model.add(evt, Core.takesPlaceNotLaterThan, resDate).add(resDate, RDF.type, Core.date)
-              .add(resDate, Core.hasDateTime, row.getLiteral(varDateTimeNotLater(base).toString())));
-      Optional.ofNullable(row.getResource(varDateSort(base).toString()))
-          .ifPresent(resDate -> model.add(evt, Core.hasSortingDate, resDate).add(resDate, RDF.type, Core.date)
-              .add(resDate, Core.hasDateTime, row.getLiteral(varDateTimeSort(base).toString())));
-    });
+  private static final void addEvent(Model model, QuerySolution row, Resource main, String base,
+      Property type) {
+    Optional
+        .ofNullable(row.getResource(NodeFactory.createVariable(base).toString()))
+        .ifPresent(evt -> {
+          model
+              .add(main, type, evt)
+              .add(evt, RDF.type, Core.event);
+          Optional
+              .ofNullable(row.getLiteral(varEventLabel(base).toString()))
+              .ifPresent(label -> model.add(evt, RDFS.label, label));
+          Optional
+              .ofNullable(row.getResource(varDateExact(base).toString()))
+              .ifPresent(resDate -> model
+                  .add(evt, Core.takesPlaceOn, resDate)
+                  .add(resDate, RDF.type, Core.date)
+                  .add(resDate, Core.hasDateTime,
+                      row.getLiteral(varDateTimeExact(base).toString())));
+          Optional
+              .ofNullable(row.getResource(varDateNotEarlier(base).toString()))
+              .ifPresent(resDate -> model
+                  .add(evt, Core.takesPlaceNotEarlierThan, resDate)
+                  .add(resDate, RDF.type, Core.date)
+                  .add(resDate, Core.hasDateTime,
+                      row.getLiteral(varDateTimeNotEarlier(base).toString())));
+          Optional
+              .ofNullable(row.getResource(varDateNotLater(base).toString()))
+              .ifPresent(resDate -> model
+                  .add(evt, Core.takesPlaceNotLaterThan, resDate)
+                  .add(resDate, RDF.type, Core.date)
+                  .add(resDate, Core.hasDateTime,
+                      row.getLiteral(varDateTimeNotLater(base).toString())));
+          Optional
+              .ofNullable(row.getResource(varDateSort(base).toString()))
+              .ifPresent(resDate -> model
+                  .add(evt, Core.hasSortingDate, resDate)
+                  .add(resDate, RDF.type, Core.date)
+                  .add(resDate, Core.hasDateTime,
+                      row.getLiteral(varDateTimeSort(base).toString())));
+        });
   }
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #aspect}")
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #aspect}")
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> aspect) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.person,
-        Api.personOrderByVar, params);
-
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService,
+        endpointUri(ENDPOINT_NAME), Core.person, Api.personOrderByVar, params);
     // Add aspect query
     builder.mapper.add("aspect", Api.personAspectVar, aspect);
     aspect.ifPresent(resAspect -> {
@@ -96,15 +119,14 @@ public class PersonRepository extends AbstractHydraRepository {
           PathFactory.pathLink(Core.usesAspect.asNode()));
       builder.coreData.addWhere(VAR_MAIN, path, resAspect);
     });
-
     builder.extendedData.addWhere(dataWhere());
     return build(builder, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
-        Core.person);
+    HydraSingleBuilder builder =
+        new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()), Core.person);
     builder.coreData.addWhere(dataWhere());
     return build(builder, lang);
   }
@@ -115,21 +137,29 @@ public class PersonRepository extends AbstractHydraRepository {
   }
 
   private WhereBuilder dataWhere() {
-    return new WhereBuilder().addWhere(eventWhere(PREF_BIRTH, Core.isBornIn))
-        .addWhere(eventWhere(PREF_DEATH, Core.diesIn)).addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+    return new WhereBuilder()
+        .addWhere(eventWhere(PREF_BIRTH, Core.isBornIn))
+        .addWhere(eventWhere(PREF_DEATH, Core.diesIn))
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
   }
 
   private WhereBuilder eventWhere(String base, Property type) {
     Node var = NodeFactory.createVariable(base);
     return new WhereBuilder()
-        .addOptional(new WhereBuilder().addWhere(VAR_MAIN, type, var).addWhere(var, RDFS.label, varEventLabel(base))
-            .addOptional(new WhereBuilder().addWhere(var, Core.takesPlaceOn, varDateExact(base))
+        .addOptional(new WhereBuilder()
+            .addWhere(VAR_MAIN, type, var)
+            .addWhere(var, RDFS.label, varEventLabel(base))
+            .addOptional(new WhereBuilder()
+                .addWhere(var, Core.takesPlaceOn, varDateExact(base))
                 .addWhere(varDateExact(base), Core.hasDateTime, varDateTimeExact(base)))
-            .addOptional(new WhereBuilder().addWhere(var, Core.takesPlaceNotEarlierThan, varDateNotEarlier(base))
+            .addOptional(new WhereBuilder()
+                .addWhere(var, Core.takesPlaceNotEarlierThan, varDateNotEarlier(base))
                 .addWhere(varDateNotEarlier(base), Core.hasDateTime, varDateTimeNotEarlier(base)))
-            .addOptional(new WhereBuilder().addWhere(var, Core.takesPlaceNotLaterThan, varDateNotLater(base))
+            .addOptional(new WhereBuilder()
+                .addWhere(var, Core.takesPlaceNotLaterThan, varDateNotLater(base))
                 .addWhere(varDateNotLater(base), Core.hasDateTime, varDateTimeNotLater(base)))
-            .addOptional(new WhereBuilder().addWhere(var, Core.hasSortingDate, varDateSort(base))
+            .addOptional(new WhereBuilder()
+                .addWhere(var, Core.hasSortingDate, varDateSort(base))
                 .addWhere(varDateSort(base), Core.hasDateTime, varDateTimeSort(base))));
   }
 

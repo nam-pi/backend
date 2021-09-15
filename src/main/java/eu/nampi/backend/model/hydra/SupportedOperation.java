@@ -1,7 +1,6 @@
 package eu.nampi.backend.model.hydra;
 
 import org.springframework.http.HttpMethod;
-
 import eu.nampi.backend.vocabulary.Hydra;
 
 public class SupportedOperation extends AbstractHydraNode {
@@ -19,5 +18,4 @@ public class SupportedOperation extends AbstractHydraNode {
   private void init(HttpMethod method) {
     add(Hydra.method, method.name());
   }
-
 }

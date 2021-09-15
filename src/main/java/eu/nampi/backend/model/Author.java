@@ -19,5 +19,4 @@ public class Author {
 
   @NonNull
   String label;
-
 }

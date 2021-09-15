@@ -20,5 +20,4 @@ public class DocLinkFilter implements Filter {
         "</doc>; rel=\"http://www.w3.org/ns/hydra/core#apiDocumentation\"");
     filter.doFilter(request, response);
   }
-
 }

@@ -1,7 +1,6 @@
 package eu.nampi.backend.service;
 
 import java.util.function.Consumer;
-
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;

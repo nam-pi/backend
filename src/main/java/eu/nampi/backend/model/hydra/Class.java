@@ -28,5 +28,4 @@ public class Class extends AbstractHydraNode {
     add(operation);
     return this;
   }
-
 }

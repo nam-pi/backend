@@ -28,15 +28,10 @@ public class SchemaOrg {
     return ResourceFactory.createProperty(uri, local);
   }
 
-  public static final Property familyName = property("familyName");
-
-  public static final Property givenName = property("givenName");
-
-  public static final Property name = property("name");
-
-  public static final Property identifier = property("identifier");
-
-  public static final Property email = property("email");
-
   public static final Property URL = property("URL");
+  public static final Property email = property("email");
+  public static final Property familyName = property("familyName");
+  public static final Property givenName = property("givenName");
+  public static final Property identifier = property("identifier");
+  public static final Property name = property("name");
 }

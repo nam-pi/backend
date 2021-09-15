@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
 import eu.nampi.backend.converter.StringToLangConverter;
 import eu.nampi.backend.exception.NotFoundException;
 import eu.nampi.backend.utils.HydraUtils;
@@ -34,21 +33,30 @@ public class HydraControllerAdvice extends ResponseEntityExceptionHandler {
     return handle(ex, request, HttpStatus.NOT_FOUND, "Not found");
   }
 
-  @ExceptionHandler(value = { IllegalArgumentException.class, MethodArgumentTypeMismatchException.class })
+  @ExceptionHandler(
+      value = {IllegalArgumentException.class, MethodArgumentTypeMismatchException.class})
   protected ResponseEntity<Object> handleIllegalArguments(RuntimeException ex, WebRequest request) {
     return handle(ex, request, HttpStatus.BAD_REQUEST, "Illegal arguments");
   }
 
-  private Model createErrorModel(RuntimeException ex, WebRequest request, HttpStatus status, String fallbackMessage) {
+  private Model createErrorModel(RuntimeException ex, WebRequest request, HttpStatus status,
+      String fallbackMessage) {
     Literal title = ResourceFactory.createLangLiteral(status.toString(), "en");
     String message = ex.getMessage();
     Literal description = ResourceFactory
         .createLangLiteral(message == null || message.isBlank() ? fallbackMessage : message, "en");
     Resource error = ResourceFactory.createResource();
-    return ModelFactory.createDefaultModel().setNsPrefix("api", Api.getURI()).setNsPrefix("hydra", Hydra.getURI())
-        .setNsPrefix("rdf", RDF.getURI()).setNsPrefix("rdfs", RDFS.getURI()).setNsPrefix("schema", SchemaOrg.getURI())
-        .setNsPrefix("xsd", XSD.getURI()).setNsPrefix("core", Core.getURI()).add(error, RDF.type, Hydra.Status)
-        .add(error, Hydra.statusCode, ResourceFactory.createTypedLiteral(status.value())).add(error, Hydra.title, title)
+    return ModelFactory
+        .createDefaultModel()
+        .setNsPrefix("api", Api.getURI())
+        .setNsPrefix("hydra", Hydra.getURI())
+        .setNsPrefix("rdf", RDF.getURI())
+        .setNsPrefix("rdfs", RDFS.getURI())
+        .setNsPrefix("schema", SchemaOrg.getURI())
+        .setNsPrefix("xsd", XSD.getURI()).setNsPrefix("core", Core.getURI())
+        .add(error, RDF.type, Hydra.Status)
+        .add(error, Hydra.statusCode, ResourceFactory.createTypedLiteral(status.value()))
+        .add(error, Hydra.title, title)
         .add(error, Hydra.description, description);
   }
 
@@ -56,7 +64,7 @@ public class HydraControllerAdvice extends ResponseEntityExceptionHandler {
       String fallbackMessage) {
     Model error = createErrorModel(ex, request, status, fallbackMessage);
     Lang lang = new StringToLangConverter().convert(request.getHeader("accept"));
-    return handleExceptionInternal(ex, HydraUtils.serialize(error, lang), new HttpHeaders(), status, request);
+    return handleExceptionInternal(ex, HydraUtils.serialize(error, lang), new HttpHeaders(), status,
+        request);
   }
-
 }

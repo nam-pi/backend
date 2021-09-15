@@ -15,5 +15,4 @@ public class Startup {
   public void init() {
     jenaService.initInfCache();
   }
-
 }

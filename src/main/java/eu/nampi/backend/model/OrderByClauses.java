@@ -60,7 +60,8 @@ public class OrderByClauses implements Serializable {
   }
 
   public String toQueryString() {
-    return clauses.entrySet().stream().map(e -> e.getKey() + (e.getValue() == Order.ASCENDING ? "" : "=DESC"))
+    return clauses.entrySet().stream()
+        .map(e -> e.getKey() + (e.getValue() == Order.ASCENDING ? "" : "=DESC"))
         .collect(Collectors.joining(","));
   }
 

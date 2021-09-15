@@ -31,10 +31,14 @@ public class Api {
     return ResourceFactory.createProperty(uri, local);
   }
 
-  public static Property descendantOf = property("descendantOf");
-  public static Resource hierarchy = property("hierarchy");
-  public static Property hierarchyRoot = property("hierarchyRoot");
+  @Deprecated
+  public static Resource classCollection = resource("classCollection");
+  @Deprecated
+  public static Resource classOrderByVar = resource("classOrderByVariable");
 
+  public static Property descendantOf = property("descendantOf");
+  public static Property hierarchyRoot = property("hierarchyRoot");
+  public static Property isAuthor = property("is_author");
   public static Resource actAuthorVar = resource("actAuthorVariable");
   public static Resource actCollection = resource("actCollection");
   public static Resource actOrderByVar = resource("actOrderByVariable");
@@ -44,12 +48,6 @@ public class Api {
   public static Resource aspectParticipantVar = resource("aspectParticipantVariable");
   public static Resource authorCollection = resource("authorCollection");
   public static Resource authorOrderByVar = resource("authorOrderByVariable");
-  @Deprecated
-  public static Resource classCollection = resource("classCollection");
-  @Deprecated
-  public static Resource classOrderByVar = resource("classOrderByVariable");
-  public static Resource typeCollection = resource("typeCollection");
-  public static Resource typeOrderByVar = resource("typeOrderByVariable");
   public static Resource entrypoint = resource("entrypoint");
   public static Resource eventAspectTypeVar = resource("eventAspectTypeVariable");
   public static Resource eventAspectUseTypeVar = resource("eventAspectUseTypeVariable");
@@ -65,6 +63,7 @@ public class Api {
   public static Resource events = resource("events");
   public static Resource groupCollection = resource("groupCollection");
   public static Resource groupOrderByVar = resource("groupOrderByVariable");
+  public static Resource hierarchy = property("hierarchy");
   public static Resource personAspectVar = resource("personAspectVariable");
   public static Resource personCollection = resource("personCollection");
   public static Resource personOrderByVar = resource("personOrderByVariable");
@@ -74,7 +73,8 @@ public class Api {
   public static Resource sourceCollection = resource("sourceCollection");
   public static Resource sourceOrderByVar = resource("sourceOrderByVariable");
   public static Resource textVar = resource("textVariable");
+  public static Resource typeCollection = resource("typeCollection");
+  public static Resource typeOrderByVar = resource("typeOrderByVariable");
   public static Resource typeVar = resource("typeVariable");
   public static Resource user = resource("user");
-  public static Property isAuthor = property("is_author");
 }
