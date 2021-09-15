@@ -4,11 +4,10 @@ import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
 import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
-
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
-
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -29,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
 import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
@@ -58,21 +56,29 @@ public class AspectRepository extends AbstractHydraRepository {
       model.add(main, RDF.type, Core.aspect);
     });
     // Label
-    Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).ifPresent(label -> model.add(main, RDFS.label, label));
+    Optional
+        .ofNullable(row.getLiteral(VAR_LABEL.toString()))
+        .ifPresent(label -> model.add(main, RDFS.label, label));
     // Comment
-    Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString()))
+    Optional
+        .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // Text
-    Optional.ofNullable(row.getLiteral(VAR_STRING.toString())).ifPresent(text -> model.add(main, Core.hasText, text));
+    Optional
+        .ofNullable(row.getLiteral(VAR_STRING.toString()))
+        .ifPresent(text -> model.add(main, Core.hasText, text));
     // SameAs
-    Optional.ofNullable(row.getResource(VAR_SAME_AS.toString())).ifPresent(iri -> model.add(main, Core.sameAs, iri));
+    Optional
+        .ofNullable(row.getResource(VAR_SAME_AS.toString()))
+        .ifPresent(iri -> model.add(main, Core.sameAs, iri));
     return main;
   };
 
-  @Cacheable(key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #participant}")
+  @Cacheable(
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #participant}")
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> participant) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.aspect,
-        Api.aspectOrderByVar, params, false);
+    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService,
+        endpointUri(ENDPOINT_NAME), Core.aspect, Api.aspectOrderByVar, params, false);
     ExprFactory ef = builder.ef;
 
     // Add participant query
@@ -98,8 +104,8 @@ public class AspectRepository extends AbstractHydraRepository {
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder = new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
-        Core.aspect);
+    HydraSingleBuilder builder =
+        new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()), Core.aspect);
     addData(builder.coreData);
     return build(builder, lang);
   }
@@ -110,22 +116,51 @@ public class AspectRepository extends AbstractHydraRepository {
   }
 
   private void addData(WhereBuilder builder) {
-    builder.addOptional(VAR_MAIN, Core.hasText, VAR_STRING).addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+    builder
+        .addOptional(VAR_MAIN, Core.hasText, VAR_STRING)
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
   }
 
-  public String insert(Lang lang, Resource type, Optional<Literal> label, Optional<Literal> text) {
+  public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> texts) {
     UUID id = UUID.randomUUID();
-    boolean isSubtype = hierarchyRepository.isSubtype(Core.aspect, type);
-    if (!isSubtype) {
+    Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id.toString()));
+    if (!hierarchyRepository.isSubtype(Core.aspect, type)) {
       throw new IllegalArgumentException(
           String.format("'%s' is not a subtype of '%s'.", type.toString(), Core.aspect.toString()));
     }
-    Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id.toString()));
-    UpdateBuilder builder = new UpdateBuilder().addInsert(aspect, RDF.type, type);
-    label.ifPresent(l -> builder.addInsert(aspect, RDFS.label, l));
-    text.ifPresent(t -> builder.addInsert(aspect, Core.hasText, t));
+    UpdateBuilder builder = new UpdateBuilder()
+        .addInsert(aspect, RDF.type, type);
+    labels.forEach(label -> builder.addInsert(aspect, RDFS.label, label));
+    texts.forEach(text -> builder.addInsert(aspect, Core.hasText, text));
     jenaService.update(builder);
     return findOne(lang, id);
   }
 
+  public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
+      List<Literal> texts) {
+    Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id));
+    if (!hierarchyRepository.isSubtype(Core.aspect, type)) {
+      throw new IllegalArgumentException(
+          String.format("'%s' is not a subtype of '%s'.", type.toString(), Core.aspect.toString()));
+    }
+    Node varAspect = NodeFactory.createVariable("aspect");
+    Node varType = NodeFactory.createVariable("type");
+    Node varLabel = NodeFactory.createVariable("label");
+    Node varText = NodeFactory.createVariable("text");
+    UpdateBuilder builder = new UpdateBuilder();
+    ExprFactory ef = builder.getExprFactory();
+    builder
+        .addDelete(varAspect, RDF.type, varType)
+        .addDelete(varAspect, RDFS.label, varLabel)
+        .addDelete(varAspect, Core.hasText, varText)
+        .addInsert(varAspect, RDF.type, type)
+        .addFilter(ef.sameTerm(varAspect, aspect))
+        .addWhere(varAspect, RDF.type, varType)
+        .addWhere(varAspect, RDFS.label, varLabel)
+        .addOptional(varAspect, Core.hasText, varText);
+    labels.forEach(label -> builder.addInsert(varAspect, RDFS.label, label));
+    texts.forEach(text -> builder.addInsert(aspect, Core.hasText, text));
+    jenaService.update(builder);
+    return findOne(lang, id);
+  }
 }
