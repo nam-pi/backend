@@ -160,4 +160,17 @@ public class AspectRepository extends AbstractHydraRepository {
     jenaService.update(builder);
     return findOne(lang, id);
   }
+
+  public void delete(UUID id) {
+    Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id));
+    Node varPredicate = NodeFactory.createVariable("predicate");
+    Node varObject = NodeFactory.createVariable("object");
+    UpdateBuilder builder = new UpdateBuilder();
+    ExprFactory ef = builder.getExprFactory();
+    builder
+        .addFilter(ef.sameTerm(VAR_MAIN, aspect))
+        .addWhere(VAR_MAIN, varPredicate, varObject)
+        .addDelete(VAR_MAIN, varPredicate, varObject);
+    jenaService.update(builder);
+  }
 }

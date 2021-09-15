@@ -10,6 +10,7 @@ import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -78,5 +79,11 @@ public class AspectController extends AbstractRdfController {
     String newAspect = aspectRepository.update(lang, id, type, label,
         comment == null ? new ArrayList<>() : comment, text == null ? new ArrayList<>() : text);
     return new ResponseEntity<String>(newAspect, HttpStatus.OK);
+  }
+
+  @DeleteMapping(value="/aspects/{id}")
+  public ResponseEntity<?> deleteAspect(@PathVariable UUID id) {
+    aspectRepository.delete(id);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 }
