@@ -145,22 +145,17 @@ public class AspectRepository extends AbstractHydraRepository {
       throw new IllegalArgumentException(
           String.format("'%s' is not a subtype of '%s'.", type.toString(), Core.aspect.toString()));
     }
-    Node varText = NodeFactory.createVariable("text");
+    Node varPredicate = NodeFactory.createVariable("predicate");
+    Node varObject = NodeFactory.createVariable("object");
     UpdateBuilder builder = new UpdateBuilder();
     ExprFactory ef = builder.getExprFactory();
     builder
-        .addDelete(VAR_MAIN, RDF.type, VAR_TYPE)
-        .addDelete(VAR_MAIN, RDFS.label, VAR_LABEL)
-        .addDelete(VAR_MAIN, RDFS.comment, VAR_COMMENT)
-        .addDelete(VAR_MAIN, Core.hasText, varText)
-        .addInsert(VAR_MAIN, RDF.type, type)
         .addFilter(ef.sameTerm(VAR_MAIN, aspect))
-        .addWhere(VAR_MAIN, RDF.type, VAR_TYPE)
-        .addWhere(VAR_MAIN, RDFS.label, VAR_LABEL)
-        .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT)
-        .addOptional(VAR_MAIN, Core.hasText, varText);
+        .addWhere(VAR_MAIN, varPredicate, varObject)
+        .addDelete(VAR_MAIN, varPredicate, varObject)
+        .addInsert(VAR_MAIN, RDF.type, type);
     labels.forEach(label -> builder.addInsert(VAR_MAIN, RDFS.label, label));
-    comments.forEach(labelcomment -> builder.addInsert(aspect, RDFS.comment, labelcomment));
+    comments.forEach(comment -> builder.addInsert(aspect, RDFS.comment, comment));
     texts.forEach(text -> builder.addInsert(aspect, Core.hasText, text));
     jenaService.update(builder);
     return findOne(lang, id);
