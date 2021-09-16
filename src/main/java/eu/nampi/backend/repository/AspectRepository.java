@@ -32,7 +32,7 @@ import eu.nampi.backend.queryBuilder.HydraDeleteBuilder;
 import eu.nampi.backend.queryBuilder.HydraInsertBuilder;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
 import eu.nampi.backend.queryBuilder.HydraUpdateBuilder;
-import eu.nampi.backend.utils.HydraBuilderFactory;
+import eu.nampi.backend.util.HydraBuilderFactory;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 

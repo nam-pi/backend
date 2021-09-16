@@ -10,7 +10,7 @@ import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import eu.nampi.backend.service.JenaService;
-import eu.nampi.backend.utils.Serializer;
+import eu.nampi.backend.util.Serializer;
 
 public class HydraSingleBuilder extends AbstractHydraQueryBuilder {
 

@@ -1,4 +1,4 @@
-package eu.nampi.backend.tasks;
+package eu.nampi.backend.task;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;

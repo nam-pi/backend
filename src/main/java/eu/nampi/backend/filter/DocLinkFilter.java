@@ -1,4 +1,4 @@
-package eu.nampi.backend.filters;
+package eu.nampi.backend.filter;
 
 import java.io.IOException;
 import javax.servlet.Filter;

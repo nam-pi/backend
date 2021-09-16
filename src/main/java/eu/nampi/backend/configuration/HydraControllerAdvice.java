@@ -20,7 +20,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import eu.nampi.backend.converter.StringToLangConverter;
 import eu.nampi.backend.exception.NotFoundException;
-import eu.nampi.backend.utils.Serializer;
+import eu.nampi.backend.util.Serializer;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;

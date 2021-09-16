@@ -15,7 +15,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import eu.nampi.backend.service.JenaService;
-import eu.nampi.backend.utils.Serializer;
+import eu.nampi.backend.util.Serializer;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;

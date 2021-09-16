@@ -37,7 +37,7 @@ import eu.nampi.backend.model.DateRange;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
-import eu.nampi.backend.utils.HydraBuilderFactory;
+import eu.nampi.backend.util.HydraBuilderFactory;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 

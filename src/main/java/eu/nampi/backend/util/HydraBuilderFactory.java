@@ -1,4 +1,4 @@
-package eu.nampi.backend.utils;
+package eu.nampi.backend.util;
 
 import java.util.List;
 import java.util.UUID;

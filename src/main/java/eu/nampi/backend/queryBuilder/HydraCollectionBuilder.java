@@ -16,7 +16,7 @@ import org.apache.jena.vocabulary.RDFS;
 import eu.nampi.backend.model.ParameterMapper;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.service.JenaService;
-import eu.nampi.backend.utils.Serializer;
+import eu.nampi.backend.util.Serializer;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Hydra;
 
