@@ -5,11 +5,11 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import eu.nampi.backend.vocabulary.Hydra;
 
-public class SupportedProperty extends AbstractHydraNode {
+public class HydraSupportedProperty extends AbstractHydraNode {
 
   private Resource property;
 
-  public SupportedProperty(Resource property, String title, boolean readable, boolean required,
+  public HydraSupportedProperty(Resource property, String title, boolean readable, boolean required,
       boolean writeable) {
     super(title, Hydra.SupportedProperty);
     this.property = property;
@@ -20,18 +20,18 @@ public class SupportedProperty extends AbstractHydraNode {
     add(Hydra.writeable, writeable ? "true" : "false");
   }
 
-  public SupportedProperty(Resource property, boolean readable, boolean required,
+  public HydraSupportedProperty(Resource property, boolean readable, boolean required,
       boolean writeable) {
     this(property, property.getLocalName(), readable, required, writeable);
   }
 
-  public SupportedProperty(Resource property, String range, String title, boolean readable,
+  public HydraSupportedProperty(Resource property, String range, String title, boolean readable,
       boolean required, boolean writeable) {
     this(property, title, readable, required, writeable);
     add(property, RDFS.range, range);
   }
 
-  public SupportedProperty(Resource property, Resource range, String title, boolean readable,
+  public HydraSupportedProperty(Resource property, Resource range, String title, boolean readable,
       boolean required, boolean writeable) {
     this(property, title, readable, required, writeable);
     add(property, RDFS.range, range);
