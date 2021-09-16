@@ -1,4 +1,4 @@
-package eu.nampi.backend.model.hydra;
+package eu.nampi.backend.model;
 
 import org.springframework.http.HttpMethod;
 import eu.nampi.backend.vocabulary.Hydra;

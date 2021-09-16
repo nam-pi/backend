@@ -1,4 +1,4 @@
-package eu.nampi.backend.model.hydra;
+package eu.nampi.backend.queryBuilder;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -13,22 +13,25 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import eu.nampi.backend.model.ParameterMapper;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.service.JenaService;
+import eu.nampi.backend.utils.Serializer;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Hydra;
 
-public class HydraCollectionBuilder extends AbstractHydraBuilder {
+public class HydraCollectionBuilder extends AbstractHydraQueryBuilder {
   private Resource orderByVar;
   private boolean includeTypeAndText;
   protected QueryParameters params;
   public ParameterMapper mapper;
   public WhereBuilder extendedData = new WhereBuilder();
 
-  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
+  public HydraCollectionBuilder(JenaService jenaService, Serializer serializer, String baseUri,
+      Resource mainType,
       Resource orderByVar, QueryParameters params, boolean includeTextFilter,
       boolean includeTypeAndText) {
-    super(jenaService, baseUri, mainType);
+    super(jenaService, serializer, baseUri, mainType);
     this.mapper = new ParameterMapper(baseUri, root, model);
     this.orderByVar = orderByVar;
     this.params = params;
@@ -60,16 +63,6 @@ public class HydraCollectionBuilder extends AbstractHydraBuilder {
     params.getType().filter(type -> includeTypeAndText).ifPresent(res -> {
       coreData.addWhere(VAR_MAIN, RDF.type, res);
     });
-  }
-
-  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
-      Resource orderByVar, QueryParameters params, boolean includeTextFilter) {
-    this(jenaService, baseUri, mainType, orderByVar, params, includeTextFilter, true);
-  }
-
-  public HydraCollectionBuilder(JenaService jenaService, String baseUri, Resource mainType,
-      Resource orderByVar, QueryParameters params) {
-    this(jenaService, baseUri, mainType, orderByVar, params, true, true);
   }
 
   @Override

@@ -1,4 +1,4 @@
-package eu.nampi.backend.model.hydra;
+package eu.nampi.backend.model;
 
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;

@@ -7,20 +7,28 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Repository;
-import eu.nampi.backend.model.hydra.Class;
-import eu.nampi.backend.model.hydra.Collection;
-import eu.nampi.backend.model.hydra.SupportedOperation;
-import eu.nampi.backend.model.hydra.SupportedProperty;
-import eu.nampi.backend.utils.HydraUtils;
+import eu.nampi.backend.model.Class;
+import eu.nampi.backend.model.Collection;
+import eu.nampi.backend.model.SupportedOperation;
+import eu.nampi.backend.model.SupportedProperty;
+import eu.nampi.backend.utils.Serializer;
+import eu.nampi.backend.utils.UrlBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
-public class DocumentationRepository extends AbstractHydraRepository {
+public class DocumentationRepository {
+
+  @Autowired
+  Serializer serializer;
+
+  @Autowired
+  UrlBuilder urlBuilder;
 
   public String get(Lang lang) {
 
@@ -34,7 +42,8 @@ public class DocumentationRepository extends AbstractHydraRepository {
         .setNsPrefix("xsd", XSD.getURI())
         .setNsPrefix("core", Core.getURI());
     Class doc =
-        new Class(endpointUri("doc"), "The NAMPI API documentation", Hydra.ApiDocumentation);
+        new Class(urlBuilder.endpointUri("doc"), "The NAMPI API documentation",
+            Hydra.ApiDocumentation);
     doc.addDescription(
         "The documentation for NAMPI, an API for the prosopographical data of the project 'Nuns and Monks - Prosopograpical Interfaces'");
     addEntryPoint(doc);
@@ -53,12 +62,12 @@ public class DocumentationRepository extends AbstractHydraRepository {
     addSupportedCollections(doc);
     model
         .add(doc);
-    return HydraUtils.serialize(model, lang, doc.base());
+    return serializer.serialize(model, lang, doc.base());
   }
 
   private void addEntryPoint(Class doc) {
     doc
-        .add(Hydra.entrypoint, ResourceFactory.createProperty(endpointUri()));
+        .add(Hydra.entrypoint, ResourceFactory.createProperty(urlBuilder.endpointUri()));
     Class entrypoint = new Class(Api.entrypoint, Api.entrypoint.getLocalName());
     entrypoint
         .addSupportedOperation(new SupportedOperation("Gets the API entrypoint", HttpMethod.GET));

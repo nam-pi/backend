@@ -16,20 +16,22 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFWriter;
+import org.springframework.stereotype.Component;
 import eu.nampi.backend.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
 
 @Slf4j
-public class HydraUtils {
+@Component
+public class Serializer {
 
-  public static String serialize(Model model, Lang lang) {
+  public String serialize(Model model, Lang lang) {
     StringWriter writer = new StringWriter();
     RDFDataMgr.write(writer, model, lang);
     return writer.toString();
   }
 
-  public static String serialize(Model model, Lang lang, Resource startId) {
+  public String serialize(Model model, Lang lang, Resource startId) {
     if (!model.contains(startId, null, (RDFNode) null)) {
       throw new NotFoundException();
     }
@@ -53,11 +55,11 @@ public class HydraUtils {
     }
   }
 
-  private static String createFrame(Model model, Resource startId) {
+  private String createFrame(Model model, Resource startId) {
     return "{\"@context\": " + extractContext(model) + ", \"@id\": \"" + startId.toString() + "\"}";
   }
 
-  private static String extractContext(Model model) {
+  private String extractContext(Model model) {
     Configuration conf = Configuration.builder().jsonProvider(new JacksonJsonProvider()).build();
     StringWriter writer = new StringWriter();
     RDFDataMgr.write(writer, model, RDFFormat.JSONLD);

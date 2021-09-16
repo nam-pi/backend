@@ -1,4 +1,4 @@
-package eu.nampi.backend.model.hydra;
+package eu.nampi.backend.model;
 
 import java.net.URLEncoder;
 import java.nio.charset.Charset;

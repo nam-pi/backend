@@ -1,4 +1,4 @@
-package eu.nampi.backend.model.hydra;
+package eu.nampi.backend.queryBuilder;
 
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -10,12 +10,14 @@ import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import eu.nampi.backend.service.JenaService;
+import eu.nampi.backend.utils.Serializer;
 
-public class HydraSingleBuilder extends AbstractHydraBuilder {
+public class HydraSingleBuilder extends AbstractHydraQueryBuilder {
 
-  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType,
+  public HydraSingleBuilder(JenaService jenaService, Serializer serializer, String baseUri,
+      Resource mainType,
       boolean filterBasic) {
-    super(jenaService, baseUri, mainType);
+    super(jenaService, serializer, baseUri, mainType);
     coreData
         .addFilter(ef.sameTerm(VAR_MAIN, root))
         .addWhere(VAR_MAIN, RDF.type, VAR_TYPE);
@@ -28,10 +30,6 @@ public class HydraSingleBuilder extends AbstractHydraBuilder {
     coreData
         .addOptional(VAR_MAIN, RDFS.label, VAR_LABEL)
         .addOptional(VAR_MAIN, RDFS.comment, VAR_COMMENT);
-  }
-
-  public HydraSingleBuilder(JenaService jenaService, String baseUri, Resource mainType) {
-    this(jenaService, baseUri, mainType, true);
   }
 
   @Override

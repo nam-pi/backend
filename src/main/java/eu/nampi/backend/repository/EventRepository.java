@@ -1,9 +1,9 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,22 +28,25 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.model.DateRange;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
-import eu.nampi.backend.model.hydra.HydraSingleBuilder;
-import eu.nampi.backend.utils.HydraUtils;
+import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
+import eu.nampi.backend.utils.HydraBuilderFactory;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
 @Repository
 @CacheConfig(cacheNames = "events")
-public class EventRepository extends AbstractHydraRepository {
+public class EventRepository {
+
+  @Autowired
+  HydraBuilderFactory hydraBuilderFactory;
 
   private static final String NEGATIVE_DEFAULT_DATE = "-9999-01-01T00:00:00";
   private static final String POSITIVE_DEFAULT_DATE = "9999-01-01T00:00:00";
@@ -235,8 +238,8 @@ public class EventRepository extends AbstractHydraRepository {
       Optional<Resource> aspect, Optional<Resource> aspectType, Optional<Property> aspectUseType,
       Optional<Resource> participant, Optional<Resource> participantType,
       Optional<Property> participationType, Optional<Resource> place, Optional<Resource> author) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService,
-        endpointUri(ENDPOINT_NAME), Core.event, Api.eventOrderByVar, params);
+    HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
+        Core.event, Api.eventOrderByVar, params);
     ExprFactory ef = builder.ef;
     boolean hasDateSort = params.getOrderByClauses().containsKey("date");
     Order order = params.getOrderByClauses().getOrderFor("date").orElse(Order.ASCENDING);
@@ -329,26 +332,19 @@ public class EventRepository extends AbstractHydraRepository {
         .addWhere(actWhere(false))
         .addWhere(participantWhere(false)).addOptional(aspectWhere(false))
         .addOptional(placeWhere(false));
-    return build(builder, lang);
+    return builder.query(ROW_MAPPER, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder =
-        new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
-            Core.event);
+    HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.event);
     builder.coreData
         .addWhere(datesWhere(Order.ASCENDING, VAR_DATE_REAL_SORT, VAR_DATE))
         .addWhere(actWhere(true))
         .addWhere(participantWhere(true))
         .addOptional(aspectWhere(true))
         .addOptional(placeWhere(true));
-    return build(builder, lang);
-  }
-
-  private String build(AbstractHydraBuilder builder, Lang lang) {
-    builder.build(ROW_MAPPER);
-    return HydraUtils.serialize(builder.model, lang, builder.root);
+    return builder.query(ROW_MAPPER, lang);
   }
 
   private WhereBuilder actWhere(boolean withTypes) {

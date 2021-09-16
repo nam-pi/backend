@@ -1,26 +1,23 @@
-package eu.nampi.backend.repository;
+package eu.nampi.backend.utils;
 
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import eu.nampi.backend.service.JenaService;
 
-public abstract class AbstractHydraRepository {
+@Component
+public class UrlBuilder {
 
   @Value("${nampi.data-base-url}")
   private String dataBaseUrl;
 
-  @Autowired
-  protected JenaService jenaService;
-
-  protected String endpointUri() {
+  public String endpointUri() {
     return dataBaseUrl == null || dataBaseUrl.isBlank()
         ? ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
         : dataBaseUrl.replaceAll("/$", "");
   }
 
-  protected String endpointUri(String... path) {
+  public String endpointUri(String... path) {
     StringBuilder builder = new StringBuilder(endpointUri());
     for (String string : path) {
       builder.append("/").append(string);
@@ -28,7 +25,8 @@ public abstract class AbstractHydraRepository {
     return builder.toString();
   }
 
-  protected String endpointUri(String endpointName, UUID id) {
+  public String endpointUri(String endpointName, UUID id) {
     return endpointUri(endpointName, id.toString());
   }
+
 }

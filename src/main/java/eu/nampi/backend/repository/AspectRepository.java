@@ -1,15 +1,14 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -18,7 +17,6 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
@@ -29,20 +27,25 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
-import eu.nampi.backend.model.hydra.HydraSingleBuilder;
-import eu.nampi.backend.utils.HydraUtils;
+import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.queryBuilder.HydraDeleteBuilder;
+import eu.nampi.backend.queryBuilder.HydraInsertBuilder;
+import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
+import eu.nampi.backend.queryBuilder.HydraUpdateBuilder;
+import eu.nampi.backend.utils.HydraBuilderFactory;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
 @Repository
 @CacheConfig(cacheNames = "aspects")
-public class AspectRepository extends AbstractHydraRepository {
+public class AspectRepository {
 
   private static final String ENDPOINT_NAME = "aspects";
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
   private static final Node VAR_STRING = NodeFactory.createVariable("string");
+
+  @Autowired
+  HydraBuilderFactory hydraBuilderFactory;
 
   @Autowired
   HierarchyRepository hierarchyRepository;
@@ -77,8 +80,8 @@ public class AspectRepository extends AbstractHydraRepository {
   @Cacheable(
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #participant}")
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> participant) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService,
-        endpointUri(ENDPOINT_NAME), Core.aspect, Api.aspectOrderByVar, params, false);
+    HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
+        Core.aspect, Api.aspectOrderByVar, params, false);
     ExprFactory ef = builder.ef;
 
     // Add participant query
@@ -99,20 +102,15 @@ public class AspectRepository extends AbstractHydraRepository {
     });
 
     addData(builder.extendedData);
-    return build(builder, lang);
+    return builder.query(ROW_MAPPER, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder =
-        new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()), Core.aspect);
+        hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.aspect);
     addData(builder.coreData);
-    return build(builder, lang);
-  }
-
-  private String build(AbstractHydraBuilder builder, Lang lang) {
-    builder.build(ROW_MAPPER);
-    return HydraUtils.serialize(builder.model, lang, builder.root);
+    return builder.query(ROW_MAPPER, lang);
   }
 
   private void addData(WhereBuilder builder) {
@@ -123,54 +121,24 @@ public class AspectRepository extends AbstractHydraRepository {
 
   public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
       List<Literal> texts) {
-    UUID id = UUID.randomUUID();
-    Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id.toString()));
-    if (!hierarchyRepository.isSubtype(Core.aspect, type)) {
-      throw new IllegalArgumentException(
-          String.format("'%s' is not a subtype of '%s'.", type.toString(), Core.aspect.toString()));
-    }
-    UpdateBuilder builder = new UpdateBuilder()
-        .addInsert(aspect, RDF.type, type);
-    labels.forEach(label -> builder.addInsert(aspect, RDFS.label, label));
-    comments.forEach(labelcomment -> builder.addInsert(aspect, RDFS.comment, labelcomment));
-    texts.forEach(text -> builder.addInsert(aspect, Core.hasText, text));
-    jenaService.update(builder);
-    return findOne(lang, id);
+    HydraInsertBuilder builder =
+        hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type, labels, comments, texts);
+    builder.validateSubtype(Core.aspect, type);
+    builder.build();
+    return findOne(lang, builder.id);
   }
 
   public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
       List<Literal> comments, List<Literal> texts) {
-    Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id));
-    if (!hierarchyRepository.isSubtype(Core.aspect, type)) {
-      throw new IllegalArgumentException(
-          String.format("'%s' is not a subtype of '%s'.", type.toString(), Core.aspect.toString()));
-    }
-    Node varPredicate = NodeFactory.createVariable("predicate");
-    Node varObject = NodeFactory.createVariable("object");
-    UpdateBuilder builder = new UpdateBuilder();
-    ExprFactory ef = builder.getExprFactory();
-    builder
-        .addFilter(ef.sameTerm(VAR_MAIN, aspect))
-        .addWhere(VAR_MAIN, varPredicate, varObject)
-        .addDelete(VAR_MAIN, varPredicate, varObject)
-        .addInsert(VAR_MAIN, RDF.type, type);
-    labels.forEach(label -> builder.addInsert(VAR_MAIN, RDFS.label, label));
-    comments.forEach(comment -> builder.addInsert(aspect, RDFS.comment, comment));
-    texts.forEach(text -> builder.addInsert(aspect, Core.hasText, text));
-    jenaService.update(builder);
-    return findOne(lang, id);
+    HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
+        labels, comments, texts);
+    builder.validateSubtype(Core.aspect, type);
+    builder.build();
+    return findOne(lang, builder.id);
   }
 
   public void delete(UUID id) {
-    Resource aspect = ResourceFactory.createResource(endpointUri(ENDPOINT_NAME, id));
-    Node varPredicate = NodeFactory.createVariable("predicate");
-    Node varObject = NodeFactory.createVariable("object");
-    UpdateBuilder builder = new UpdateBuilder();
-    ExprFactory ef = builder.getExprFactory();
-    builder
-        .addFilter(ef.sameTerm(VAR_MAIN, aspect))
-        .addWhere(VAR_MAIN, varPredicate, varObject)
-        .addDelete(VAR_MAIN, varPredicate, varObject);
-    jenaService.update(builder);
+    HydraDeleteBuilder builder = hydraBuilderFactory.deleteBuilder(id, ENDPOINT_NAME, Core.aspect);
+    builder.build();
   }
 }

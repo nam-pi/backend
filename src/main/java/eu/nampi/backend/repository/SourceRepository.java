@@ -1,9 +1,9 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -16,20 +16,23 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
-import eu.nampi.backend.model.hydra.HydraSingleBuilder;
-import eu.nampi.backend.utils.HydraUtils;
+import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
+import eu.nampi.backend.utils.HydraBuilderFactory;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
 @Repository
 @CacheConfig(cacheNames = "sources")
-public class SourceRepository extends AbstractHydraRepository {
+public class SourceRepository {
+
+  @Autowired
+  HydraBuilderFactory hydraBuilderFactory;
 
   private static final String ENDPOINT_NAME = "sources";
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
@@ -59,22 +62,16 @@ public class SourceRepository extends AbstractHydraRepository {
   @Cacheable(
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
-    HydraCollectionBuilder builder = new HydraCollectionBuilder(jenaService,
-        endpointUri(ENDPOINT_NAME), Core.source, Api.sourceOrderByVar, params);
+    HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
+        Core.source, Api.sourceOrderByVar, params);
     builder.extendedData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
-    return build(builder, lang);
+    return builder.query(ROW_MAPPER, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder =
-        new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()), Core.source);
+    HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.source);
     builder.coreData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
-    return build(builder, lang);
-  }
-
-  private String build(AbstractHydraBuilder builder, Lang lang) {
-    builder.build(ROW_MAPPER);
-    return HydraUtils.serialize(builder.model, lang, builder.root);
+    return builder.query(ROW_MAPPER, lang);
   }
 }

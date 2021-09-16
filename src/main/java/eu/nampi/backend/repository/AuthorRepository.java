@@ -1,9 +1,9 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_TYPE;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,21 +19,32 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.Author;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.hydra.AbstractHydraBuilder;
-import eu.nampi.backend.model.hydra.HydraCollectionBuilder;
-import eu.nampi.backend.model.hydra.HydraSingleBuilder;
-import eu.nampi.backend.utils.HydraUtils;
+import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
+import eu.nampi.backend.service.JenaService;
+import eu.nampi.backend.utils.HydraBuilderFactory;
+import eu.nampi.backend.utils.UrlBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
 @Repository
 @CacheConfig(cacheNames = "authors")
-public class AuthorRepository extends AbstractHydraRepository {
+public class AuthorRepository {
+
+  @Autowired
+  HydraBuilderFactory hydraBuilderFactory;
+
+  @Autowired
+  UrlBuilder urlBuilder;
+
+  @Autowired
+  JenaService jenaService;
 
   private static final String ENDPOINT_NAME = "authors";
 
@@ -61,30 +72,22 @@ public class AuthorRepository extends AbstractHydraRepository {
   @Cacheable(
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
-    HydraCollectionBuilder builder =
-        new HydraCollectionBuilder(jenaService, endpointUri(ENDPOINT_NAME), Core.author,
-            Api.authorOrderByVar, params);
-    return build(builder, lang);
+    HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
+        Core.author, Api.authorOrderByVar, params);
+    return builder.query(ROW_MAPPER, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
-    HydraSingleBuilder builder =
-        new HydraSingleBuilder(jenaService, endpointUri(ENDPOINT_NAME, id.toString()),
-            Core.author);
-    return build(builder, lang);
-  }
-
-  private String build(AbstractHydraBuilder builder, Lang lang) {
-    builder.build(ROW_MAPPER);
-    return HydraUtils.serialize(builder.model, lang, builder.root);
+    HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.author);
+    return builder.query(ROW_MAPPER, lang);
   }
 
   public Optional<Author> findOne(UUID rdfId) {
     AtomicReference<Optional<Author>> authorRef = new AtomicReference<>(Optional.empty());
     SelectBuilder builder = new SelectBuilder();
     ExprFactory ef = builder.getExprFactory();
-    String authorIri = endpointUri(ENDPOINT_NAME, rdfId);
+    String authorIri = urlBuilder.endpointUri(ENDPOINT_NAME, rdfId);
     Resource author = ResourceFactory.createResource(authorIri);
     builder
         .addValueVar(VAR_LABEL)
@@ -99,7 +102,7 @@ public class AuthorRepository extends AbstractHydraRepository {
   }
 
   public Author addOne(UUID rdfId, String label) {
-    String iri = endpointUri(ENDPOINT_NAME, rdfId);
+    String iri = urlBuilder.endpointUri(ENDPOINT_NAME, rdfId);
     Resource authorRes = ResourceFactory.createResource(iri);
     UpdateBuilder updateBuilder = new UpdateBuilder()
         .addInsert(authorRes, RDF.type, Core.author)

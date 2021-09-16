@@ -10,13 +10,20 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import eu.nampi.backend.utils.HydraUtils;
+import eu.nampi.backend.utils.Serializer;
+import eu.nampi.backend.utils.UrlBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
 
 @Repository
-public class EntrypointRepository extends AbstractHydraRepository {
+public class EntrypointRepository {
+
+  @Autowired
+  Serializer serializer;
+
+  @Autowired
+  UrlBuilder urlBuilder;
 
   @Autowired
   UserRepository userRepository;
@@ -28,12 +35,12 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .setNsPrefix("core", Core.getURI())
         .setNsPrefix("rdf", RDF.getURI());
 
-    Resource ep = ResourceFactory.createResource(endpointUri());
+    Resource ep = ResourceFactory.createResource(urlBuilder.endpointUri());
     model
         .add(ep, RDF.type, Api.entrypoint)
         .add(ep, Hydra.title, "The NAMPI API");
 
-    Resource acts = ResourceFactory.createResource(endpointUri("acts"));
+    Resource acts = ResourceFactory.createResource(urlBuilder.endpointUri("acts"));
     Resource actsBnode = ResourceFactory.createResource();
     model
         .add(ep, Hydra.collection, acts)
@@ -42,7 +49,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .add(actsBnode, Hydra.property, RDF.type)
         .add(acts, Hydra.manages, actsBnode);
 
-    Resource aspects = ResourceFactory.createResource(endpointUri("aspects"));
+    Resource aspects = ResourceFactory.createResource(urlBuilder.endpointUri("aspects"));
     Resource aspectsBnode = ResourceFactory.createResource();
     model
         .add(ep, Hydra.collection, aspects)
@@ -51,7 +58,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .add(aspectsBnode, Hydra.property, RDF.type)
         .add(aspects, Hydra.manages, aspectsBnode);
 
-    Resource authors = ResourceFactory.createResource(endpointUri("authors"));
+    Resource authors = ResourceFactory.createResource(urlBuilder.endpointUri("authors"));
     Resource authorsBnode = ResourceFactory.createResource();
     model
         .add(ep, Hydra.collection, authors)
@@ -60,7 +67,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .add(authorsBnode, Hydra.property, RDF.type)
         .add(authors, Hydra.manages, authorsBnode);
 
-    Resource events = ResourceFactory.createResource(endpointUri("events"));
+    Resource events = ResourceFactory.createResource(urlBuilder.endpointUri("events"));
     Resource eventsBnode = ResourceFactory.createResource();
     model
         .add(ep, Hydra.collection, events)
@@ -69,7 +76,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .add(eventsBnode, Hydra.property, RDF.type)
         .add(events, Hydra.manages, eventsBnode);
 
-    Resource groups = ResourceFactory.createResource(endpointUri("groups"));
+    Resource groups = ResourceFactory.createResource(urlBuilder.endpointUri("groups"));
     Resource groupsBnode = ResourceFactory.createResource();
     model
         .add(ep, Hydra.collection, groups)
@@ -78,7 +85,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .add(groupsBnode, Hydra.property, RDF.type)
         .add(groups, Hydra.manages, groupsBnode);
 
-    Resource persons = ResourceFactory.createResource(endpointUri("persons"));
+    Resource persons = ResourceFactory.createResource(urlBuilder.endpointUri("persons"));
     Resource personsBnode = ResourceFactory.createResource();
     model
         .add(ep, Hydra.collection, persons)
@@ -87,7 +94,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .add(personsBnode, Hydra.property, RDF.type)
         .add(persons, Hydra.manages, personsBnode);
 
-    Resource places = ResourceFactory.createResource(endpointUri("places"));
+    Resource places = ResourceFactory.createResource(urlBuilder.endpointUri("places"));
     Resource placesBnode = ResourceFactory.createResource();
     model
         .add(ep, Hydra.collection, places)
@@ -96,7 +103,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .add(placesBnode, Hydra.property, RDF.type)
         .add(places, Hydra.manages, placesBnode);
 
-    Resource sources = ResourceFactory.createResource(endpointUri("sources"));
+    Resource sources = ResourceFactory.createResource(urlBuilder.endpointUri("sources"));
     Resource sourcesBnode = ResourceFactory.createResource();
     model
         .add(ep, Hydra.collection, sources)
@@ -105,7 +112,7 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .add(sourcesBnode, Hydra.property, RDF.type)
         .add(sources, Hydra.manages, sourcesBnode);
 
-    Resource types = ResourceFactory.createResource(endpointUri("types"));
+    Resource types = ResourceFactory.createResource(urlBuilder.endpointUri("types"));
     Resource typesBnode = ResourceFactory.createResource();
     model
         .add(ep, Hydra.collection, types)
@@ -115,10 +122,11 @@ public class EntrypointRepository extends AbstractHydraRepository {
         .add(types, Hydra.manages, typesBnode);
 
     userRepository.getCurrentUser().ifPresent(u -> {
-      Property user = ResourceFactory.createProperty(endpointUri("user"));
+      Property user = ResourceFactory.createProperty(urlBuilder.endpointUri("user"));
       model.add(ep, user, Api.user);
     });
 
-    return HydraUtils.serialize(model, lang, ResourceFactory.createResource(endpointUri()));
+    return serializer.serialize(model, lang,
+        ResourceFactory.createResource(urlBuilder.endpointUri()));
   }
 }

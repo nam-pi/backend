@@ -1,4 +1,4 @@
-package eu.nampi.backend.model.hydra;
+package eu.nampi.backend.model;
 
 import org.apache.jena.rdf.model.Resource;
 import eu.nampi.backend.vocabulary.Hydra;

@@ -9,6 +9,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import eu.nampi.backend.converter.StringToLangConverter;
 import eu.nampi.backend.exception.NotFoundException;
-import eu.nampi.backend.utils.HydraUtils;
+import eu.nampi.backend.utils.Serializer;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
@@ -27,6 +28,9 @@ import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @ControllerAdvice
 public class HydraControllerAdvice extends ResponseEntityExceptionHandler {
+
+  @Autowired
+  Serializer serializer;
 
   @ExceptionHandler(value = NotFoundException.class)
   protected ResponseEntity<Object> handleNotFound(RuntimeException ex, WebRequest request) {
@@ -64,7 +68,7 @@ public class HydraControllerAdvice extends ResponseEntityExceptionHandler {
       String fallbackMessage) {
     Model error = createErrorModel(ex, request, status, fallbackMessage);
     Lang lang = new StringToLangConverter().convert(request.getHeader("accept"));
-    return handleExceptionInternal(ex, HydraUtils.serialize(error, lang), new HttpHeaders(), status,
+    return handleExceptionInternal(ex, serializer.serialize(error, lang), new HttpHeaders(), status,
         request);
   }
 }
