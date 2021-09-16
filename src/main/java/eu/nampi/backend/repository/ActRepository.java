@@ -27,9 +27,9 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
-import eu.nampi.backend.util.HydraBuilderFactory;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 

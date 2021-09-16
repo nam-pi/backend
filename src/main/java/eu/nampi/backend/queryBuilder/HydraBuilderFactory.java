@@ -1,4 +1,4 @@
-package eu.nampi.backend.util;
+package eu.nampi.backend.queryBuilder;
 
 import java.util.List;
 import java.util.UUID;
@@ -8,13 +8,10 @@ import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
-import eu.nampi.backend.queryBuilder.HydraDeleteBuilder;
-import eu.nampi.backend.queryBuilder.HydraInsertBuilder;
-import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
-import eu.nampi.backend.queryBuilder.HydraUpdateBuilder;
 import eu.nampi.backend.repository.HierarchyRepository;
 import eu.nampi.backend.service.JenaService;
+import eu.nampi.backend.util.Serializer;
+import eu.nampi.backend.util.UrlBuilder;
 
 @Component
 public class HydraBuilderFactory {

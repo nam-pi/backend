@@ -24,9 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
 import eu.nampi.backend.service.JenaService;
-import eu.nampi.backend.util.HydraBuilderFactory;
 import eu.nampi.backend.util.UrlBuilder;
 import eu.nampi.backend.vocabulary.Api;
 
