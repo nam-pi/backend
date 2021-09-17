@@ -1,6 +1,7 @@
 package eu.nampi.backend.queryBuilder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
@@ -77,7 +78,16 @@ public class HydraBuilderFactory {
       List<Literal> labels, List<Literal> comments, List<Literal> texts) {
     UUID id = UUID.randomUUID();
     return new HydraInsertBuilder(jenaService, hierarchyRepository, lang,
-        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts, id);
+        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
+        Optional.empty(), id);
+  }
+
+  public HydraInsertBuilder insertBuilder(Lang lang, String endpointName, Resource mainType,
+      List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
+    UUID id = UUID.randomUUID();
+    return new HydraInsertBuilder(jenaService, hierarchyRepository, lang,
+        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
+        Optional.of(sameAs), id);
   }
 
   /**
@@ -87,7 +97,16 @@ public class HydraBuilderFactory {
   public HydraUpdateBuilder updateBuilder(Lang lang, UUID id, String endpointName,
       Resource mainType, List<Literal> labels, List<Literal> comments, List<Literal> texts) {
     return new HydraUpdateBuilder(jenaService, hierarchyRepository, lang,
-        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts, id);
+        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
+        Optional.empty(), id);
+  }
+
+  public HydraUpdateBuilder updateBuilder(Lang lang, UUID id, String endpointName,
+      Resource mainType, List<Literal> labels, List<Literal> comments, List<Literal> texts,
+      List<Resource> sameAs) {
+    return new HydraUpdateBuilder(jenaService, hierarchyRepository, lang,
+        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
+        Optional.of(sameAs), id);
   }
 
   /**
