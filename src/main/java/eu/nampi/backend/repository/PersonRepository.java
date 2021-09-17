@@ -4,6 +4,7 @@ import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -11,6 +12,7 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -27,7 +29,10 @@ import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.queryBuilder.HydraDeleteBuilder;
+import eu.nampi.backend.queryBuilder.HydraInsertBuilder;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
+import eu.nampi.backend.queryBuilder.HydraUpdateBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
@@ -64,6 +69,7 @@ public class PersonRepository {
         .ifPresent(iri -> model.add(main, Core.sameAs, iri));
     // Birth
     addEvent(model, row, main, PREF_BIRTH, Core.isBornIn);
+    // Death
     addEvent(model, row, main, PREF_DEATH, Core.diesIn);
     return main;
   };
@@ -131,6 +137,29 @@ public class PersonRepository {
     HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.person);
     builder.coreData.addWhere(dataWhere());
     return builder.query(ROW_MAPPER, lang);
+  }
+
+  public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
+      List<Literal> texts, List<Resource> sameAs) {
+    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
+        labels, comments, texts, sameAs);
+    builder.validateSubtype(Core.person, type);
+    builder.build();
+    return findOne(lang, builder.id);
+  }
+
+  public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
+      List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
+    HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
+        labels, comments, texts, sameAs);
+    builder.validateSubtype(Core.person, type);
+    builder.build();
+    return findOne(lang, builder.id);
+  }
+
+  public void delete(UUID id) {
+    HydraDeleteBuilder builder = hydraBuilderFactory.deleteBuilder(id, ENDPOINT_NAME, Core.person);
+    builder.build();
   }
 
   private WhereBuilder dataWhere() {

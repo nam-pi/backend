@@ -1,5 +1,7 @@
 package eu.nampi.backend.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.jena.rdf.model.Literal;
@@ -8,8 +10,11 @@ import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,5 +51,42 @@ public class PlaceController extends AbstractRdfController {
       @PathVariable UUID id) {
     String result = placeRepository.findOne(lang, id);
     return new ResponseEntity<String>(result, HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/places", produces = {"application/ld+json", "text/turtle",
+      "application/rdf+xml", "application/n-triples"})
+  public ResponseEntity<String> postPlace(
+      @RequestHeader("accept") Lang lang,
+      @RequestParam("type") Resource type,
+      @RequestParam("label[]") List<Literal> label,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
+      @RequestParam(value = "text[]", required = false) List<Literal> text,
+      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
+    String newPlace =
+        placeRepository.insert(lang, type, label, comment == null ? new ArrayList<>() : comment,
+            text == null ? new ArrayList<>() : text, sameAs);
+    return new ResponseEntity<String>(newPlace, HttpStatus.CREATED);
+  }
+
+  @PutMapping(value = "/places/{id}", produces = {"application/ld+json", "text/turtle",
+      "application/rdf+xml", "application/n-triples"})
+  public ResponseEntity<String> putPlace(
+      @RequestHeader("accept") Lang lang,
+      @PathVariable UUID id,
+      @RequestParam("type") Resource type,
+      @RequestParam("label[]") List<Literal> label,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
+      @RequestParam(value = "text[]", required = false) List<Literal> text,
+      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
+    String newPlace =
+        placeRepository.update(lang, id, type, label, comment == null ? new ArrayList<>() : comment,
+            text == null ? new ArrayList<>() : text, sameAs);
+    return new ResponseEntity<String>(newPlace, HttpStatus.OK);
+  }
+
+  @DeleteMapping(value = "/places/{id}")
+  public ResponseEntity<?> deletePlace(@PathVariable UUID id) {
+    placeRepository.delete(id);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 }

@@ -50,7 +50,7 @@ public class TypeRepository {
     // Comment
     Optional
         .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
-        .ifPresent(comment -> model.add(main, RDFS.comment, comment));;
+        .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     return main;
   };
 
