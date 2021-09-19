@@ -165,7 +165,7 @@ public class DocumentationRepository {
         Core.takesPlaceAt.getLocalName(), true, false, false));
     event.addSupportedProperty(new HydraSupportedProperty(Core.hasMainParticipant, Core.person,
         Core.hasParticipant.getLocalName(), true, true, false));
-    event.addSupportedProperty(new HydraSupportedProperty(Core.hasParticipant, Core.agent,
+    event.addSupportedProperty(new HydraSupportedProperty(Core.hasParticipant, Core.actor,
         Core.hasParticipant.getLocalName(), true, true, false));
     event.addSupportedProperty(new HydraSupportedProperty(Core.usesAspect, Core.aspect,
         Core.usesAspect.getLocalName(), true, true, false));

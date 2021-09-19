@@ -57,7 +57,7 @@ public class Core {
   public static final Property takesPlaceOn = property("takes_place_on");
   public static final Property usesAspect = property("uses_aspect");
   public static final Resource act = resource("act");
-  public static final Resource agent = resource("agent");
+  public static final Resource actor = resource("actor");
   public static final Resource aspect = resource("aspect");
   public static final Resource author = resource("author");
   public static final Resource date = resource("date");

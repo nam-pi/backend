@@ -74,9 +74,12 @@ public class EventController extends AbstractRdfController {
       @RequestParam("authors[]") List<Resource> authors,
       @RequestParam("source") Resource source,
       @RequestParam("sourceLocation") Literal sourceLocation,
-      @RequestParam("mainParticipant") ResourceCouple mainParticipant) {
-    String newEvent = eventRepository.insert(lang, type, label, asList(comment), asList(text),
-        asList(sameAs), authors, source, sourceLocation, mainParticipant);
+      @RequestParam("mainParticipant") ResourceCouple mainParticipant,
+      @RequestParam(value = "otherParticipants[]",
+          required = false) List<ResourceCouple> otherParticipants) {
+    String newEvent =
+        eventRepository.insert(lang, type, label, asList(comment), asList(text), asList(sameAs),
+            authors, source, sourceLocation, mainParticipant, asList(otherParticipants));
     return new ResponseEntity<String>(newEvent, HttpStatus.CREATED);
   }
 }

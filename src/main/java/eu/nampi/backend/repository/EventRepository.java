@@ -175,7 +175,7 @@ public class EventRepository {
           Optional
               .ofNullable(row.getResource(VAR_PARTICIPANT_TYPE.toString()))
               .ifPresentOrElse(type -> model.add(agent, RDF.type, type),
-                  () -> model.add(agent, RDF.type, Core.agent));
+                  () -> model.add(agent, RDF.type, Core.actor));
         });
     // Main participant
     Optional
@@ -486,7 +486,8 @@ public class EventRepository {
 
   public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
       List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
-      Literal sourceLocation, ResourceCouple mainParticipant) {
+      Literal sourceLocation, ResourceCouple mainParticipant,
+      List<ResourceCouple> otherParticipants) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
     // Add event type
@@ -497,6 +498,15 @@ public class EventRepository {
       builder.validateSubnode(Core.hasMainParticipant, predicate);
       builder.addInsert(builder.root, predicate, mainParticipant.getObject());
     }, () -> builder.addInsert(builder.root, Core.hasMainParticipant, mainParticipant.getObject()));
+    // Other participants
+    otherParticipants.forEach(participant -> {
+      builder.validateType(Core.actor, participant.getObject());
+      participant.getPredicate().ifPresentOrElse(predicate -> {
+        builder.validateNotSubnode(Core.hasMainParticipant, predicate);
+        builder.validateSubnode(Core.hasParticipant, predicate);
+        builder.addInsert(builder.root, predicate, participant.getObject());
+      }, () -> builder.addInsert(builder.root, Core.hasParticipant, participant.getObject()));
+    });
     // Build event
     builder.build();
     // Insert Document Interpretation Act

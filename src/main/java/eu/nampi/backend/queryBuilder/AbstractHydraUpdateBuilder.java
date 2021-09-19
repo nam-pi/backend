@@ -40,10 +40,26 @@ public abstract class AbstractHydraUpdateBuilder extends AbstractHydraBuilder {
     }
   }
 
+  public void validateNotSubnode(RDFNode parent, RDFNode child) {
+    if (hierarchyRepository.isSubnode(parent, child)) {
+      throw new IllegalArgumentException(
+          String.format("'%s' is not allowed to be a subtype of '%s'.", child.toString(),
+              parent.toString()));
+    }
+  }
+
   public void validateType(RDFNode type, RDFNode node) {
     if (!typeRepository.isType(type, node)) {
       throw new IllegalArgumentException(
           String.format("'%s' is not an individual of '%s'", node.toString(), type.toString()));
+    }
+  }
+
+  public void validateNotType(RDFNode type, RDFNode node) {
+    if (typeRepository.isType(type, node)) {
+      throw new IllegalArgumentException(
+          String.format("'%s' is not allowed to be an individual of '%s'", node.toString(),
+              type.toString()));
     }
   }
 
