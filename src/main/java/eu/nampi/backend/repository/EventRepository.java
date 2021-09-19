@@ -397,6 +397,7 @@ public class EventRepository {
       builder
           .addWhere(VAR_ASPECT, RDF.type, VAR_ASPECT_TYPE)
           .addWhere(VAR_MAIN, VAR_ASPECT_USE_TYPE, VAR_ASPECT)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_USE_TYPE), OWL.getURI())))
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_TYPE), OWL.getURI())))
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_TYPE), RDFS.getURI())))
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_TYPE), RDF.getURI())));
