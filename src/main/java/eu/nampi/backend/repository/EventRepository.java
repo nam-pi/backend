@@ -67,6 +67,7 @@ public class EventRepository {
   private static final Node VAR_ASPECT_LABEL = NodeFactory.createVariable("aspectLabel");
   private static final Node VAR_ASPECT_STRING = NodeFactory.createVariable("aspectString");
   private static final Node VAR_ASPECT_TYPE = NodeFactory.createVariable("aspectType");
+  private static final Node VAR_ASPECT_USE_TYPE = NodeFactory.createVariable("aspectUseType");
   private static final Node VAR_AUTHOR = NodeFactory.createVariable("author");
   private static final Node VAR_AUTHOR_LABEL = NodeFactory.createVariable("authorLabel");
   private static final Node VAR_DATE = NodeFactory.createVariable("date");
@@ -148,7 +149,11 @@ public class EventRepository {
     Optional
         .ofNullable(row.getResource(VAR_ASPECT.toString()))
         .ifPresent(aspect -> {
-          model.add(main, Core.usesAspect, aspect);
+          Optional
+              .ofNullable(row.getResource(VAR_ASPECT_USE_TYPE.toString()))
+              .map(type -> ResourceFactory.createProperty(type.getURI()))
+              .ifPresentOrElse(type -> model.add(main, type, aspect),
+                  () -> model.add(main, Core.usesAspect, aspect));
           Optional
               .ofNullable(row.getLiteral(VAR_ASPECT_LABEL.toString()))
               .ifPresent(label -> model.add(aspect, RDFS.label, label));
@@ -391,6 +396,7 @@ public class EventRepository {
     if (withTypes) {
       builder
           .addWhere(VAR_ASPECT, RDF.type, VAR_ASPECT_TYPE)
+          .addWhere(VAR_MAIN, VAR_ASPECT_USE_TYPE, VAR_ASPECT)
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_TYPE), OWL.getURI())))
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_TYPE), RDFS.getURI())))
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_ASPECT_TYPE), RDF.getURI())));
