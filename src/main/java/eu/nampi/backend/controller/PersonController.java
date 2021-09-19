@@ -64,8 +64,7 @@ public class PersonController extends AbstractRdfController {
       @RequestParam(value = "text[]", required = false) List<Literal> text,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
     String newPerson =
-        personRepository.insert(lang, type, label, comment == null ? new ArrayList<>() : comment,
-            text == null ? new ArrayList<>() : text, sameAs);
+        personRepository.insert(lang, type, label, asList(comment), asList(text), asList(sameAs));
     return new ResponseEntity<String>(newPerson, HttpStatus.CREATED);
   }
 
@@ -80,8 +79,7 @@ public class PersonController extends AbstractRdfController {
       @RequestParam(value = "text[]", required = false) List<Literal> text,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
     String newPerson = personRepository.update(lang, id, type, label,
-        comment == null ? new ArrayList<>() : comment, text == null ? new ArrayList<>() : text,
-        sameAs);
+        comment == null ? new ArrayList<>() : asList(comment), asList(text), asList(sameAs));
     return new ResponseEntity<String>(newPerson, HttpStatus.OK);
   }
 

@@ -1,6 +1,5 @@
 package eu.nampi.backend.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -64,8 +63,7 @@ public class AspectController extends AbstractRdfController {
       @RequestParam(value = "text[]", required = false) List<Literal> text,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
     String newAspect =
-        aspectRepository.insert(lang, type, label, comment == null ? new ArrayList<>() : comment,
-            text == null ? new ArrayList<>() : text, sameAs);
+        aspectRepository.insert(lang, type, label, asList(comment), asList(text), asList(sameAs));
     return new ResponseEntity<String>(newAspect, HttpStatus.CREATED);
   }
 
@@ -79,9 +77,8 @@ public class AspectController extends AbstractRdfController {
       @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
-    String newAspect = aspectRepository.update(lang, id, type, label,
-        comment == null ? new ArrayList<>() : comment, text == null ? new ArrayList<>() : text,
-        sameAs);
+    String newAspect = aspectRepository.update(lang, id, type, label, asList(comment), asList(text),
+        asList(sameAs));
     return new ResponseEntity<String>(newAspect, HttpStatus.OK);
   }
 

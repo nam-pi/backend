@@ -1,6 +1,5 @@
 package eu.nampi.backend.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -63,8 +62,7 @@ public class SourceController extends AbstractRdfController {
       @RequestParam(value = "text[]", required = false) List<Literal> text,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
     String newSource =
-        sourceRepository.insert(lang, type, label, comment == null ? new ArrayList<>() : comment,
-            text == null ? new ArrayList<>() : text, sameAs);
+        sourceRepository.insert(lang, type, label, asList(comment), asList(text), asList(sameAs));
     return new ResponseEntity<String>(newSource, HttpStatus.CREATED);
   }
 
@@ -78,9 +76,8 @@ public class SourceController extends AbstractRdfController {
       @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
-    String newSource = sourceRepository.update(lang, id, type, label,
-        comment == null ? new ArrayList<>() : comment, text == null ? new ArrayList<>() : text,
-        sameAs);
+    String newSource = sourceRepository.update(lang, id, type, label, asList(comment), asList(text),
+        asList(sameAs));
     return new ResponseEntity<String>(newSource, HttpStatus.OK);
   }
 
