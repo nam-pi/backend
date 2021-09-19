@@ -3,11 +3,16 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
@@ -29,6 +34,7 @@ import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.queryBuilder.HydraInsertBuilder;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
@@ -40,6 +46,8 @@ public class ActRepository {
   @Autowired
   HydraBuilderFactory hydraBuilderFactory;
 
+  private static final List<Literal> DEFAULT_LABEL =
+      Arrays.asList(ResourceFactory.createLangLiteral("Document interpretation act", "en"));
   private static final String ENDPOINT_NAME = "acts";
   private static final Node VAR_AUTHOR = NodeFactory.createVariable("author");
   private static final Node VAR_AUTHOR_LABEL = NodeFactory.createVariable("authorLabel");
@@ -171,5 +179,45 @@ public class ActRepository {
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), RDF.getURI())))
           .addFilter(ef.not(ef.sameTerm(VAR_LOC_TEXT_TYPE, Core.hasValue)));
     }
+  }
+
+  public UUID insert(Lang lang, List<Resource> authors, Resource source, Literal sourceLocation,
+      Resource event) {
+    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, Core.act,
+        DEFAULT_LABEL, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+    // Insert authors
+    authors.forEach(author -> {
+      builder
+          .validateType(Core.author, author);
+      builder
+          .addInsert(builder.root, Core.isAuthoredBy, author);
+    });
+    // Insert source location
+    builder
+        .validateType(Core.source, source);
+    Resource sourceLocationResource = ResourceFactory.createResource();
+    builder
+        .addInsert(builder.root, Core.hasSourceLocation, sourceLocationResource)
+        .addInsert(sourceLocationResource, RDF.type, Core.sourceLocation)
+        .addInsert(sourceLocationResource, Core.hasText, sourceLocation)
+        .addInsert(sourceLocationResource, Core.hasSource, source);
+    builder
+        .addInsert(builder.root, Core.hasSource, source).addInsert(builder.root,
+            Core.hasSourceLocation, sourceLocation);
+    // Insert event
+    builder
+        .validateType(Core.event, event);
+    builder
+        .addInsert(builder.root, Core.hasInterpretation, event);
+    // Insert date
+    Resource date = ResourceFactory.createResource();
+    builder
+        .addInsert(builder.root, Core.isAuthoredOn, date)
+        .addInsert(date, RDF.type, Core.date)
+        .addInsert(date, Core.hasDateTime, ResourceFactory
+            .createTypedLiteral(LocalDateTime.now().toString(), XSDDatatype.XSDdateTime));
+    // build
+    builder.build();
+    return builder.id;
   }
 }

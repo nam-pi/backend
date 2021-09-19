@@ -123,7 +123,7 @@ public class AspectRepository {
       List<Literal> texts, List<Resource> sameAs) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
-    builder.validateSubtype(Core.aspect, type);
+    builder.validateSubnode(Core.aspect, type);
     builder.build();
     return findOne(lang, builder.id);
   }
@@ -132,7 +132,7 @@ public class AspectRepository {
       List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
-    builder.validateSubtype(Core.aspect, type);
+    builder.validateSubnode(Core.aspect, type);
     builder.build();
     return findOne(lang, builder.id);
   }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.repository.HierarchyRepository;
+import eu.nampi.backend.repository.TypeRepository;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.util.Serializer;
 import eu.nampi.backend.util.UrlBuilder;
@@ -28,6 +29,9 @@ public class HydraBuilderFactory {
 
   @Autowired
   HierarchyRepository hierarchyRepository;
+
+  @Autowired
+  TypeRepository typeRepository;
 
   /**
    * Hydra Collection Builders
@@ -77,7 +81,7 @@ public class HydraBuilderFactory {
   public HydraInsertBuilder insertBuilder(Lang lang, String endpointName, Resource mainType,
       List<Literal> labels, List<Literal> comments, List<Literal> texts) {
     UUID id = UUID.randomUUID();
-    return new HydraInsertBuilder(jenaService, hierarchyRepository, lang,
+    return new HydraInsertBuilder(jenaService, hierarchyRepository, typeRepository, lang,
         urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
         Optional.empty(), id);
   }
@@ -85,7 +89,7 @@ public class HydraBuilderFactory {
   public HydraInsertBuilder insertBuilder(Lang lang, String endpointName, Resource mainType,
       List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     UUID id = UUID.randomUUID();
-    return new HydraInsertBuilder(jenaService, hierarchyRepository, lang,
+    return new HydraInsertBuilder(jenaService, hierarchyRepository, typeRepository, lang,
         urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
         Optional.of(sameAs), id);
   }
@@ -96,7 +100,7 @@ public class HydraBuilderFactory {
 
   public HydraUpdateBuilder updateBuilder(Lang lang, UUID id, String endpointName,
       Resource mainType, List<Literal> labels, List<Literal> comments, List<Literal> texts) {
-    return new HydraUpdateBuilder(jenaService, hierarchyRepository, lang,
+    return new HydraUpdateBuilder(jenaService, hierarchyRepository, typeRepository, lang,
         urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
         Optional.empty(), id);
   }
@@ -104,7 +108,7 @@ public class HydraBuilderFactory {
   public HydraUpdateBuilder updateBuilder(Lang lang, UUID id, String endpointName,
       Resource mainType, List<Literal> labels, List<Literal> comments, List<Literal> texts,
       List<Resource> sameAs) {
-    return new HydraUpdateBuilder(jenaService, hierarchyRepository, lang,
+    return new HydraUpdateBuilder(jenaService, hierarchyRepository, typeRepository, lang,
         urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
         Optional.of(sameAs), id);
   }
@@ -114,7 +118,7 @@ public class HydraBuilderFactory {
    */
 
   public HydraDeleteBuilder deleteBuilder(UUID id, String endpointName, Resource mainType) {
-    return new HydraDeleteBuilder(jenaService, hierarchyRepository,
+    return new HydraDeleteBuilder(jenaService, hierarchyRepository, typeRepository,
         urlBuilder.endpointUri(endpointName, id), mainType, id);
   }
 }

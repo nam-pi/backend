@@ -6,6 +6,7 @@ import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.util.Serializer;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Hydra;
@@ -34,6 +36,9 @@ public class TypeRepository {
 
   @Autowired
   HydraBuilderFactory hydraBuilderFactory;
+
+  @Autowired
+  JenaService jenaService;
 
   private static final String ENDPOINT_NAME = "types";
 
@@ -76,5 +81,14 @@ public class TypeRepository {
     builder.coreData.addWhere(VAR_MAIN, RDFS.subPropertyOf,
         params.getType().orElseThrow());
     return builder.query(ROW_MAPPER, lang);
+  }
+
+  @Cacheable(key = "{#type, #node}")
+  public boolean isType(RDFNode type, RDFNode node) {
+    if (type.toString().equals(node.toString())) {
+      return true;
+    }
+    AskBuilder builder = new AskBuilder().addWhere(node, RDF.type, type);
+    return jenaService.ask(builder);
   }
 }

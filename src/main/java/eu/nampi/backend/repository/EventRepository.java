@@ -5,6 +5,7 @@ import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,8 +36,10 @@ import org.springframework.stereotype.Repository;
 import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.model.DateRange;
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.model.ResourceCouple;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.queryBuilder.HydraInsertBuilder;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
@@ -47,6 +50,9 @@ public class EventRepository {
 
   @Autowired
   HydraBuilderFactory hydraBuilderFactory;
+
+  @Autowired
+  ActRepository actRepository;
 
   private static final String NEGATIVE_DEFAULT_DATE = "-9999-01-01T00:00:00";
   private static final String POSITIVE_DEFAULT_DATE = "9999-01-01T00:00:00";
@@ -476,5 +482,25 @@ public class EventRepository {
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_PLACE_TYPE), RDF.getURI())));
     }
     return builder;
+  }
+
+  public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
+      List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
+      Literal sourceLocation, ResourceCouple mainParticipant) {
+    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
+        labels, comments, texts, sameAs);
+    // Add event type
+    builder.validateSubnode(Core.event, type);
+    // Event main participant
+    builder.validateType(Core.person, mainParticipant.getObject());
+    mainParticipant.getPredicate().ifPresentOrElse(predicate -> {
+      builder.validateSubnode(Core.hasMainParticipant, predicate);
+      builder.addInsert(builder.root, predicate, mainParticipant.getObject());
+    }, () -> builder.addInsert(builder.root, Core.hasMainParticipant, mainParticipant.getObject()));
+    // Build event
+    builder.build();
+    // Insert Document Interpretation Act
+    actRepository.insert(lang, authors, source, sourceLocation, builder.root);
+    return findOne(lang, builder.id);
   }
 }

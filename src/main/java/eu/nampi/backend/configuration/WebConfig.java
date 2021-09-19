@@ -9,6 +9,7 @@ import eu.nampi.backend.converter.StringToLiteralConverter;
 import eu.nampi.backend.converter.StringToOrderByClausesConverter;
 import eu.nampi.backend.converter.StringToPropertyConverter;
 import eu.nampi.backend.converter.StringToResourceConverter;
+import eu.nampi.backend.converter.StringToResourceCouple;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -21,5 +22,6 @@ public class WebConfig implements WebMvcConfigurer {
     registry.addConverter(new StringToOrderByClausesConverter());
     registry.addConverter(new StringToPropertyConverter());
     registry.addConverter(new StringToResourceConverter());
+    registry.addConverter(new StringToResourceCouple());
   }
 }

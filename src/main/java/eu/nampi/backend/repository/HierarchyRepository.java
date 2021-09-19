@@ -50,8 +50,14 @@ public class HierarchyRepository {
   private static final Node VAR_PARENT_LABEL = NodeFactory.createVariable("parentLabel");
   private static final Node VAR_PARENT_COMMENT = NodeFactory.createVariable("parentComment");
 
-  public boolean isSubtype(RDFNode parent, RDFNode child) {
-    AskBuilder builder = new AskBuilder().addWhere(child, RDFS.subClassOf, parent);
+  @Cacheable(key = "{#parent, #child}")
+  public boolean isSubnode(RDFNode parent, RDFNode child) {
+    AskBuilder builder = new AskBuilder();
+    ExprFactory ef = builder.getExprFactory();
+    Node predicate = NodeFactory.createVariable("p");
+    builder
+        .addWhere(child, predicate, parent)
+        .addFilter(ef.in(predicate, RDFS.subClassOf, RDFS.subPropertyOf));
     return jenaService.ask(builder);
   }
 

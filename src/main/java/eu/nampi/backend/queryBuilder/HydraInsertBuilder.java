@@ -9,6 +9,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import eu.nampi.backend.repository.HierarchyRepository;
+import eu.nampi.backend.repository.TypeRepository;
 import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Core;
 
@@ -17,16 +18,16 @@ public class HydraInsertBuilder extends AbstractHydraUpdateBuilder {
   public UUID id;
 
   public HydraInsertBuilder(JenaService jenaService, HierarchyRepository hierarchyRepository,
-      Lang lang, String baseUri, Resource mainType, List<Literal> labels,
-      List<Literal> comments, List<Literal> texts, Optional<List<Resource>> optionalSameAs,
-      UUID id) {
-    super(jenaService, hierarchyRepository, baseUri, mainType);
+      TypeRepository typeRepository, Lang lang, String baseUri, Resource mainType,
+      List<Literal> labels, List<Literal> comments, List<Literal> texts,
+      Optional<List<Resource>> optionalSameAs, UUID id) {
+    super(jenaService, hierarchyRepository, typeRepository, baseUri, mainType);
     this.id = id;
-    updateBuilder.addInsert(root, RDF.type, mainType);
-    labels.forEach(label -> updateBuilder.addInsert(root, RDFS.label, label));
-    comments.forEach(labelcomment -> updateBuilder.addInsert(root, RDFS.comment, labelcomment));
-    texts.forEach(text -> updateBuilder.addInsert(root, Core.hasText, text));
+    addInsert(root, RDF.type, mainType);
+    labels.forEach(label -> addInsert(root, RDFS.label, label));
+    comments.forEach(labelcomment -> addInsert(root, RDFS.comment, labelcomment));
+    texts.forEach(text -> addInsert(root, Core.hasText, text));
     optionalSameAs.ifPresent(sameAsList -> sameAsList
-        .forEach(sameAs -> updateBuilder.addInsert(root, Core.sameAs, sameAs)));
+        .forEach(sameAs -> addInsert(root, Core.sameAs, sameAs)));
   }
 }

@@ -84,7 +84,7 @@ public class SourceRepository {
       List<Literal> texts, List<Resource> sameAs) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
-    builder.validateSubtype(Core.source, type);
+    builder.validateSubnode(Core.source, type);
     builder.build();
     return findOne(lang, builder.id);
   }
@@ -93,7 +93,7 @@ public class SourceRepository {
       List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
-    builder.validateSubtype(Core.source, type);
+    builder.validateSubnode(Core.source, type);
     builder.build();
     return findOne(lang, builder.id);
   }

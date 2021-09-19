@@ -84,7 +84,7 @@ public class PlaceRepository {
       List<Literal> texts, List<Resource> sameAs) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
-    builder.validateSubtype(Core.place, type);
+    builder.validateSubnode(Core.place, type);
     builder.build();
     return findOne(lang, builder.id);
   }
@@ -93,7 +93,7 @@ public class PlaceRepository {
       List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
-    builder.validateSubtype(Core.place, type);
+    builder.validateSubnode(Core.place, type);
     builder.build();
     return findOne(lang, builder.id);
   }

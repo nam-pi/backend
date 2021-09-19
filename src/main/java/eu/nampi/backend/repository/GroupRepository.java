@@ -84,7 +84,7 @@ public class GroupRepository {
       List<Literal> texts, List<Resource> sameAs) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
-    builder.validateSubtype(Core.group, type);
+    builder.validateSubnode(Core.group, type);
     builder.build();
     return findOne(lang, builder.id);
   }
@@ -93,7 +93,7 @@ public class GroupRepository {
       List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
-    builder.validateSubtype(Core.group, type);
+    builder.validateSubnode(Core.group, type);
     builder.build();
     return findOne(lang, builder.id);
   }

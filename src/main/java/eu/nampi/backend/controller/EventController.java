@@ -1,5 +1,6 @@
 package eu.nampi.backend.controller;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.jena.rdf.model.Literal;
@@ -11,11 +12,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.model.ResourceCouple;
 import eu.nampi.backend.repository.EventRepository;
 
 @RestController
@@ -57,5 +60,23 @@ public class EventController extends AbstractRdfController {
       @PathVariable UUID id) {
     String result = eventRepository.findOne(lang, id);
     return new ResponseEntity<String>(result, HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/events", produces = {"application/ld+json", "text/turtle",
+      "application/rdf+xml", "application/n-triples"})
+  public ResponseEntity<String> postEvent(
+      @RequestHeader("accept") Lang lang,
+      @RequestParam("type") Resource type,
+      @RequestParam("label[]") List<Literal> label,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
+      @RequestParam(value = "text[]", required = false) List<Literal> text,
+      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
+      @RequestParam("authors[]") List<Resource> authors,
+      @RequestParam("source") Resource source,
+      @RequestParam("sourceLocation") Literal sourceLocation,
+      @RequestParam("mainParticipant") ResourceCouple mainParticipant) {
+    String newEvent = eventRepository.insert(lang, type, label, asList(comment), asList(text),
+        asList(sameAs), authors, source, sourceLocation, mainParticipant);
+    return new ResponseEntity<String>(newEvent, HttpStatus.CREATED);
   }
 }
