@@ -81,7 +81,7 @@ public class UserRepository {
       if (u.getAuthorities().contains("ROLE_AUTHOR")) {
         model.add(userResource, Api.isAuthor,
             ResourceFactory
-                .createResource(urlBuilder.endpointUri(ENDPOINT_NAME, u.getRdfId().toString())));
+                .createResource(urlBuilder.endpointUri("authors", u.getRdfId().toString())));
       }
       model.add(userResource, RDFS.label, u.getLabel());
       model.add(userResource, SchemaOrg.givenName, u.getGivenName());
