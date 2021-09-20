@@ -494,7 +494,7 @@ public class EventRepository {
   public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
       List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
       Literal sourceLocation, ResourceCouple mainParticipant,
-      List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects) {
+      List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects, Optional<Resource> optionalPlace) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
     // Add event type
@@ -521,6 +521,11 @@ public class EventRepository {
         builder.validateSubnode(Core.usesAspect, predicate);
         builder.addInsert(builder.root, predicate, aspect.getObject());
       }, () -> builder.addInsert(builder.root, Core.usesAspect, aspect.getObject()));
+    });
+    // Event place
+    optionalPlace.ifPresent(place -> {
+      builder.validateType(Core.place, place);
+      builder.addInsert(builder.root, Core.takesPlaceAt, place);
     });
     // Build event
     builder.build();
