@@ -494,7 +494,8 @@ public class EventRepository {
   public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
       List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
       Literal sourceLocation, ResourceCouple mainParticipant,
-      List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects, Optional<Resource> optionalPlace) {
+      List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
+      Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
     // Add event type
@@ -526,6 +527,36 @@ public class EventRepository {
     optionalPlace.ifPresent(place -> {
       builder.validateType(Core.place, place);
       builder.addInsert(builder.root, Core.takesPlaceAt, place);
+    });
+    // Event date
+    optionalDate.ifPresent(date -> {
+      if (date.getStart().isPresent()) {
+        if (date.isRange()) {
+          date.getStart().ifPresent(start -> {
+            Resource startRes = ResourceFactory.createResource();
+            builder
+                .addInsert(builder.root, Core.takesPlaceNotEarlierThan, startRes)
+                .addInsert(startRes, RDF.type, Core.date)
+                .addInsert(startRes, Core.hasDateTime,
+                    ResourceFactory.createTypedLiteral(start.toString(), XSDDatatype.XSDdateTime));
+          });
+          date.getEnd().ifPresent(end -> {
+            Resource endRes = ResourceFactory.createResource();
+            builder
+                .addInsert(builder.root, Core.takesPlaceNotLaterThan, endRes)
+                .addInsert(endRes, RDF.type, Core.date)
+                .addInsert(endRes, Core.hasDateTime,
+                    ResourceFactory.createTypedLiteral(end.toString(), XSDDatatype.XSDdateTime));
+          });
+        } else {
+          Resource exactRes = ResourceFactory.createResource();
+          builder
+              .addInsert(builder.root, Core.takesPlaceOn, exactRes)
+              .addInsert(exactRes, RDF.type, Core.date)
+              .addInsert(exactRes, Core.hasDateTime, ResourceFactory
+                  .createTypedLiteral(date.getStart().get().toString(), XSDDatatype.XSDdateTime));
+        }
+      }
     });
     // Build event
     builder.build();

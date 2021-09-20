@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import eu.nampi.backend.model.DateRange;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.ResourceCouple;
@@ -64,21 +65,25 @@ public class EventController extends AbstractRdfController {
 
   @PostMapping(value = "/events", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> postEvent(@RequestHeader("accept") Lang lang,
-      @RequestParam("type") Resource type, @RequestParam("label[]") List<Literal> label,
+  public ResponseEntity<String> postEvent(
+      @RequestHeader("accept") Lang lang,
+      @RequestParam("type") Resource type,
+      @RequestParam("label[]") List<Literal> label,
       @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
-      @RequestParam("authors[]") List<Resource> authors, @RequestParam("source") Resource source,
+      @RequestParam("authors[]") List<Resource> authors,
+      @RequestParam("source") Resource source,
       @RequestParam("sourceLocation") Literal sourceLocation,
       @RequestParam("mainParticipant") ResourceCouple mainParticipant,
       @RequestParam(value = "otherParticipants[]",
           required = false) List<ResourceCouple> otherParticipants,
       @RequestParam(value = "aspects[]", required = false) List<ResourceCouple> aspects,
-      @RequestParam("place") Optional<Resource> place) {
+      @RequestParam("place") Optional<Resource> place,
+      @RequestParam("date") Optional<DateRange> date) {
     String newEvent = eventRepository.insert(lang, type, label, asList(comment), asList(text),
         asList(sameAs), authors, source, sourceLocation, mainParticipant, asList(otherParticipants),
-        asList(aspects), place);
+        asList(aspects), place, date);
     return new ResponseEntity<String>(newEvent, HttpStatus.CREATED);
   }
 }
