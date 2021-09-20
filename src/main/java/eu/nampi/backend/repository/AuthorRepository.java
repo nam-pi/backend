@@ -83,6 +83,7 @@ public class AuthorRepository {
     return builder.query(ROW_MAPPER, lang);
   }
 
+  @Cacheable(key = "{#rdfId}")
   public Optional<Author> findOne(UUID rdfId) {
     AtomicReference<Optional<Author>> authorRef = new AtomicReference<>(Optional.empty());
     SelectBuilder builder = new SelectBuilder();
