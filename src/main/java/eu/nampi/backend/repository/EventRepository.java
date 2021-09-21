@@ -37,8 +37,10 @@ import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.model.DateRange;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.ResourceCouple;
+import eu.nampi.backend.queryBuilder.AbstractHydraUpdateBuilder;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.queryBuilder.HydraDeleteBuilder;
 import eu.nampi.backend.queryBuilder.HydraInsertBuilder;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
 import eu.nampi.backend.vocabulary.Api;
@@ -491,15 +493,51 @@ public class EventRepository {
     return builder;
   }
 
+  public void delete(UUID id) {
+    HydraDeleteBuilder builder = hydraBuilderFactory.deleteBuilder(id, ENDPOINT_NAME, Core.event);
+    // Delete act
+    actRepository.findForEvent(builder.root).ifPresent(act -> actRepository.delete(act));
+    // Delete event
+    ExprFactory ef = builder.updateBuilder.getExprFactory();
+    Node varHasDatePredicate = NodeFactory.createVariable("hasDatePredicate");
+    Node varDate = NodeFactory.createVariable("date");
+    Node varDatePredicate = NodeFactory.createVariable("datePredicate");
+    Node varDateObject = NodeFactory.createVariable("dateObject");
+    builder
+        .addOptional(new WhereBuilder()
+            .addWhere(builder.root, varHasDatePredicate, varDate)
+            .addFilter(ef.in(
+                varHasDatePredicate,
+                Core.hasDate, Core.takesPlaceNotEarlierThan,
+                Core.takesPlaceNotLaterThan, Core.takesPlaceOn))
+            .addWhere(varDate, varDatePredicate, varDateObject))
+        .addDelete(builder.root, varHasDatePredicate, varDate)
+        .addDelete(varDate, varDatePredicate, varDateObject);
+    builder.build();
+  }
+
   public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
       List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
       Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
+    Resource act = actRepository.insert(lang, authors, source, sourceLocation);
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
-    // Add event type
     builder.validateSubnode(Core.event, type);
+    builder.addInsert(builder.root, Core.isInterpretationOf, act);
+    // Add data
+    addInserts(builder, authors, source, sourceLocation, mainParticipant, otherParticipants,
+        aspects, optionalPlace, optionalDate);
+    builder.build();
+    // Insert Document Interpretation Act
+    return findOne(lang, builder.id);
+  }
+
+  private void addInserts(AbstractHydraUpdateBuilder builder, List<Resource> authors,
+      Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
+      List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
+      Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     // Event main participant
     builder.validateType(Core.person, mainParticipant.getObject());
     mainParticipant.getPredicate().ifPresentOrElse(predicate -> {
@@ -538,7 +576,9 @@ public class EventRepository {
                 .addInsert(builder.root, Core.takesPlaceNotEarlierThan, startRes)
                 .addInsert(startRes, RDF.type, Core.date)
                 .addInsert(startRes, Core.hasDateTime,
-                    ResourceFactory.createTypedLiteral(start.toString(), XSDDatatype.XSDdateTime));
+                    ResourceFactory.createTypedLiteral(
+                        start.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                        XSDDatatype.XSDdateTime));
           });
           date.getEnd().ifPresent(end -> {
             Resource endRes = ResourceFactory.createResource();
@@ -546,7 +586,9 @@ public class EventRepository {
                 .addInsert(builder.root, Core.takesPlaceNotLaterThan, endRes)
                 .addInsert(endRes, RDF.type, Core.date)
                 .addInsert(endRes, Core.hasDateTime,
-                    ResourceFactory.createTypedLiteral(end.toString(), XSDDatatype.XSDdateTime));
+                    ResourceFactory.createTypedLiteral(
+                        end.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                        XSDDatatype.XSDdateTime));
           });
         } else {
           Resource exactRes = ResourceFactory.createResource();
@@ -554,14 +596,11 @@ public class EventRepository {
               .addInsert(builder.root, Core.takesPlaceOn, exactRes)
               .addInsert(exactRes, RDF.type, Core.date)
               .addInsert(exactRes, Core.hasDateTime, ResourceFactory
-                  .createTypedLiteral(date.getStart().get().toString(), XSDDatatype.XSDdateTime));
+                  .createTypedLiteral(
+                      date.getStart().get().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                      XSDDatatype.XSDdateTime));
         }
       }
     });
-    // Build event
-    builder.build();
-    // Insert Document Interpretation Act
-    actRepository.insert(lang, authors, source, sourceLocation, builder.root);
-    return findOne(lang, builder.id);
   }
 }

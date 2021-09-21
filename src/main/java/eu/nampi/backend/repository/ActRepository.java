@@ -4,13 +4,16 @@ import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
@@ -34,8 +37,10 @@ import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
+import eu.nampi.backend.queryBuilder.HydraDeleteBuilder;
 import eu.nampi.backend.queryBuilder.HydraInsertBuilder;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
+import eu.nampi.backend.service.JenaService;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
@@ -45,6 +50,9 @@ public class ActRepository {
 
   @Autowired
   HydraBuilderFactory hydraBuilderFactory;
+
+  @Autowired
+  JenaService jenaService;
 
   private static final List<Literal> DEFAULT_LABEL =
       Arrays.asList(ResourceFactory.createLangLiteral("Document interpretation act", "en"));
@@ -181,8 +189,46 @@ public class ActRepository {
     }
   }
 
-  public UUID insert(Lang lang, List<Resource> authors, Resource source, Literal sourceLocation,
-      Resource event) {
+  public Optional<UUID> findForEvent(Resource event) {
+    Node varAct = NodeFactory.createVariable("act");
+    Node varEvent = NodeFactory.createVariable("event");
+    SelectBuilder builder = new SelectBuilder();
+    ExprFactory ef = builder.getExprFactory();
+    builder
+        .addVar(varAct)
+        .addWhere(varEvent, Core.isInterpretationOf, varAct)
+        .addFilter(ef.sameTerm(varEvent, event));
+    AtomicReference<Optional<UUID>> id = new AtomicReference<>();
+    jenaService.select(builder,
+        qs -> id.set(Optional.ofNullable(qs.getResource(varAct.getName()))
+            .map(res -> {
+              String[] uriParts = res.getURI().split("/");
+              String idString = uriParts[uriParts.length - 1];
+              return UUID.fromString(idString);
+            })));
+    return id.get();
+  }
+
+  public void delete(UUID id) {
+    HydraDeleteBuilder builder = hydraBuilderFactory.deleteBuilder(id, ENDPOINT_NAME, Core.act);
+    Node varDate = NodeFactory.createVariable("date");
+    Node varDateObject = NodeFactory.createVariable("dateObject");
+    Node varDatePredicate = NodeFactory.createVariable("datePredicate");
+    Node varLocation = NodeFactory.createVariable("location");
+    Node varLocationObject = NodeFactory.createVariable("locationObject");
+    Node varLocationPredicate = NodeFactory.createVariable("locationPredicate");
+    builder
+        .addDelete(varDate, varDatePredicate, varDateObject)
+        .addDelete(varLocation, varLocationPredicate, varLocationObject)
+        .addWhere(VAR_MAIN, Core.hasSourceLocation, varLocation)
+        .addWhere(VAR_MAIN, Core.isAuthoredOn, varDate)
+        .addWhere(varDate, varDatePredicate, varDateObject)
+        .addWhere(varLocation, varLocationPredicate, varLocationObject);
+    builder.build();
+  }
+
+  public Resource insert(Lang lang, List<Resource> authors, Resource source,
+      Literal sourceLocation) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, Core.act,
         DEFAULT_LABEL, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     // Insert authors
@@ -204,20 +250,17 @@ public class ActRepository {
     builder
         .addInsert(builder.root, Core.hasSource, source).addInsert(builder.root,
             Core.hasSourceLocation, sourceLocation);
-    // Insert event
-    builder
-        .validateType(Core.event, event);
-    builder
-        .addInsert(builder.root, Core.hasInterpretation, event);
     // Insert date
     Resource date = ResourceFactory.createResource();
     builder
         .addInsert(builder.root, Core.isAuthoredOn, date)
         .addInsert(date, RDF.type, Core.date)
-        .addInsert(date, Core.hasDateTime, ResourceFactory
-            .createTypedLiteral(LocalDateTime.now().toString(), XSDDatatype.XSDdateTime));
+        .addInsert(date, Core.hasDateTime,
+            ResourceFactory.createTypedLiteral(
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                XSDDatatype.XSDdateTime));
     // build
     builder.build();
-    return builder.id;
+    return builder.root;
   }
 }

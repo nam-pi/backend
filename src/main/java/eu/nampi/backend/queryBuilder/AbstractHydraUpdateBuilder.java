@@ -1,10 +1,12 @@
 package eu.nampi.backend.queryBuilder;
 
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.expr.Expr;
 import eu.nampi.backend.repository.HierarchyRepository;
 import eu.nampi.backend.repository.TypeRepository;
 import eu.nampi.backend.service.JenaService;
@@ -63,7 +65,27 @@ public abstract class AbstractHydraUpdateBuilder extends AbstractHydraBuilder {
     }
   }
 
+  public UpdateBuilder addDelete(Object s, Object p, Object o) {
+    return updateBuilder.addDelete(s, p, o);
+  }
+
+  public UpdateBuilder addFilter(Expr expression) {
+    return updateBuilder.addFilter(expression);
+  }
+
   public UpdateBuilder addInsert(Object s, Object p, Object o) {
     return updateBuilder.addInsert(s, p, o);
+  }
+
+  public UpdateBuilder addOptional(Object s, Object p, Object o) {
+    return updateBuilder.addOptional(s, p, o);
+  }
+
+  public UpdateBuilder addOptional(WhereBuilder builder) {
+    return updateBuilder.addOptional(builder);
+  }
+
+  public UpdateBuilder addWhere(Object s, Object p, Object o) {
+    return updateBuilder.addWhere(s, p, o);
   }
 }

@@ -10,6 +10,7 @@ import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -85,5 +86,11 @@ public class EventController extends AbstractRdfController {
         asList(sameAs), authors, source, sourceLocation, mainParticipant, asList(otherParticipants),
         asList(aspects), place, date);
     return new ResponseEntity<String>(newEvent, HttpStatus.CREATED);
+  }
+
+  @DeleteMapping(value = "/events/{id}")
+  public ResponseEntity<?> deleteEvent(@PathVariable UUID id) {
+    eventRepository.delete(id);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 }
