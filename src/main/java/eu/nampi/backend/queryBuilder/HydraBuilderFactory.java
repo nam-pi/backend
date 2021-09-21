@@ -1,5 +1,6 @@
 package eu.nampi.backend.queryBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -80,15 +81,18 @@ public class HydraBuilderFactory {
 
   public HydraInsertBuilder insertBuilder(Lang lang, String endpointName, Resource mainType,
       List<Literal> labels, List<Literal> comments, List<Literal> texts) {
-    UUID id = UUID.randomUUID();
-    return new HydraInsertBuilder(jenaService, hierarchyRepository, typeRepository, lang,
-        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
-        Optional.empty(), id);
+    return insertBuilder(lang, endpointName, mainType, labels, comments, texts, new ArrayList<>());
   }
 
   public HydraInsertBuilder insertBuilder(Lang lang, String endpointName, Resource mainType,
       List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     UUID id = UUID.randomUUID();
+    return insertBuilder(lang, id, endpointName, mainType, labels, comments, texts, sameAs);
+  }
+
+  public HydraInsertBuilder insertBuilder(Lang lang, UUID id, String endpointName,
+      Resource mainType,
+      List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     return new HydraInsertBuilder(jenaService, hierarchyRepository, typeRepository, lang,
         urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
         Optional.of(sameAs), id);

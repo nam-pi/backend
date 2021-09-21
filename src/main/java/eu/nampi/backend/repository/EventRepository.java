@@ -37,7 +37,6 @@ import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.model.DateRange;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.ResourceCouple;
-import eu.nampi.backend.queryBuilder.AbstractHydraUpdateBuilder;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
 import eu.nampi.backend.queryBuilder.HydraDeleteBuilder;
@@ -495,8 +494,6 @@ public class EventRepository {
 
   public void delete(UUID id) {
     HydraDeleteBuilder builder = hydraBuilderFactory.deleteBuilder(id, ENDPOINT_NAME, Core.event);
-    // Delete act
-    actRepository.findForEvent(builder.root).ifPresent(act -> actRepository.delete(act));
     // Delete event
     ExprFactory ef = builder.updateBuilder.getExprFactory();
     Node varHasDatePredicate = NodeFactory.createVariable("hasDatePredicate");
@@ -504,40 +501,33 @@ public class EventRepository {
     Node varDatePredicate = NodeFactory.createVariable("datePredicate");
     Node varDateObject = NodeFactory.createVariable("dateObject");
     builder
+        .addFilter(ef.in(
+            varHasDatePredicate,
+            Core.hasDate, Core.takesPlaceNotEarlierThan,
+            Core.takesPlaceNotLaterThan, Core.takesPlaceOn))
         .addOptional(new WhereBuilder()
-            .addWhere(builder.root, varHasDatePredicate, varDate)
-            .addFilter(ef.in(
-                varHasDatePredicate,
-                Core.hasDate, Core.takesPlaceNotEarlierThan,
-                Core.takesPlaceNotLaterThan, Core.takesPlaceOn))
+            .addWhere(VAR_MAIN, varHasDatePredicate, varDate)
             .addWhere(varDate, varDatePredicate, varDateObject))
-        .addDelete(builder.root, varHasDatePredicate, varDate)
+        .addDelete(VAR_MAIN, varHasDatePredicate, varDate)
         .addDelete(varDate, varDatePredicate, varDateObject);
+    // Delete act
+    actRepository.findOne(builder.root).ifPresent(act -> actRepository.delete(act));
     builder.build();
   }
 
-  public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
+  public String insert(Optional<UUID> optionalId, Lang lang, Resource type, List<Literal> labels,
+      List<Literal> comments,
       List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
       Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
-    Resource act = actRepository.insert(lang, authors, source, sourceLocation);
-    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
-        labels, comments, texts, sameAs);
+    // Create builder depending on whether or not id is present
+    HydraInsertBuilder builder = optionalId
+        .map(id -> hydraBuilderFactory.insertBuilder(lang, id, ENDPOINT_NAME, type,
+            labels, comments, texts, sameAs))
+        .orElse(hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
+            labels, comments, texts, sameAs));
     builder.validateSubnode(Core.event, type);
-    builder.addInsert(builder.root, Core.isInterpretationOf, act);
-    // Add data
-    addInserts(builder, authors, source, sourceLocation, mainParticipant, otherParticipants,
-        aspects, optionalPlace, optionalDate);
-    builder.build();
-    // Insert Document Interpretation Act
-    return findOne(lang, builder.id);
-  }
-
-  private void addInserts(AbstractHydraUpdateBuilder builder, List<Resource> authors,
-      Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
-      List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
-      Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     // Event main participant
     builder.validateType(Core.person, mainParticipant.getObject());
     mainParticipant.getPredicate().ifPresentOrElse(predicate -> {
@@ -602,5 +592,31 @@ public class EventRepository {
         }
       }
     });
+    // Connected act
+    builder.addInsert(builder.root, Core.isInterpretationOf,
+        actRepository.insert(lang, authors, source, sourceLocation));
+    builder.build();
+    // Insert Document Interpretation Act
+    return findOne(lang, builder.id);
+  }
+
+  public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
+      List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
+      Literal sourceLocation, ResourceCouple mainParticipant,
+      List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
+      Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
+    return insert(Optional.empty(), lang, type, labels, comments, texts, sameAs, authors, source,
+        sourceLocation, mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
+  }
+
+  public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
+      List<Literal> comments, List<Literal> texts, List<Resource> sameAs, List<Resource> authors,
+      Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
+      List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
+      Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
+    delete(id);
+    insert(Optional.of(id), lang, type, labels, comments, texts, sameAs, authors, source,
+        sourceLocation, mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
+    return findOne(lang, id);
   }
 }

@@ -155,6 +155,14 @@ public class ActRepository {
     return builder.query(ROW_MAPPER, lang);
   }
 
+  public Optional<UUID> findOne(Resource event) {
+    return findResourceForEvent(event).map(res -> {
+      String[] uriParts = res.getURI().split("/");
+      String idString = uriParts[uriParts.length - 1];
+      return UUID.fromString(idString);
+    });
+  }
+
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.act);
@@ -189,7 +197,7 @@ public class ActRepository {
     }
   }
 
-  public Optional<UUID> findForEvent(Resource event) {
+  private Optional<Resource> findResourceForEvent(Resource event) {
     Node varAct = NodeFactory.createVariable("act");
     Node varEvent = NodeFactory.createVariable("event");
     SelectBuilder builder = new SelectBuilder();
@@ -198,14 +206,9 @@ public class ActRepository {
         .addVar(varAct)
         .addWhere(varEvent, Core.isInterpretationOf, varAct)
         .addFilter(ef.sameTerm(varEvent, event));
-    AtomicReference<Optional<UUID>> id = new AtomicReference<>();
+    AtomicReference<Optional<Resource>> id = new AtomicReference<>();
     jenaService.select(builder,
-        qs -> id.set(Optional.ofNullable(qs.getResource(varAct.getName()))
-            .map(res -> {
-              String[] uriParts = res.getURI().split("/");
-              String idString = uriParts[uriParts.length - 1];
-              return UUID.fromString(idString);
-            })));
+        qs -> id.set(Optional.ofNullable(qs.getResource(varAct.getName()))));
     return id.get();
   }
 
@@ -247,9 +250,6 @@ public class ActRepository {
         .addInsert(sourceLocationResource, RDF.type, Core.sourceLocation)
         .addInsert(sourceLocationResource, Core.hasText, sourceLocation)
         .addInsert(sourceLocationResource, Core.hasSource, source);
-    builder
-        .addInsert(builder.root, Core.hasSource, source).addInsert(builder.root,
-            Core.hasSourceLocation, sourceLocation);
     // Insert date
     Resource date = ResourceFactory.createResource();
     builder
