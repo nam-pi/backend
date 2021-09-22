@@ -5,6 +5,7 @@ import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -530,16 +531,16 @@ public class EventRepository {
   public InsertResult insert(Optional<UUID> optionalId, Lang lang, Resource type,
       List<Literal> labels,
       List<Literal> comments,
-      List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
+      List<Literal> texts, List<Resource> authors, Resource source,
       Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     // Create builder depending on whether or not id is present
     HydraInsertBuilder builder = optionalId
         .map(id -> hydraBuilderFactory.insertBuilder(lang, id, ENDPOINT_NAME, type,
-            labels, comments, texts, sameAs))
+            labels, comments, texts, new ArrayList<>()))
         .orElse(hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
-            labels, comments, texts, sameAs));
+            labels, comments, texts, new ArrayList<>()));
     builder.validateSubnode(Core.event, type);
     // Event main participant
     builder.validateType(Core.person, mainParticipant.getObject());
@@ -615,21 +616,21 @@ public class EventRepository {
   }
 
   public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
-      List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
+      List<Literal> texts, List<Resource> authors, Resource source,
       Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
-    return insert(Optional.empty(), lang, type, labels, comments, texts, sameAs, authors, source,
+    return insert(Optional.empty(), lang, type, labels, comments, texts, authors, source,
         sourceLocation, mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
   }
 
   public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
-      List<Literal> comments, List<Literal> texts, List<Resource> sameAs, List<Resource> authors,
+      List<Literal> comments, List<Literal> texts, List<Resource> authors,
       Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     delete(id);
-    insert(Optional.of(id), lang, type, labels, comments, texts, sameAs, authors, source,
+    insert(Optional.of(id), lang, type, labels, comments, texts, authors, source,
         sourceLocation, mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
     return findOne(lang, id);
   }
