@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -26,6 +27,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -43,6 +46,8 @@ import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
 import eu.nampi.backend.queryBuilder.HydraDeleteBuilder;
 import eu.nampi.backend.queryBuilder.HydraInsertBuilder;
 import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
+import eu.nampi.backend.service.JenaService;
+import eu.nampi.backend.util.UrlBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 
@@ -55,6 +60,12 @@ public class EventRepository {
 
   @Autowired
   ActRepository actRepository;
+
+  @Autowired
+  JenaService jenaService;
+
+  @Autowired
+  UrlBuilder urlBuilder;
 
   private static final String NEGATIVE_DEFAULT_DATE = "-9999-01-01T00:00:00";
   private static final String POSITIVE_DEFAULT_DATE = "9999-01-01T00:00:00";
@@ -621,5 +632,15 @@ public class EventRepository {
     insert(Optional.of(id), lang, type, labels, comments, texts, sameAs, authors, source,
         sourceLocation, mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
     return findOne(lang, id);
+  }
+
+  @Cacheable(key = "{#authorId.toString(), #eventId.toString()}")
+  public boolean isAuthor(UUID authorId, UUID eventId) {
+    Resource event = ResourceFactory.createResource(urlBuilder.endpointUri(ENDPOINT_NAME, eventId));
+    Resource author = ResourceFactory.createResource(urlBuilder.endpointUri("authors", authorId));
+    Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.isInterpretationOf.asNode()),
+        PathFactory.pathLink(Core.isAuthoredBy.asNode()));
+    AskBuilder builder = new AskBuilder().addWhere(event, path, author);
+    return jenaService.ask(builder);
   }
 }

@@ -19,6 +19,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import eu.nampi.backend.converter.StringToLangConverter;
+import eu.nampi.backend.exception.ForbiddenException;
 import eu.nampi.backend.exception.NotFoundException;
 import eu.nampi.backend.util.Serializer;
 import eu.nampi.backend.vocabulary.Api;
@@ -41,6 +42,12 @@ public class HydraControllerAdvice extends ResponseEntityExceptionHandler {
       value = {IllegalArgumentException.class, MethodArgumentTypeMismatchException.class})
   protected ResponseEntity<Object> handleIllegalArguments(RuntimeException ex, WebRequest request) {
     return handle(ex, request, HttpStatus.BAD_REQUEST, "Illegal arguments");
+  }
+
+  @ExceptionHandler(
+      value = {ForbiddenException.class})
+  protected ResponseEntity<Object> handleForbidden(RuntimeException ex, WebRequest request) {
+    return handle(ex, request, HttpStatus.FORBIDDEN, "Forbidden");
   }
 
   private Model createErrorModel(RuntimeException ex, WebRequest request, HttpStatus status,

@@ -19,18 +19,23 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import eu.nampi.backend.exception.ForbiddenException;
 import eu.nampi.backend.model.DateRange;
 import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.ResourceCouple;
 import eu.nampi.backend.repository.EventRepository;
+import eu.nampi.backend.repository.UserRepository;
 
 @RestController
 public class EventController extends AbstractRdfController {
 
   @Autowired
   EventRepository eventRepository;
+
+  @Autowired
+  UserRepository userRepository;
 
   @GetMapping(value = "/events", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
@@ -112,6 +117,10 @@ public class EventController extends AbstractRdfController {
       @RequestParam(value = "aspects[]", required = false) List<ResourceCouple> aspects,
       @RequestParam("place") Optional<Resource> place,
       @RequestParam("date") Optional<DateRange> date) {
+    UUID userId = userRepository.getCurrentUser().map(user -> user.getId()).orElseThrow();
+    if (!eventRepository.isAuthor(userId, id)) {
+      throw new ForbiddenException();
+    }
     String newEvent = eventRepository.update(lang, id, type, label, asList(comment), asList(text),
         asList(sameAs), authors, source, sourceLocation, mainParticipant, asList(otherParticipants),
         asList(aspects), place, date);
