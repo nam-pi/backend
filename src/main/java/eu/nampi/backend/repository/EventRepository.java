@@ -35,6 +35,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.model.DateRange;
+import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.ResourceCouple;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
@@ -515,7 +516,8 @@ public class EventRepository {
     builder.build();
   }
 
-  public String insert(Optional<UUID> optionalId, Lang lang, Resource type, List<Literal> labels,
+  public InsertResult insert(Optional<UUID> optionalId, Lang lang, Resource type,
+      List<Literal> labels,
       List<Literal> comments,
       List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
       Literal sourceLocation, ResourceCouple mainParticipant,
@@ -597,10 +599,11 @@ public class EventRepository {
         actRepository.insert(lang, authors, source, sourceLocation));
     builder.build();
     // Insert Document Interpretation Act
-    return findOne(lang, builder.id);
+    String result = findOne(lang, builder.id);
+    return new InsertResult(builder.root, result);
   }
 
-  public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
+  public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
       List<Literal> texts, List<Resource> sameAs, List<Resource> authors, Resource source,
       Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,

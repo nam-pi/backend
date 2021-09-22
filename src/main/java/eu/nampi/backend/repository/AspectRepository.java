@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
@@ -119,13 +120,13 @@ public class AspectRepository {
         .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
   }
 
-  public String insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
+  public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
       List<Literal> texts, List<Resource> sameAs) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
     builder.validateSubnode(Core.aspect, type);
     builder.build();
-    return findOne(lang, builder.id);
+    return new InsertResult(builder.root, findOne(lang, builder.id));
   }
 
   public String update(Lang lang, UUID id, Resource type, List<Literal> labels,

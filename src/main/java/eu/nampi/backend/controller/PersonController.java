@@ -8,6 +8,7 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.repository.PersonRepository;
@@ -63,9 +65,11 @@ public class PersonController extends AbstractRdfController {
       @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
-    String newPerson =
+    InsertResult result =
         personRepository.insert(lang, type, label, asList(comment), asList(text), asList(sameAs));
-    return new ResponseEntity<String>(newPerson, HttpStatus.CREATED);
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Location", result.getEntity().getURI());
+    return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
   }
 
   @PutMapping(value = "/persons/{id}", produces = {"application/ld+json", "text/turtle",

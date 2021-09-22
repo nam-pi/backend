@@ -8,6 +8,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.model.DateRange;
+import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.model.ResourceCouple;
@@ -83,10 +85,12 @@ public class EventController extends AbstractRdfController {
       @RequestParam(value = "aspects[]", required = false) List<ResourceCouple> aspects,
       @RequestParam("place") Optional<Resource> place,
       @RequestParam("date") Optional<DateRange> date) {
-    String newEvent = eventRepository.insert(lang, type, label, asList(comment), asList(text),
+    InsertResult result = eventRepository.insert(lang, type, label, asList(comment), asList(text),
         asList(sameAs), authors, source, sourceLocation, mainParticipant, asList(otherParticipants),
         asList(aspects), place, date);
-    return new ResponseEntity<String>(newEvent, HttpStatus.CREATED);
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Location", result.getEntity().getURI());
+    return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
   }
 
   @PutMapping(value = "/events/{id}", produces = {"application/ld+json", "text/turtle",
