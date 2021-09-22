@@ -39,9 +39,11 @@ public class GroupController extends AbstractRdfController {
       @RequestParam("offset") Optional<Integer> offset,
       @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
       @RequestParam("type") Optional<Resource> type,
-      @RequestParam("text") Optional<Literal> text) {
+      @RequestParam("text") Optional<Literal> text,
+      @RequestParam("partOf") Optional<Resource> partOf,
+      @RequestParam("hasPart") Optional<Resource> hasPart) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
-    String result = groupRepository.findAll(params, lang);
+    String result = groupRepository.findAll(params, lang, partOf, hasPart);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 

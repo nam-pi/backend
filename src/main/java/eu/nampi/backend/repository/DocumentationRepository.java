@@ -185,6 +185,10 @@ public class DocumentationRepository {
         RDFS.comment.getLocalName(), true, false, false));
     group.addSupportedProperty(new HydraSupportedProperty(Core.sameAs, SchemaOrg.URL,
         Core.sameAs.getLocalName(), true, false, false));
+    group.addSupportedProperty(new HydraSupportedProperty(Core.isPartOf, Core.group,
+        Core.isPartOf.getLocalName(), true, false, false));
+    group.addSupportedProperty(new HydraSupportedProperty(Core.hasPart, Core.group,
+        Core.hasPart.getLocalName(), true, false, false));
     doc.add(Hydra.supportedClass, group);
   }
 

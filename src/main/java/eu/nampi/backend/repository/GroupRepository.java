@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
@@ -17,6 +19,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,12 @@ public class GroupRepository {
 
   private static final String ENDPOINT_NAME = "groups";
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
+  private static final Node VAR_PART_OF = NodeFactory.createVariable("partOf");
+  private static final Node VAR_PART_OF_LABEL = NodeFactory.createVariable("partOfLabel");
+  private static final Node VAR_PART_OF_TYPE = NodeFactory.createVariable("partOfType");
+  private static final Node VAR_HAS_PART = NodeFactory.createVariable("hasPart");
+  private static final Node VAR_HAS_PART_LABEL = NodeFactory.createVariable("hasPartLabel");
+  private static final Node VAR_HAS_PART_TYPE = NodeFactory.createVariable("hasPartType");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
@@ -64,22 +73,73 @@ public class GroupRepository {
     Optional
         .ofNullable(row.getResource(VAR_SAME_AS.toString()))
         .ifPresent(iri -> model.add(main, Core.sameAs, iri));
+    // Part of
+    Optional
+        .ofNullable(row.getResource(VAR_PART_OF.toString()))
+        .ifPresent(iri -> {
+          model.add(main, Core.isPartOf, iri);
+          Optional.ofNullable(row.getResource(VAR_PART_OF_TYPE.toString()))
+              .ifPresentOrElse(type -> model.add(iri, RDF.type, type),
+                  () -> model.add(iri, RDF.type, Core.group));
+          Optional.ofNullable(row.getLiteral(VAR_PART_OF_LABEL.toString()))
+              .ifPresent(label -> model.add(iri, RDFS.label, label));
+        });
+    // Has part
+    Optional
+        .ofNullable(row.getResource(VAR_HAS_PART.toString()))
+        .ifPresent(iri -> {
+          model.add(main, Core.hasPart, iri);
+          Optional.ofNullable(row.getResource(VAR_HAS_PART_TYPE.toString()))
+              .ifPresentOrElse(type -> model.add(iri, RDF.type, type),
+                  () -> model.add(iri, RDF.type, Core.group));
+          Optional.ofNullable(row.getLiteral(VAR_HAS_PART_LABEL.toString()))
+              .ifPresent(label -> model.add(iri, RDFS.label, label));
+        });
     return main;
   };
 
   @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
-  public String findAll(QueryParameters params, Lang lang) {
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #partOf, #hasPart}")
+  public String findAll(QueryParameters params, Lang lang, Optional<Resource> partOf,
+      Optional<Resource> hasPart) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
         Core.group, Api.groupOrderByVar, params);
+    ExprFactory ef = builder.ef;
     builder.extendedData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+    // Part of
+    builder.mapper.add("partOf", Api.groupPartOfVar, partOf);
+    partOf.ifPresent(partOfType -> builder.coreData
+        .addWhere(VAR_MAIN, Core.isPartOf, VAR_PART_OF)
+        .addFilter(ef.sameTerm(VAR_PART_OF, partOfType))
+        .addWhere(VAR_PART_OF, RDFS.label, VAR_PART_OF_LABEL));
+    // Has part
+    builder.mapper.add("hasPart", Api.groupHasPartVar, hasPart);
+    hasPart.ifPresent(hasPartType -> builder.coreData
+        .addWhere(VAR_MAIN, Core.hasPart, VAR_HAS_PART)
+        .addFilter(ef.sameTerm(VAR_HAS_PART, hasPartType))
+        .addWhere(VAR_HAS_PART, RDFS.label, VAR_HAS_PART_LABEL));
     return builder.query(ROW_MAPPER, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.group);
-    builder.coreData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+    ExprFactory ef = builder.ef;
+    builder.coreData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS)
+        .addOptional(new WhereBuilder()
+            .addWhere(VAR_MAIN, Core.isPartOf, VAR_PART_OF)
+            .addWhere(VAR_PART_OF, RDF.type, VAR_PART_OF_TYPE)
+            .addFilter(ef.not(ef.strstarts(ef.str(VAR_PART_OF_TYPE), OWL.getURI())))
+            .addFilter(ef.not(ef.strstarts(ef.str(VAR_PART_OF_TYPE), RDFS.getURI())))
+            .addFilter(ef.not(ef.strstarts(ef.str(VAR_PART_OF_TYPE), RDF.getURI())))
+            .addWhere(VAR_PART_OF, RDFS.label, VAR_PART_OF_LABEL))
+        .addOptional(new WhereBuilder()
+            .addWhere(VAR_MAIN, Core.hasPart, VAR_HAS_PART)
+            .addWhere(VAR_HAS_PART, RDF.type, VAR_HAS_PART_TYPE)
+            .addFilter(ef.not(ef.strstarts(ef.str(VAR_HAS_PART_TYPE), OWL.getURI())))
+            .addFilter(ef.not(ef.strstarts(ef.str(VAR_HAS_PART_TYPE), RDFS.getURI())))
+            .addFilter(ef.not(ef.strstarts(ef.str(VAR_HAS_PART_TYPE), RDF.getURI())))
+            .addWhere(VAR_HAS_PART, RDFS.label, VAR_HAS_PART_LABEL));
     return builder.query(ROW_MAPPER, lang);
   }
 

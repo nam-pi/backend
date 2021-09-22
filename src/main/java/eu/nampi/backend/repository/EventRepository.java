@@ -293,9 +293,8 @@ public class EventRepository {
     });
     // Participation type data
     builder.mapper.add("participationType", Api.eventParticipationTypeVar, participationType);
-    participationType.ifPresent(resType -> {
-      builder.coreData.addWhere(VAR_MAIN, resType, VAR_PARTICIPANT);
-    });
+    participationType
+        .ifPresent(resType -> builder.coreData.addWhere(VAR_MAIN, resType, VAR_PARTICIPANT));
 
     AtomicBoolean useAspectWhere = new AtomicBoolean(false);
     // Aspect data
@@ -318,14 +317,11 @@ public class EventRepository {
     });
     // Aspect use type data
     builder.mapper.add("aspectUseType", Api.eventAspectUseTypeVar, aspectUseType);
-    aspectUseType.ifPresent(resType -> {
-      builder.coreData.addWhere(VAR_MAIN, resType, VAR_ASPECT);
-    });
+    aspectUseType.ifPresent(resType -> builder.coreData.addWhere(VAR_MAIN, resType, VAR_ASPECT));
     // Author data
     builder.mapper.add("author", Api.eventAuthorVar, author);
-    author.ifPresent(resAuthor -> {
-      builder.coreData.addWhere(actWhere(false)).addFilter(ef.sameTerm(VAR_AUTHOR, resAuthor));
-    });
+    author.ifPresent(resAuthor -> builder.coreData.addWhere(actWhere(false))
+        .addFilter(ef.sameTerm(VAR_AUTHOR, resAuthor)));
     // Dates data
     if (hasDateSort || dates.isPresent()) {
       builder.coreData.addWhere(datesWhere(order, VAR_DATE_REAL_SORT, VAR_DATE));

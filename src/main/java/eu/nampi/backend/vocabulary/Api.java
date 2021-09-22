@@ -62,7 +62,9 @@ public class Api {
   public static Resource eventPlaceVar = resource("eventPlaceVariable");
   public static Resource events = resource("events");
   public static Resource groupCollection = resource("groupCollection");
+  public static Resource groupHasPartVar = resource("groupHasPartVariable");
   public static Resource groupOrderByVar = resource("groupOrderByVariable");
+  public static Resource groupPartOfVar = resource("groupPartOfVariable");
   public static Resource hierarchy = property("hierarchy");
   public static Resource personAspectVar = resource("personAspectVariable");
   public static Resource personCollection = resource("personCollection");

@@ -39,6 +39,7 @@ public class Core {
   public static final Property hasDateTime = property("has_date_time");
   public static final Property hasInterpretation = property("has_interpretation");
   public static final Property hasMainParticipant = property("has_main_participant");
+  public static final Property hasPart = property("has_part");
   public static final Property hasParticipant = property("has_participant");
   public static final Property hasSortingDate = property("has_sorting_date");
   public static final Property hasSource = property("has_source");
@@ -50,6 +51,7 @@ public class Core {
   public static final Property isAuthoredOn = property("is_authored_on");
   public static final Property isBornIn = property("is_born_in");
   public static final Property isInterpretationOf = property("is_interpretation_of");
+  public static final Property isPartOf = property("is_part_of");
   public static final Property sameAs = property("same_as");
   public static final Property startsLifeOf = property("starts_life_of");
   public static final Property takesPlaceAt = property("takes_place_at");
