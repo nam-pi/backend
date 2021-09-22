@@ -1,6 +1,7 @@
 package eu.nampi.backend.queryBuilder;
 
 import java.util.Optional;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -31,5 +32,9 @@ public abstract class AbstractHydraBuilder {
 
   protected Optional<RDFNode> get(QuerySolution row, Node variable) {
     return Optional.ofNullable(row.get(variable.getName()));
+  }
+
+  public boolean ask(AskBuilder builder) {
+    return jenaService.ask(builder);
   }
 }

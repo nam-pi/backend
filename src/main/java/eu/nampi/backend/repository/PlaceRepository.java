@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+import eu.nampi.backend.exception.DeletionNotPermittedException;
 import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
@@ -101,6 +103,9 @@ public class PlaceRepository {
 
   public void delete(UUID id) {
     HydraDeleteBuilder builder = hydraBuilderFactory.deleteBuilder(id, ENDPOINT_NAME, Core.place);
+    if (builder.ask(new AskBuilder().addWhere("?event", Core.takesPlaceAt, builder.root))) {
+      throw new DeletionNotPermittedException("The place to be deleted is still in use");
+    }
     builder.build();
   }
 }
