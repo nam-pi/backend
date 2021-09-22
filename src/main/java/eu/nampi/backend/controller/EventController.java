@@ -129,6 +129,10 @@ public class EventController extends AbstractRdfController {
 
   @DeleteMapping(value = "/events/{id}")
   public ResponseEntity<?> deleteEvent(@PathVariable UUID id) {
+    UUID userId = userRepository.getCurrentUser().map(user -> user.getId()).orElseThrow();
+    if (!eventRepository.isAuthor(userId, id)) {
+      throw new ForbiddenException();
+    }
     eventRepository.delete(id);
     return new ResponseEntity<>(HttpStatus.OK);
   }
