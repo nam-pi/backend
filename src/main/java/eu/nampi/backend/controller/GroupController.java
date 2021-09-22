@@ -64,9 +64,10 @@ public class GroupController extends AbstractRdfController {
       @RequestParam("label[]") List<Literal> label,
       @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
-    InsertResult result =
-        groupRepository.insert(lang, type, label, asList(comment), asList(text), asList(sameAs));
+      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
+      @RequestParam(value = "partOf[]", required = false) List<Resource> partOf) {
+    InsertResult result = groupRepository.insert(lang, type, label, asList(comment), asList(text),
+        asList(sameAs), asList(partOf));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
@@ -81,9 +82,10 @@ public class GroupController extends AbstractRdfController {
       @RequestParam("label[]") List<Literal> label,
       @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
+      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
+      @RequestParam(value = "partOf[]", required = false) List<Resource> partOf) {
     String newGroup = groupRepository.update(lang, id, type, label, asList(comment), asList(text),
-        asList(sameAs));
+        asList(sameAs), asList(partOf));
     return new ResponseEntity<String>(newGroup, HttpStatus.OK);
   }
 

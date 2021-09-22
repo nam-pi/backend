@@ -144,26 +144,38 @@ public class GroupRepository {
   }
 
   public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
-      List<Literal> texts, List<Resource> sameAs) {
+      List<Literal> texts, List<Resource> sameAs, List<Resource> partOf) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
     builder.validateSubnode(Core.group, type);
+    partOf.forEach(parent -> {
+      builder.validateType(Core.group, parent);
+      builder.addInsert(builder.root, Core.isPartOf, parent);
+    });
     builder.build();
     return new InsertResult(builder.root, findOne(lang, builder.id));
   }
 
   public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
-      List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
+      List<Literal> comments, List<Literal> texts, List<Resource> sameAs, List<Resource> partOf) {
     HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
     builder.validateSubnode(Core.group, type);
+    partOf.forEach(parent -> {
+      builder.validateType(Core.group, parent);
+      builder.addInsert(builder.root, Core.isPartOf, parent);
+    });
     builder.build();
     return findOne(lang, builder.id);
   }
 
   public void delete(UUID id) {
     HydraDeleteBuilder builder = hydraBuilderFactory.deleteBuilder(id, ENDPOINT_NAME, Core.group);
-    if (builder.ask(new AskBuilder().addWhere("?event", Core.hasParticipant, builder.root))) {
+    ExprFactory ef = builder.updateBuilder.getExprFactory();
+    Node varProperty = NodeFactory.createVariable("property");
+    if (builder.ask(new AskBuilder()
+        .addWhere("?item", varProperty, builder.root)
+        .addFilter(ef.in(varProperty, Core.hasParticipant, Core.isPartOf)))) {
       throw new DeletionNotPermittedException("The group to be deleted is still in use");
     }
     builder.build();
