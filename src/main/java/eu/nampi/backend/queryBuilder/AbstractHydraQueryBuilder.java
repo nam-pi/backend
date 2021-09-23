@@ -57,4 +57,10 @@ public abstract class AbstractHydraQueryBuilder extends AbstractHydraBuilder {
     build(rowToNode);
     return serializer.serialize(model, lang, root);
   }
+
+  public String query(BiFunction<Model, QuerySolution, RDFNode> rowToNode, Lang lang,
+      Resource customRoot) {
+    build(rowToNode);
+    return serializer.serialize(model, lang, customRoot);
+  }
 }

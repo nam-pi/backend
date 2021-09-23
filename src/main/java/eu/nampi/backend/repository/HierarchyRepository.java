@@ -63,7 +63,7 @@ public class HierarchyRepository {
 
   @Cacheable(key = "{#lang, #iri}")
   public String findHierarchy(Lang lang, String iri) {
-    HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(iri, RDFS.Resource, false);
+    HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(RDFS.Resource, iri, false);
     ExprFactory ef = builder.ef;
     Expr childNotRdf = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDF.getURI()));
     Expr childNotRdfs = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDFS.getURI()));
@@ -141,6 +141,6 @@ public class HierarchyRepository {
           .ifPresent(literal -> model.add(parent, RDFS.comment, literal));
       return base;
     };
-    return builder.query(rowMapper, lang);
+    return builder.query(rowMapper, lang, base);
   }
 }

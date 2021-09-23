@@ -75,6 +75,10 @@ public class HydraBuilderFactory {
         mainType, filterBasic);
   }
 
+  public HydraSingleBuilder singleBuilder(Resource mainType, String iri, boolean filterBasic) {
+    return new HydraSingleBuilder(jenaService, serializer, iri, mainType, filterBasic);
+  }
+
   /**
    * Hydra Insert Builders
    */
