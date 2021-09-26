@@ -77,9 +77,9 @@ public class EventController extends AbstractRdfController {
   public ResponseEntity<String> postEvent(
       @RequestHeader("accept") Lang lang,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> label,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
-      @RequestParam(value = "text[]", required = false) List<Literal> text,
+      @RequestParam("labels[]") List<Literal> label,
+      @RequestParam(value = "comments[]", required = false) List<Literal> comment,
+      @RequestParam(value = "texts[]", required = false) List<Literal> text,
       @RequestParam("authors[]") List<Resource> authors,
       @RequestParam("source") Resource source,
       @RequestParam("sourceLocation") Literal sourceLocation,

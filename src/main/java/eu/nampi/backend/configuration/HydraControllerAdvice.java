@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -58,7 +59,15 @@ public class HydraControllerAdvice extends ResponseEntityExceptionHandler {
     return handle(ex, request, HttpStatus.CONFLICT, "Conflict");
   }
 
-  private Model createErrorModel(RuntimeException ex, WebRequest request, HttpStatus status,
+  @Override
+  protected ResponseEntity<Object> handleMissingServletRequestParameter(
+      MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatus status,
+      WebRequest request) {
+    String name = ex.getParameterName();
+    return handle(ex, request, HttpStatus.BAD_REQUEST, name + " parameter is missing");
+  }
+
+  private Model createErrorModel(Exception ex, WebRequest request, HttpStatus status,
       String fallbackMessage) {
     Literal title = ResourceFactory.createLangLiteral(status.toString(), "en");
     String message = ex.getMessage();
@@ -79,7 +88,7 @@ public class HydraControllerAdvice extends ResponseEntityExceptionHandler {
         .add(error, Hydra.description, description);
   }
 
-  private ResponseEntity<Object> handle(RuntimeException ex, WebRequest request, HttpStatus status,
+  private ResponseEntity<Object> handle(Exception ex, WebRequest request, HttpStatus status,
       String fallbackMessage) {
     Model error = createErrorModel(ex, request, status, fallbackMessage);
     Lang lang = new StringToLangConverter().convert(request.getHeader("accept"));
