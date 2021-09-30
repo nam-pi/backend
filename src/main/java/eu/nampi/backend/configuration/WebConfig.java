@@ -2,6 +2,8 @@ package eu.nampi.backend.configuration;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import eu.nampi.backend.converter.StringToDateRangeConverter;
 import eu.nampi.backend.converter.StringToLangConverter;
@@ -23,5 +25,17 @@ public class WebConfig implements WebMvcConfigurer {
     registry.addConverter(new StringToPropertyConverter());
     registry.addConverter(new StringToResourceConverter());
     registry.addConverter(new StringToResourceCouple());
+  }
+
+  @Override
+  public void addCorsMappings(CorsRegistry registry) {
+    registry
+        .addMapping("/**")
+        .allowedMethods(
+            HttpMethod.GET.name(),
+            HttpMethod.POST.name(),
+            HttpMethod.PUT.name(),
+            HttpMethod.DELETE.name(),
+            HttpMethod.OPTIONS.name());
   }
 }
