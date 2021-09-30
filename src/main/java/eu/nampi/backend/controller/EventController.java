@@ -115,7 +115,7 @@ public class EventController extends AbstractRdfController {
       @RequestParam(value = "aspects[]", required = false) List<ResourceCouple> aspects,
       @RequestParam("place") Optional<Resource> place,
       @RequestParam("date") Optional<DateRange> date) {
-    UUID userId = userRepository.getCurrentUser().map(user -> user.getId()).orElseThrow();
+    UUID userId = userRepository.getCurrentUser().map(user -> user.getRdfId()).orElseThrow();
     if (!eventRepository.isAuthor(userId, id)) {
       throw new ForbiddenException();
     }
@@ -127,7 +127,7 @@ public class EventController extends AbstractRdfController {
 
   @DeleteMapping(value = "/events/{id}")
   public ResponseEntity<?> deleteEvent(@PathVariable UUID id) {
-    UUID userId = userRepository.getCurrentUser().map(user -> user.getId()).orElseThrow();
+    UUID userId = userRepository.getCurrentUser().map(user -> user.getRdfId()).orElseThrow();
     if (!eventRepository.isAuthor(userId, id)) {
       throw new ForbiddenException();
     }
