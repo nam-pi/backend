@@ -38,6 +38,8 @@ public class Core {
   public static final Property hasDate = property("has_date");
   public static final Property hasDateTime = property("has_date_time");
   public static final Property hasInterpretation = property("has_interpretation");
+  public static final Property hasLatitude = property("has_latitude");
+  public static final Property hasLongitude = property("has_longitude");
   public static final Property hasMainParticipant = property("has_main_participant");
   public static final Property hasPart = property("has_part");
   public static final Property hasParticipant = property("has_participant");

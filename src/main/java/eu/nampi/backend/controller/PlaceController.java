@@ -62,9 +62,12 @@ public class PlaceController extends AbstractRdfController {
       @RequestParam("label[]") List<Literal> label,
       @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
+      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
+      @RequestParam(value = "latitude", required = false) Optional<Double> latitude,
+      @RequestParam(value = "longitude", required = false) Optional<Double> longitude) {
     InsertResult result =
-        placeRepository.insert(lang, type, label, asList(comment), asList(text), asList(sameAs));
+        placeRepository.insert(lang, type, label, asList(comment), asList(text), asList(sameAs),
+            latitude, longitude);
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
@@ -79,9 +82,11 @@ public class PlaceController extends AbstractRdfController {
       @RequestParam("label[]") List<Literal> label,
       @RequestParam(value = "comment[]", required = false) List<Literal> comment,
       @RequestParam(value = "text[]", required = false) List<Literal> text,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
+      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
+      @RequestParam(value = "latitude", required = false) Optional<Double> latitude,
+      @RequestParam(value = "longitude", required = false) Optional<Double> longitude) {
     String newPlace = placeRepository.update(lang, id, type, label, asList(comment), asList(text),
-        asList(sameAs));
+        asList(sameAs), latitude, longitude);
     return new ResponseEntity<String>(newPlace, HttpStatus.OK);
   }
 

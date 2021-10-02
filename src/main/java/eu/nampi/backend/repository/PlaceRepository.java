@@ -18,6 +18,7 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Repository;
 import eu.nampi.backend.exception.DeletionNotPermittedException;
 import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.QueryParameters;
+import eu.nampi.backend.queryBuilder.AbstractHydraUpdateBuilder;
 import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
 import eu.nampi.backend.queryBuilder.HydraCollectionBuilder;
 import eu.nampi.backend.queryBuilder.HydraDeleteBuilder;
@@ -48,6 +50,8 @@ public class PlaceRepository {
 
   private static final String ENDPOINT_NAME = "places";
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
+  private static final Node VAR_LATITUDE = NodeFactory.createVariable("latitude");
+  private static final Node VAR_LONGITUDE = NodeFactory.createVariable("longitude");
 
   private static final BiFunction<Model, QuerySolution, RDFNode> ROW_MAPPER = (model, row) -> {
     Resource main = row.getResource(VAR_MAIN.toString());
@@ -72,6 +76,12 @@ public class PlaceRepository {
     Optional
         .ofNullable(row.getResource(VAR_SAME_AS.toString()))
         .ifPresent(iri -> model.add(main, Core.sameAs, iri));
+    // Latitude & Longitude
+    Optional.ofNullable(row.getLiteral(VAR_LATITUDE.toString())).ifPresent(
+        latitude -> Optional.ofNullable(row.getLiteral(VAR_LONGITUDE.toString()))
+            .ifPresent(longitude -> model
+                .add(main, Core.hasLatitude, latitude)
+                .add(main, Core.hasLongitude, longitude)));
     return main;
   };
 
@@ -83,7 +93,9 @@ public class PlaceRepository {
     ExprFactory ef = builder.ef;
     builder.extendedData
         .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
-        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS)
+        .addOptional(VAR_MAIN, Core.hasLatitude, VAR_LATITUDE)
+        .addOptional(VAR_MAIN, Core.hasLongitude, VAR_LONGITUDE);
     // Add custom text select
     params.getText().ifPresent(text -> {
       Node varSearchString = NodeFactory.createVariable("searchString");
@@ -100,26 +112,60 @@ public class PlaceRepository {
     HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.place);
     builder.coreData
         .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
-        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS)
+        .addOptional(VAR_MAIN, Core.hasLatitude, VAR_LATITUDE)
+        .addOptional(VAR_MAIN, Core.hasLongitude, VAR_LONGITUDE);
     return builder.query(ROW_MAPPER, lang);
   }
 
   public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
-      List<Literal> texts, List<Resource> sameAs) {
+      List<Literal> texts, List<Resource> sameAs, Optional<Double> optionalLatitude,
+      Optional<Double> optionalLongitude) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
     builder.validateSubnode(Core.place, type);
+    addPlace(builder, optionalLatitude, optionalLongitude);
     builder.build();
     return new InsertResult(builder.root, findOne(lang, builder.id));
   }
 
   public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
-      List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
+      List<Literal> comments, List<Literal> texts, List<Resource> sameAs,
+      Optional<Double> optionalLatitude, Optional<Double> optionalLongitude) {
     HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
         labels, comments, texts, sameAs);
     builder.validateSubnode(Core.place, type);
+    addPlace(builder, optionalLatitude, optionalLongitude);
     builder.build();
     return findOne(lang, builder.id);
+  }
+
+  private void addPlace(AbstractHydraUpdateBuilder builder, Optional<Double> optionalLatitude,
+      Optional<Double> optionalLongitude) {
+    if (optionalLatitude.isPresent() || optionalLongitude.isPresent()) {
+      if (optionalLatitude.isEmpty() && optionalLongitude.isPresent()) {
+        throw new IllegalArgumentException(
+            "Latitude is missing. Either none or both coordinate numbers need to be present");
+      }
+      if (optionalLatitude.isPresent() && optionalLongitude.isEmpty()) {
+        throw new IllegalArgumentException(
+            "Longitude is missing. Either none or both coordinate numbers need to be present");
+      }
+      Double latitude = optionalLatitude.get();
+      Double longitude = optionalLongitude.get();
+      if (latitude < -90 || latitude > 90) {
+        throw new IllegalArgumentException(
+            String.format("Latitude '%s' needs to be between -90 and 90", latitude));
+      }
+      if (longitude < -180 || longitude > 180) {
+        throw new IllegalArgumentException(
+            String.format("Longitude '%s' needs to be between -180 and 180", longitude));
+      }
+      builder
+          .addInsert(builder.root, Core.hasLatitude, ResourceFactory.createTypedLiteral(latitude))
+          .addInsert(builder.root, Core.hasLongitude,
+              ResourceFactory.createTypedLiteral(longitude));
+    }
   }
 
   public void delete(UUID id) {
