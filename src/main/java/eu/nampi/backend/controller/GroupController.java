@@ -49,7 +49,7 @@ public class GroupController extends AbstractRdfController {
 
   @GetMapping(value = "/groups/{id}", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> getEvent(
+  public ResponseEntity<String> getGvent(
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id) {
     String result = groupRepository.findOne(lang, id);
@@ -58,7 +58,7 @@ public class GroupController extends AbstractRdfController {
 
   @PostMapping(value = "/groups", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> postgroup(
+  public ResponseEntity<String> postGroup(
       @RequestHeader("accept") Lang lang,
       @RequestParam("type") Resource type,
       @RequestParam("label[]") List<Literal> label,
@@ -75,7 +75,7 @@ public class GroupController extends AbstractRdfController {
 
   @PutMapping(value = "/groups/{id}", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> putgroup(
+  public ResponseEntity<String> putGroup(
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
       @RequestParam("type") Resource type,
@@ -90,7 +90,7 @@ public class GroupController extends AbstractRdfController {
   }
 
   @DeleteMapping(value = "/groups/{id}")
-  public ResponseEntity<?> deletegroup(@PathVariable UUID id) {
+  public ResponseEntity<?> deleteGroup(@PathVariable UUID id) {
     groupRepository.delete(id);
     return new ResponseEntity<>(HttpStatus.OK);
   }
