@@ -3,12 +3,14 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TEXT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -66,6 +68,10 @@ public class PersonRepository {
     Optional
         .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
+    // Text
+    Optional
+        .ofNullable(row.getLiteral(VAR_TEXT.toString()))
+        .ifPresent(text -> model.add(main, Core.hasText, text));
     // SameAs
     Optional
         .ofNullable(row.getResource(VAR_SAME_AS.toString()))
@@ -123,7 +129,16 @@ public class PersonRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #aspect}")
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> aspect) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.person, Api.personOrderByVar, params);
+        Core.person, Api.personOrderByVar, params, false);
+    ExprFactory ef = builder.ef;
+    // Add custom text select
+    params.getText().ifPresent(text -> {
+      Node varSearchString = NodeFactory.createVariable("searchString");
+      Path path = PathFactory.pathAlt(PathFactory.pathLink(RDFS.label.asNode()),
+          PathFactory.pathLink(Core.hasText.asNode()));
+      builder.coreData.addOptional(VAR_MAIN, path, varSearchString)
+          .addFilter(ef.regex(varSearchString, params.getText().get(), "i"));
+    });
     // Add aspect query
     builder.mapper.add("aspect", Api.personAspectVar, aspect);
     aspect.ifPresent(resAspect -> {
@@ -172,6 +187,7 @@ public class PersonRepository {
     return new WhereBuilder()
         .addWhere(eventWhere(PREF_BIRTH, Core.isBornIn))
         .addWhere(eventWhere(PREF_DEATH, Core.diesIn))
+        .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
         .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
   }
 

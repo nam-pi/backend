@@ -3,6 +3,7 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TEXT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +46,6 @@ public class AspectRepository {
 
   private static final String ENDPOINT_NAME = "aspects";
   private static final Node VAR_SAME_AS = NodeFactory.createVariable("sameAs");
-  private static final Node VAR_STRING = NodeFactory.createVariable("string");
 
   @Autowired
   HydraBuilderFactory hydraBuilderFactory;
@@ -71,7 +71,7 @@ public class AspectRepository {
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
     // Text
     Optional
-        .ofNullable(row.getLiteral(VAR_STRING.toString()))
+        .ofNullable(row.getLiteral(VAR_TEXT.toString()))
         .ifPresent(text -> model.add(main, Core.hasText, text));
     // SameAs
     Optional
@@ -118,7 +118,7 @@ public class AspectRepository {
 
   private void addData(WhereBuilder builder) {
     builder
-        .addOptional(VAR_MAIN, Core.hasText, VAR_STRING)
+        .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
         .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
   }
 

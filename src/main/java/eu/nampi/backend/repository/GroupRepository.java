@@ -3,6 +3,7 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TEXT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -65,6 +68,10 @@ public class GroupRepository {
     Optional
         .ofNullable(row.getLiteral(VAR_LABEL.toString()))
         .ifPresent(label -> model.add(main, RDFS.label, label));
+    // Text
+    Optional
+        .ofNullable(row.getLiteral(VAR_TEXT.toString()))
+        .ifPresent(text -> model.add(main, Core.hasText, text));
     // Comment
     Optional
         .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
@@ -103,9 +110,19 @@ public class GroupRepository {
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> partOf,
       Optional<Resource> hasPart) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.group, Api.groupOrderByVar, params);
+        Core.group, Api.groupOrderByVar, params, false);
     ExprFactory ef = builder.ef;
-    builder.extendedData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+    builder.extendedData
+        .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+    // Add custom text select
+    params.getText().ifPresent(text -> {
+      Node varSearchString = NodeFactory.createVariable("searchString");
+      Path path = PathFactory.pathAlt(PathFactory.pathLink(RDFS.label.asNode()),
+          PathFactory.pathLink(Core.hasText.asNode()));
+      builder.coreData.addOptional(VAR_MAIN, path, varSearchString)
+          .addFilter(ef.regex(varSearchString, params.getText().get(), "i"));
+    });
     // Part of
     builder.mapper.add("partOf", Api.groupPartOfVar, partOf);
     partOf.ifPresent(partOfType -> builder.coreData
@@ -125,7 +142,9 @@ public class GroupRepository {
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.group);
     ExprFactory ef = builder.ef;
-    builder.coreData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS)
+    builder.coreData
+        .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS)
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, Core.isPartOf, VAR_PART_OF)
             .addWhere(VAR_PART_OF, RDF.type, VAR_PART_OF_TYPE)

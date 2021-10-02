@@ -3,6 +3,7 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TEXT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -126,6 +127,10 @@ public class EventRepository {
     Optional
         .ofNullable(row.getLiteral(VAR_LABEL.toString()))
         .ifPresent(label -> model.add(main, RDFS.label, label));
+    // Text
+    Optional
+        .ofNullable(row.getLiteral(VAR_TEXT.toString()))
+        .ifPresent(text -> model.add(main, Core.hasText, text));
     // Comment
     Optional
         .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
@@ -264,12 +269,22 @@ public class EventRepository {
       Optional<Resource> participant, Optional<Resource> participantType,
       Optional<Property> participationType, Optional<Resource> place, Optional<Resource> author) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.event, Api.eventOrderByVar, params);
+        Core.event, Api.eventOrderByVar, params, false);
     ExprFactory ef = builder.ef;
     boolean hasDateSort = params.getOrderByClauses().containsKey("date");
     Order order = params.getOrderByClauses().getOrderFor("date").orElse(Order.ASCENDING);
+    // Add custom text select
+    params.getText().ifPresent(text -> {
+      Node varSearchString = NodeFactory.createVariable("searchString");
+      Path path = PathFactory.pathAlt(PathFactory.pathLink(RDFS.label.asNode()),
+          PathFactory.pathLink(Core.hasText.asNode()));
+      builder.coreData.addOptional(VAR_MAIN, path, varSearchString)
+          .addFilter(ef.regex(varSearchString, params.getText().get(), "i"));
+    });
     // Place data
     builder.mapper.add("place", Api.eventPlaceVar, place);
+    builder.extendedData
+        .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT);
     place.ifPresent(resPlace -> builder.coreData.addWhere(placeWhere(false))
         .addFilter(ef.sameTerm(VAR_PLACE, resPlace)));
     // Participant data
@@ -360,6 +375,7 @@ public class EventRepository {
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.event);
     builder.coreData
+        .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
         .addWhere(datesWhere(Order.ASCENDING, VAR_DATE_REAL_SORT, VAR_DATE))
         .addWhere(actWhere(true))
         .addWhere(participantWhere(true))
@@ -525,10 +541,8 @@ public class EventRepository {
   }
 
   public InsertResult insert(Optional<UUID> optionalId, Lang lang, Resource type,
-      List<Literal> labels,
-      List<Literal> comments,
-      List<Literal> texts, List<Resource> authors, Resource source,
-      Literal sourceLocation, ResourceCouple mainParticipant,
+      List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> authors,
+      Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     // Create builder depending on whether or not id is present

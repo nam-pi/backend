@@ -22,6 +22,7 @@ public abstract class AbstractHydraBuilder {
   public static final Node VAR_MAIN = NodeFactory.createVariable("main");
   public static final Node VAR_COMMENT = NodeFactory.createVariable("comment");
   public static final Node VAR_LABEL = NodeFactory.createVariable("label");
+  public static final Node VAR_TEXT = NodeFactory.createVariable("text");
   public static final Node VAR_TYPE = NodeFactory.createVariable("type");
 
 

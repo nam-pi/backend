@@ -3,12 +3,14 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TEXT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
@@ -17,6 +19,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +64,10 @@ public class PlaceRepository {
     Optional
         .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
         .ifPresent(comment -> model.add(main, RDFS.comment, comment));
+    // Text
+    Optional
+        .ofNullable(row.getLiteral(VAR_TEXT.toString()))
+        .ifPresent(text -> model.add(main, Core.hasText, text));
     // SameAs
     Optional
         .ofNullable(row.getResource(VAR_SAME_AS.toString()))
@@ -71,15 +79,28 @@ public class PlaceRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.place, Api.placeOrderByVar, params);
-    builder.extendedData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+        Core.place, Api.placeOrderByVar, params, false);
+    ExprFactory ef = builder.ef;
+    builder.extendedData
+        .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+    // Add custom text select
+    params.getText().ifPresent(text -> {
+      Node varSearchString = NodeFactory.createVariable("searchString");
+      Path path = PathFactory.pathAlt(PathFactory.pathLink(RDFS.label.asNode()),
+          PathFactory.pathLink(Core.hasText.asNode()));
+      builder.coreData.addOptional(VAR_MAIN, path, varSearchString)
+          .addFilter(ef.regex(varSearchString, params.getText().get(), "i"));
+    });
     return builder.query(ROW_MAPPER, lang);
   }
 
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.place);
-    builder.coreData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+    builder.coreData
+        .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
     return builder.query(ROW_MAPPER, lang);
   }
 

@@ -4,6 +4,7 @@ import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -84,18 +85,18 @@ public class SourceRepository {
   }
 
   public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
-      List<Literal> texts, List<Resource> sameAs) {
+      List<Resource> sameAs) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
-        labels, comments, texts, sameAs);
+        labels, comments, new ArrayList<>(), sameAs);
     builder.validateSubnode(Core.source, type);
     builder.build();
     return new InsertResult(builder.root, findOne(lang, builder.id));
   }
 
   public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
-      List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
+      List<Literal> comments, List<Resource> sameAs) {
     HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
-        labels, comments, texts, sameAs);
+        labels, comments, new ArrayList<>(), sameAs);
     builder.validateSubnode(Core.source, type);
     builder.build();
     return findOne(lang, builder.id);
