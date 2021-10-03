@@ -2,11 +2,15 @@
 
 This is the server backend and API for NAMPI.
 
-## Prerequisite
+The NAMPI backend is a [Spring Boot](https://spring.io/projects/spring-boot) application, the data is stored in [Apache Fuseki](https://jena.apache.org/documentation/fuseki2/) and cached by [Redis](https://redis.io/). The identity management is handled by [Keycloak](https://www.keycloak.org/).
 
-The NAMPI backend is a [Spring Boot](https://spring.io/projects/spring-boot) app, the data is stored in [Apache Fuseki](https://jena.apache.org/documentation/fuseki2/) and cached by [Redis](https://redis.io/) and the identity management is handled by [Keycloak](https://www.keycloak.org/).
+## Prerequisites
 
-_Note: Currently the server only runs on Java <14 because Java 14 doesn't work yet with Keycloak, see this [issue](https://issues.redhat.com/browse/KEYCLOAK-13633)._
+The following prerequisites have to be met if the server is self hosted without the provided Docker and docker-compose configuration.
+
+### Java
+
+The server only runs on Java > version 11 which is the version the included Docker configuration uses.
 
 ### Keycloak
 
@@ -16,7 +20,7 @@ _Note: Currently the server only runs on Java <14 because Java 14 doesn't work y
 - A composite role `author` for authenticated authors that includes `user` has to be created.
 - A mapper that maps a custom user attribute - to be used for RDF-ID overrides - into the keycloak access token. This needs to be configured for each used client. This field can be used to specify a different UUID than the keycloak user id to connect to the `core:author` individual in the database.
 
-#### Optional
+#### Optional users
 
 Some users can be created for a development environment. They need to get at least the role `user` and a password assigned, but to be able to actually edit content they need have the `author` role.
 
@@ -40,8 +44,8 @@ A number of command line parameters are available to configure the application.
 | DATA_URL                  | \*        |                                             | http://localhost:3030/data                        | The URL to the data dataset where the original data will be stored                                                                           |
 | DEFAULT_LIMIT             |           | 20                                          |                                                   | The default result number to return when requesting from a collection endpoint like '/persons                                                |
 | INF_CACHE_URL             | \*        |                                             | http://localhost:3030/inf_cache                   | The URL to the joint inference dataset where the cached inference data will be stored                                                        |
+| KEYCLOAK_FRONTEND_URL     | \*        |                                             | http://localhost:8080/auth                        | The base URL for frontend requests (see [official documentation](https://hub.docker.com/r/jboss/keycloak/))                                  |
 | KEYCLOAK_RDF_ID_ATTRIBUTE |           | rdf-id                                      |                                                   | The name of the RDF-ID override attribute configured in the Keycloak client mapper settings                                                  |
-| KEYCLOAK_FRONTEND_URL     | \*        |                                             | http://keycloak.dev.local:8080/auth               | The base URL for frontend requests (see [official documentation](https://hub.docker.com/r/jboss/keycloak/))                                  |
 | KEYCLOAK_REALM            | \*        |                                             | nampi                                             | The name of the Keycloak realm                                                                                                               |
 | KEYCLOAK_RESOURCE         | \*        |                                             | nampi-client                                      | The name of the Keycloak client                                                                                                              |
 | KEYCLOAK_URL              | \*        |                                             | http://localhost:8080/auth/                       | The URL of the Keycloak authentication endpoint                                                                                              |
@@ -57,16 +61,11 @@ The application can be run from the command line using Maven, the environment pa
 
 ### Example
 
-`mvn spring-boot:run "'-Dspring-boot.run.arguments=--DATA_BASE_URL=https://example.com/nampi/data,--KEYCLOAK_FRONTEND_URL=http://keycloak.dev.local:8080/auth,--KEYCLOAK_URL=http://localhost:8080/auth,--KEYCLOAK_REALM=nampi,--KEYCLOAK_RESOURCE=nampi-client,--LOGGING_LEVEL=DEBUG,--REDIS_PORT=6379,--REDIS_URL=http://localhost,--INF_CACHE_URL=http://localhost:3030/inf-cache,--DATA_URL=http://localhost:3030/data'"`
+`mvn spring-boot:run "'-Dspring-boot.run.arguments=--DATA_BASE_URL=https://example.com/nampi/data,--KEYCLOAK_FRONTEND_URL=http://localhost:8080/auth,--KEYCLOAK_URL=http://localhost:8080/auth,--KEYCLOAK_REALM=nampi,--KEYCLOAK_RESOURCE=nampi-client,--LOGGING_LEVEL=DEBUG,--REDIS_PORT=6379,--REDIS_URL=http://localhost,--INF_CACHE_URL=http://localhost:3030/inf-cache,--DATA_URL=http://localhost:3030/data'"`
 
 #### Windows
 
-`mvn spring-boot:run "-Dspring-boot.run.arguments=--DATA_BASE_URL=https://example.com/nampi/data --KEYCLOAK_FRONTEND_URL=http://keycloak.dev.local:8080/auth --KEYCLOAK_URL=http://keycloak.dev.local:8080/auth --KEYCLOAK_REALM=nampi --KEYCLOAK_RESOURCE=nampi-client --LOGGING_LEVEL=DEBUG --REDIS_PORT=6379 --REDIS_URL=http://localhost --INF_CACHE_URL=http://localhost:3030/inf-cache --DATA_URL=http://localhost:3030/data"`
-
-Note: To work on Windows, Keycloak must be reachable with a domain, this can be configured in the hosts file:
-
-    Location: `C:\Windows\System32\Drivers\etc\hosts`
-    Added mapping: `127.0.0.1 keycloak.dev.local`
+`mvn spring-boot:run "-Dspring-boot.run.arguments=--DATA_BASE_URL=https://example.com/nampi/data --KEYCLOAK_FRONTEND_URL=http://localhost:8080/auth --KEYCLOAK_URL=http://localhost:8080/auth --KEYCLOAK_REALM=nampi --KEYCLOAK_RESOURCE=nampi-client --LOGGING_LEVEL=DEBUG --REDIS_PORT=6379 --REDIS_URL=http://localhost --INF_CACHE_URL=http://localhost:3030/inf-cache --DATA_URL=http://localhost:3030/data"`
 
 ## Deploying as standalone Docker container
 
@@ -75,7 +74,7 @@ The application can be run as a standalone Docker container connected to pre-exi
 Example:
 
 ```
-docker build --build-arg DATA_BASE_URL=https://example.com/nampi/data --build-arg KEYCLOAK_FRONTEND_URL=http://keycloak.dev.local:8080/auth --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life --build-arg REDIS_PORT=6379 --build-arg REDIS_URL=http://example.com/redis --build-arg INF_CACHE_URL=http://example.com/fuseki/inf-cache --build-arg DATA_URL=http://example.com/fuseki/data .
+docker build --build-arg DATA_BASE_URL=https://example.com/nampi/data --build-arg KEYCLOAK_FRONTEND_URL=http://localhost:8080/auth --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life --build-arg REDIS_PORT=6379 --build-arg REDIS_URL=http://example.com/redis --build-arg INF_CACHE_URL=http://example.com/fuseki/inf-cache --build-arg DATA_URL=http://example.com/fuseki/data .
 ```
 
 ## Deploying with `docker-compose`
@@ -89,7 +88,7 @@ If used as-is it will start containers for Fuseki, Redis and Keycloak, including
 ```
 DATA_BASE_URL=https://example.com/nampi/data
 FUSEKI_ADMIN_PASSWORD=[fuseki admin password]
-KEYCLOAK_FRONTEND_URL=http://keycloak.dev.local:8080/auth
+KEYCLOAK_FRONTEND_URL=http://localhost:8080/auth
 KEYCLOAK_PASSWORD=[keycloak password]
 KEYCLOAK_PG_PASSWORD=[keycloak pg password]
 KEYCLOAK_REALM=nampi
