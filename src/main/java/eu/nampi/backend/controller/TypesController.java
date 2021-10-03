@@ -1,6 +1,7 @@
 package eu.nampi.backend.controller;
 
 import java.util.Optional;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,16 +22,18 @@ public class TypesController extends AbstractRdfController {
 
   @GetMapping(value = "/types", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> getTypes(@RequestHeader("accept") Lang lang,
+  public ResponseEntity<String> getTypes(
+      @RequestHeader("accept") Lang lang,
       @RequestParam("page") Optional<Integer> page,
       @RequestParam("pageIndex") Optional<Integer> pageIndex,
       @RequestParam("limit") Optional<Integer> limit,
       @RequestParam("offset") Optional<Integer> offset,
       @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
-      @RequestParam("type") String type) {
-    QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, Optional.of(type), Optional.empty());
+      @RequestParam("type") Resource type) {
+    QueryParameters params =
+        getParameters(page, pageIndex, limit, offset, orderBy, Optional.of(type),
+            Optional.empty());
     String result = typeRepository.findAll(params, lang);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
-
 }

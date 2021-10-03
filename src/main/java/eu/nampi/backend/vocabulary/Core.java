@@ -32,12 +32,16 @@ public class Core {
   }
 
   public static final Property aspectIsUsedIn = property("aspect_is_used_in");
-  public static final Property hasAspectChangedIn = property("has_aspect_changed_in");
   public static final Property diesIn = property("dies_in");
   public static final Property endsLifeOf = property("ends_life_of");
+  public static final Property hasAspectChangedIn = property("has_aspect_changed_in");
+  public static final Property hasDate = property("has_date");
   public static final Property hasDateTime = property("has_date_time");
   public static final Property hasInterpretation = property("has_interpretation");
+  public static final Property hasLatitude = property("has_latitude");
+  public static final Property hasLongitude = property("has_longitude");
   public static final Property hasMainParticipant = property("has_main_participant");
+  public static final Property hasPart = property("has_part");
   public static final Property hasParticipant = property("has_participant");
   public static final Property hasSortingDate = property("has_sorting_date");
   public static final Property hasSource = property("has_source");
@@ -49,6 +53,7 @@ public class Core {
   public static final Property isAuthoredOn = property("is_authored_on");
   public static final Property isBornIn = property("is_born_in");
   public static final Property isInterpretationOf = property("is_interpretation_of");
+  public static final Property isPartOf = property("is_part_of");
   public static final Property sameAs = property("same_as");
   public static final Property startsLifeOf = property("starts_life_of");
   public static final Property takesPlaceAt = property("takes_place_at");
@@ -57,7 +62,7 @@ public class Core {
   public static final Property takesPlaceOn = property("takes_place_on");
   public static final Property usesAspect = property("uses_aspect");
   public static final Resource act = resource("act");
-  public static final Resource agent = resource("agent");
+  public static final Resource actor = resource("actor");
   public static final Resource aspect = resource("aspect");
   public static final Resource author = resource("author");
   public static final Resource date = resource("date");

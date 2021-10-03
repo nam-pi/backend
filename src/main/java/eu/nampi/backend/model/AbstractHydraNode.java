@@ -1,4 +1,4 @@
-package eu.nampi.backend.model.hydra;
+package eu.nampi.backend.model;
 
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -45,13 +45,13 @@ public abstract class AbstractHydraNode extends ModelCom {
     this.add(this.base, predicate, object);
   }
 
-  public void add(Property predicate, Class object) {
+  public void add(Property predicate, HydraClass object) {
     this.add(this.base, predicate, object.base());
     this.add(object);
   }
 
-  public void add(Property predicate, Class... objects) {
-    for (Class o : objects) {
+  public void add(Property predicate, HydraClass... objects) {
+    for (HydraClass o : objects) {
       this.add(predicate, o);
     }
   }

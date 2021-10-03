@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: Dockerfile.fuseki
       args:
-        FUSEKI_VERSION: 3.14.0
+        FUSEKI_VERSION: 4.0.0
     restart: always
     volumes:
       - fuseki_data:/fuseki
@@ -36,7 +36,7 @@ services:
       TDB: 2
 
   keycloak:
-    image: quay.io/keycloak/keycloak:12.0.4
+    image: quay.io/keycloak/keycloak:15.0.4
     restart: always
     environment:
       DB_ADDR: postgres

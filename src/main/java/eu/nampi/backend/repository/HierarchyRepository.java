@@ -1,10 +1,11 @@
 package eu.nampi.backend.repository;
 
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_COMMENT;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_LABEL;
-import static eu.nampi.backend.model.hydra.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
@@ -19,15 +20,28 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
-import eu.nampi.backend.model.hydra.HydraSingleBuilder;
+import eu.nampi.backend.queryBuilder.HydraBuilderFactory;
+import eu.nampi.backend.queryBuilder.HydraSingleBuilder;
+import eu.nampi.backend.service.JenaService;
+import eu.nampi.backend.util.UrlBuilder;
 import eu.nampi.backend.vocabulary.Api;
 
 @Repository
 @CacheConfig(cacheNames = "hierarchies")
-public class HierarchyRepository extends AbstractHydraRepository {
+public class HierarchyRepository {
+
+  @Autowired
+  HydraBuilderFactory hydraBuilderFactory;
+
+  @Autowired
+  JenaService jenaService;
+
+  @Autowired
+  UrlBuilder urlBuilder;
 
   private static final Node VAR_CHILD = NodeFactory.createVariable("child");
   private static final Node VAR_CHILD_LABEL = NodeFactory.createVariable("childLabel");
@@ -36,10 +50,20 @@ public class HierarchyRepository extends AbstractHydraRepository {
   private static final Node VAR_PARENT_LABEL = NodeFactory.createVariable("parentLabel");
   private static final Node VAR_PARENT_COMMENT = NodeFactory.createVariable("parentComment");
 
+  @Cacheable(key = "{#parent, #child}")
+  public boolean isSubnode(RDFNode parent, RDFNode child) {
+    AskBuilder builder = new AskBuilder();
+    ExprFactory ef = builder.getExprFactory();
+    Node predicate = NodeFactory.createVariable("p");
+    builder
+        .addWhere(child, predicate, parent)
+        .addFilter(ef.in(predicate, RDFS.subClassOf, RDFS.subPropertyOf));
+    return jenaService.ask(builder);
+  }
+
   @Cacheable(key = "{#lang, #iri}")
   public String findHierarchy(Lang lang, String iri) {
-    HydraSingleBuilder builder =
-        new HydraSingleBuilder(jenaService, iri, RDFS.Resource, false);
+    HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(RDFS.Resource, iri, false);
     ExprFactory ef = builder.ef;
     Expr childNotRdf = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDF.getURI()));
     Expr childNotRdfs = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDFS.getURI()));
@@ -79,7 +103,7 @@ public class HierarchyRepository extends AbstractHydraRepository {
         .addOptional(VAR_CHILD, RDFS.comment, VAR_CHILD_COMMENT)
         .addOptional(VAR_PARENT, RDFS.label, VAR_PARENT_LABEL)
         .addOptional(VAR_PARENT, RDFS.comment, VAR_PARENT_COMMENT);
-    Resource base = ResourceFactory.createResource(endpointUri("hierarchy"));
+    Resource base = ResourceFactory.createResource(urlBuilder.endpointUri("hierarchy"));
     builder.model
         .add(base, RDF.type, Api.hierarchy)
         .add(base, Api.hierarchyRoot, builder.root);
@@ -97,29 +121,26 @@ public class HierarchyRepository extends AbstractHydraRepository {
         model.add(child, Api.descendantOf, parent);
         model.add(parent, RDF.type, RDFS.Resource);
       }
-      Optional.ofNullable(row.getLiteral(VAR_LABEL.toString())).ifPresent(literal -> {
-        model.add(main, RDFS.label, literal);
-      });
-      Optional.ofNullable(row.getLiteral(VAR_COMMENT.toString())).ifPresent(literal -> {
-        model.add(main, RDFS.comment, literal);
-      });
-      Optional.ofNullable(row.getLiteral(VAR_CHILD_LABEL.toString())).ifPresent(literal -> {
-        model.add(child, RDFS.label, literal);
-      });
-      Optional.ofNullable(row.getLiteral(VAR_CHILD_COMMENT.toString())).ifPresent(literal -> {
-        model.add(child, RDFS.comment, literal);
-      });
-      Optional.ofNullable(row.getLiteral(VAR_PARENT_LABEL.toString())).ifPresent(literal -> {
-        model.add(parent, RDFS.label, literal);
-      });
-      Optional.ofNullable(row.getLiteral(VAR_PARENT_COMMENT.toString())).ifPresent(literal -> {
-        model.add(parent, RDFS.comment, literal);
-      });
+      Optional
+          .ofNullable(row.getLiteral(VAR_LABEL.toString()))
+          .ifPresent(literal -> model.add(main, RDFS.label, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
+          .ifPresent(literal -> model.add(main, RDFS.comment, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_CHILD_LABEL.toString()))
+          .ifPresent(literal -> model.add(child, RDFS.label, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_CHILD_COMMENT.toString()))
+          .ifPresent(literal -> model.add(child, RDFS.comment, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_PARENT_LABEL.toString()))
+          .ifPresent(literal -> model.add(parent, RDFS.label, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_PARENT_COMMENT.toString()))
+          .ifPresent(literal -> model.add(parent, RDFS.comment, literal));
       return base;
     };
-
-    builder.build(rowMapper);
-    return serialize(builder.model, lang, base);
+    return builder.query(rowMapper, lang, base);
   }
-
 }

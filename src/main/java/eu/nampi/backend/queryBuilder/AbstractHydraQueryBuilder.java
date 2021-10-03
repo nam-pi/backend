@@ -1,45 +1,40 @@
-package eu.nampi.backend.model.hydra;
+package eu.nampi.backend.queryBuilder;
 
 import java.util.Optional;
-import org.apache.jena.arq.querybuilder.ExprFactory;
+import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import eu.nampi.backend.service.JenaService;
+import eu.nampi.backend.util.Serializer;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.Hydra;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
-public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
-  protected JenaService jenaService;
+public abstract class AbstractHydraQueryBuilder extends AbstractHydraBuilder {
+
+  Serializer serializer;
+
   protected Resource mainType;
-  protected String baseUri;
-  public ExprFactory ef;
   public Model model = ModelFactory.createDefaultModel();
-  public Resource root;
   public WhereBuilder coreData = new WhereBuilder();
-  public static final Node VAR_MAIN = NodeFactory.createVariable("main");
-  public static final Node VAR_COMMENT = NodeFactory.createVariable("comment");
-  public static final Node VAR_LABEL = NodeFactory.createVariable("label");
-  public static final Node VAR_TYPE = NodeFactory.createVariable("type");
 
-
-  protected AbstractHydraBuilder(JenaService jenaService, String baseUri, Resource mainType) {
-    this.jenaService = jenaService;
-    this.baseUri = baseUri;
+  protected AbstractHydraQueryBuilder(JenaService jenaService, Serializer serializer,
+      String baseUri, Resource mainType) {
+    super(jenaService, baseUri, mainType);
     this.mainType = mainType;
-    this.root = ResourceFactory.createResource(baseUri);
+    this.ef = coreData.getExprFactory();
+    this.serializer = serializer;
     coreData.addWhere(VAR_MAIN, RDF.type, mainType);
     model
         .setNsPrefix("api", Api.getURI())
@@ -50,11 +45,22 @@ public abstract class AbstractHydraBuilder implements InterfaceHydraBuilder {
         .setNsPrefix("rdfs", RDFS.getURI())
         .setNsPrefix("schema", SchemaOrg.getURI())
         .setNsPrefix("xsd", XSD.getURI());
-    this.ef = coreData.getExprFactory();
   }
 
   protected Optional<RDFNode> get(QuerySolution row, Node variable) {
     return Optional.ofNullable(row.get(variable.getName()));
   }
 
+  abstract void build(BiFunction<Model, QuerySolution, RDFNode> rowToNode);
+
+  public String query(BiFunction<Model, QuerySolution, RDFNode> rowToNode, Lang lang) {
+    build(rowToNode);
+    return serializer.serialize(model, lang, root);
+  }
+
+  public String query(BiFunction<Model, QuerySolution, RDFNode> rowToNode, Lang lang,
+      Resource customRoot) {
+    build(rowToNode);
+    return serializer.serialize(model, lang, customRoot);
+  }
 }

@@ -2,7 +2,8 @@ package eu.nampi.backend.model;
 
 import java.io.Serializable;
 import java.util.Optional;
-
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -25,8 +26,7 @@ public class QueryParameters implements Serializable {
 
   private OrderByClauses orderByClauses;
 
-  private Optional<String> type;
+  private Optional<Resource> type;
 
-  private Optional<String> text;
-
+  private Optional<Literal> text;
 }

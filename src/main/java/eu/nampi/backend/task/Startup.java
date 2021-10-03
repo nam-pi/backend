@@ -1,4 +1,4 @@
-package eu.nampi.backend.tasks;
+package eu.nampi.backend.task;
 
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,5 +15,4 @@ public class Startup {
   public void init() {
     jenaService.initInfCache();
   }
-
 }

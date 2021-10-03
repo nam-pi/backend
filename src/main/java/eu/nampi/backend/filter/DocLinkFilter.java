@@ -1,4 +1,4 @@
-package eu.nampi.backend.filters;
+package eu.nampi.backend.filter;
 
 import java.io.IOException;
 import javax.servlet.Filter;
@@ -20,5 +20,4 @@ public class DocLinkFilter implements Filter {
         "</doc>; rel=\"http://www.w3.org/ns/hydra/core#apiDocumentation\"");
     filter.doFilter(request, response);
   }
-
 }

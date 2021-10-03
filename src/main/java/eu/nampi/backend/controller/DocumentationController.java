@@ -20,5 +20,4 @@ public class DocumentationController extends AbstractRdfController {
   public ResponseEntity<String> getDocumentation(@RequestHeader("accept") Lang lang) {
     return new ResponseEntity<String>(documentationRepository.get(lang), HttpStatus.OK);
   }
-
 }

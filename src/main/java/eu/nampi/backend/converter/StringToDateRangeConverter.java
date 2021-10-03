@@ -10,8 +10,8 @@ import eu.nampi.backend.model.DateRange;
 
 public class StringToDateRangeConverter implements Converter<String, DateRange> {
 
-  public static final Pattern SPLIT_REGEX = Pattern
-      .compile("^(\\w{4})?(-(\\w{2})-(\\w{2}))?(-)?(\\w{4})?(-(\\w{2})-(\\w{2}))?$");
+  public static final Pattern SPLIT_REGEX =
+      Pattern.compile("^(\\w{4})?(-(\\w{2})-(\\w{2}))?(-)?(\\w{4})?(-(\\w{2})-(\\w{2}))?$");
 
   public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -44,5 +44,4 @@ public class StringToDateRangeConverter implements Converter<String, DateRange> 
     }
     return new DateRange(start, end, isRange);
   }
-
 }

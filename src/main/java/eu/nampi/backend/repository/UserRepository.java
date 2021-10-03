@@ -16,20 +16,31 @@ import org.apache.jena.vocabulary.RDFS;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.representations.AccessToken;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import eu.nampi.backend.model.User;
+import eu.nampi.backend.util.Serializer;
+import eu.nampi.backend.util.UrlBuilder;
 import eu.nampi.backend.vocabulary.Api;
 import eu.nampi.backend.vocabulary.Core;
 import eu.nampi.backend.vocabulary.SchemaOrg;
 
 @Repository
-public class UserRepository extends AbstractHydraRepository {
+public class UserRepository {
 
   @Value("${nampi.keycloak-rdf-id-attribute}")
   String keycloakRdfIdAttribute;
+
+  @Autowired
+  Serializer serializer;
+
+  @Autowired
+  UrlBuilder urlBuilder;
+
+  private static final String ENDPOINT_NAME = "users";
 
   public Optional<User> getCurrentUser() {
     Object origPrincipal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -62,14 +73,15 @@ public class UserRepository extends AbstractHydraRepository {
 
   public Optional<String> getCurrentUser(Lang lang) {
     return getCurrentUser().map(u -> {
-      String uri = endpointUri("user");
-      Resource userResource = ResourceFactory.createResource(uri);
+      Resource userResource =
+          ResourceFactory.createResource(urlBuilder.endpointUri(ENDPOINT_NAME, "current"));
       Model model = ModelFactory.createDefaultModel();
       model.setNsPrefix("api", Api.getURI()).setNsPrefix("core", Core.getURI());
       model.add(userResource, RDF.type, Api.user);
       if (u.getAuthorities().contains("ROLE_AUTHOR")) {
-        model.add(userResource, Core.sameAs,
-            ResourceFactory.createResource(individualsUri(Core.author, u.getRdfId())));
+        model.add(userResource, Api.isAuthor,
+            ResourceFactory
+                .createResource(urlBuilder.endpointUri("authors", u.getRdfId().toString())));
       }
       model.add(userResource, RDFS.label, u.getLabel());
       model.add(userResource, SchemaOrg.givenName, u.getGivenName());
@@ -77,7 +89,7 @@ public class UserRepository extends AbstractHydraRepository {
       model.add(userResource, SchemaOrg.email, u.getEmail());
       model.add(userResource, SchemaOrg.name, u.getUsername());
       model.add(userResource, SchemaOrg.identifier, u.getId().toString());
-      return serialize(model, lang, userResource);
+      return serializer.serialize(model, lang, userResource);
     });
   }
 }

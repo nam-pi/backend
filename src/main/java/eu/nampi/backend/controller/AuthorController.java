@@ -2,6 +2,8 @@ package eu.nampi.backend.controller;
 
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,24 +25,26 @@ public class AuthorController extends AbstractRdfController {
 
   @GetMapping(value = "/authors", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> getAuthors(@RequestHeader("accept") Lang lang,
+  public ResponseEntity<String> getAuthors(
+      @RequestHeader("accept") Lang lang,
       @RequestParam("page") Optional<Integer> page,
       @RequestParam("pageIndex") Optional<Integer> pageIndex,
       @RequestParam("limit") Optional<Integer> limit,
       @RequestParam("offset") Optional<Integer> offset,
       @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
-      @RequestParam("type") Optional<String> type, @RequestParam("text") Optional<String> text) {
+      @RequestParam("type") Optional<Resource> type,
+      @RequestParam("text") Optional<Literal> text) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
     String result = authorRepository.findAll(params, lang);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
-  @GetMapping(value = "/author/{id}", produces = {"application/ld+json", "text/turtle",
+  @GetMapping(value = "/authors/{id}", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> getEvent(@RequestHeader("accept") Lang lang,
+  public ResponseEntity<String> getEvent(
+      @RequestHeader("accept") Lang lang,
       @PathVariable UUID id) {
     String result = authorRepository.findOne(lang, id);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
-
 }

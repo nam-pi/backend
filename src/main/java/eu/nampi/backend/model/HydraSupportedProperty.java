@@ -1,15 +1,16 @@
-package eu.nampi.backend.model.hydra;
+package eu.nampi.backend.model;
 
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import eu.nampi.backend.vocabulary.Hydra;
 
-public class SupportedProperty extends AbstractHydraNode {
+public class HydraSupportedProperty extends AbstractHydraNode {
 
   private Resource property;
 
-  public SupportedProperty(Resource property, String title, boolean readable, boolean required, boolean writeable) {
+  public HydraSupportedProperty(Resource property, String title, boolean readable, boolean required,
+      boolean writeable) {
     super(title, Hydra.SupportedProperty);
     this.property = property;
     add(Hydra.property, property);
@@ -19,18 +20,19 @@ public class SupportedProperty extends AbstractHydraNode {
     add(Hydra.writeable, writeable ? "true" : "false");
   }
 
-  public SupportedProperty(Resource property, boolean readable, boolean required, boolean writeable) {
+  public HydraSupportedProperty(Resource property, boolean readable, boolean required,
+      boolean writeable) {
     this(property, property.getLocalName(), readable, required, writeable);
   }
 
-  public SupportedProperty(Resource property, String range, String title, boolean readable, boolean required,
-      boolean writeable) {
+  public HydraSupportedProperty(Resource property, String range, String title, boolean readable,
+      boolean required, boolean writeable) {
     this(property, title, readable, required, writeable);
     add(property, RDFS.range, range);
   }
 
-  public SupportedProperty(Resource property, Resource range, String title, boolean readable, boolean required,
-      boolean writeable) {
+  public HydraSupportedProperty(Resource property, Resource range, String title, boolean readable,
+      boolean required, boolean writeable) {
     this(property, title, readable, required, writeable);
     add(property, RDFS.range, range);
   }
@@ -42,5 +44,4 @@ public class SupportedProperty extends AbstractHydraNode {
   public void makeLink() {
     addPropertyType(Hydra.Link);
   }
-
 }

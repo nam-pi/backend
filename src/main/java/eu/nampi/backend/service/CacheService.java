@@ -15,9 +15,12 @@ public class CacheService {
   public void clear() {
     // All cache names need to be manually configured in application.properties to
     // be available in cacheManager.getCacheNames
-    cacheManager.getCacheNames().stream()
-        .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
+    cacheManager
+        .getCacheNames()
+        .stream()
+        .forEach(cacheName -> cacheManager
+            .getCache(cacheName)
+            .clear());
     log.debug("Cleared cache");
   }
-
 }

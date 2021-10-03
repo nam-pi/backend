@@ -2,6 +2,8 @@ package eu.nampi.backend.controller;
 
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,26 +25,28 @@ public class ActController extends AbstractRdfController {
 
   @GetMapping(value = "/acts", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> getActs(@RequestHeader("accept") Lang lang,
+  public ResponseEntity<String> getActs(
+      @RequestHeader("accept") Lang lang,
       @RequestParam("page") Optional<Integer> page,
       @RequestParam("pageIndex") Optional<Integer> pageIndex,
       @RequestParam("limit") Optional<Integer> limit,
       @RequestParam("offset") Optional<Integer> offset,
       @RequestParam("orderBy") Optional<OrderByClauses> orderBy,
-      @RequestParam("type") Optional<String> type, @RequestParam("text") Optional<String> text,
-      @RequestParam("author") Optional<String> author,
-      @RequestParam("source") Optional<String> source) {
+      @RequestParam("type") Optional<Resource> type,
+      @RequestParam("text") Optional<Literal> text,
+      @RequestParam("author") Optional<Resource> author,
+      @RequestParam("source") Optional<Resource> source) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
     String result = actRepository.findAll(params, lang, author, source);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
-  @GetMapping(value = "/act/{id}", produces = {"application/ld+json", "text/turtle",
+  @GetMapping(value = "/acts/{id}", produces = {"application/ld+json", "text/turtle",
       "application/rdf+xml", "application/n-triples"})
-  public ResponseEntity<String> getEvent(@RequestHeader("accept") Lang lang,
+  public ResponseEntity<String> getEvent(
+      @RequestHeader("accept") Lang lang,
       @PathVariable UUID id) {
     String result = actRepository.findOne(lang, id);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
-
 }
