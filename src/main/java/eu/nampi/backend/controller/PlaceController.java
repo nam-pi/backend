@@ -59,14 +59,14 @@ public class PlaceController extends AbstractRdfController {
   public ResponseEntity<String> postPlace(
       @RequestHeader("accept") Lang lang,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> label,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
-      @RequestParam(value = "text[]", required = false) List<Literal> text,
+      @RequestParam("label[]") List<Literal> labels,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
+      @RequestParam(value = "text[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
       @RequestParam(value = "latitude", required = false) Optional<Double> latitude,
       @RequestParam(value = "longitude", required = false) Optional<Double> longitude) {
     InsertResult result =
-        placeRepository.insert(lang, type, label, asList(comment), asList(text), asList(sameAs),
+        placeRepository.insert(lang, type, labels, asList(comments), asList(texts), asList(sameAs),
             latitude, longitude);
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
@@ -79,14 +79,15 @@ public class PlaceController extends AbstractRdfController {
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> label,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
-      @RequestParam(value = "text[]", required = false) List<Literal> text,
+      @RequestParam("label[]") List<Literal> labels,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
+      @RequestParam(value = "text[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
       @RequestParam(value = "latitude", required = false) Optional<Double> latitude,
       @RequestParam(value = "longitude", required = false) Optional<Double> longitude) {
-    String newPlace = placeRepository.update(lang, id, type, label, asList(comment), asList(text),
-        asList(sameAs), latitude, longitude);
+    String newPlace =
+        placeRepository.update(lang, id, type, labels, asList(comments), asList(texts),
+            asList(sameAs), latitude, longitude);
     return new ResponseEntity<String>(newPlace, HttpStatus.OK);
   }
 

@@ -61,13 +61,14 @@ public class GroupController extends AbstractRdfController {
   public ResponseEntity<String> postGroup(
       @RequestHeader("accept") Lang lang,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> label,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
-      @RequestParam(value = "text[]", required = false) List<Literal> text,
+      @RequestParam("label[]") List<Literal> labels,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
+      @RequestParam(value = "text[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
-      @RequestParam(value = "partOf[]", required = false) List<Resource> partOf) {
-    InsertResult result = groupRepository.insert(lang, type, label, asList(comment), asList(text),
-        asList(sameAs), asList(partOf));
+      @RequestParam(value = "partOf[]", required = false) List<Resource> partOfs) {
+    InsertResult result =
+        groupRepository.insert(lang, type, labels, asList(comments), asList(texts),
+            asList(sameAs), asList(partOfs));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
@@ -79,13 +80,14 @@ public class GroupController extends AbstractRdfController {
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> label,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
-      @RequestParam(value = "text[]", required = false) List<Literal> text,
+      @RequestParam("label[]") List<Literal> labels,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
+      @RequestParam(value = "text[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
-      @RequestParam(value = "partOf[]", required = false) List<Resource> partOf) {
-    String newGroup = groupRepository.update(lang, id, type, label, asList(comment), asList(text),
-        asList(sameAs), asList(partOf));
+      @RequestParam(value = "partOf[]", required = false) List<Resource> partOfs) {
+    String newGroup =
+        groupRepository.update(lang, id, type, labels, asList(comments), asList(texts),
+            asList(sameAs), asList(partOfs));
     return new ResponseEntity<String>(newGroup, HttpStatus.OK);
   }
 
