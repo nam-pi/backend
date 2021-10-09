@@ -59,11 +59,11 @@ public class SourceController extends AbstractRdfController {
   public ResponseEntity<String> postSource(
       @RequestHeader("accept") Lang lang,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> label,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
+      @RequestParam("label[]") List<Literal> labels,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
     InsertResult result =
-        sourceRepository.insert(lang, type, label, asList(comment), asList(sameAs));
+        sourceRepository.insert(lang, type, labels, asList(comments), asList(sameAs));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
@@ -75,11 +75,11 @@ public class SourceController extends AbstractRdfController {
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> label,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
+      @RequestParam("label[]") List<Literal> labels,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
     String newSource =
-        sourceRepository.update(lang, id, type, label, asList(comment), asList(sameAs));
+        sourceRepository.update(lang, id, type, labels, asList(comments), asList(sameAs));
     return new ResponseEntity<String>(newSource, HttpStatus.OK);
   }
 

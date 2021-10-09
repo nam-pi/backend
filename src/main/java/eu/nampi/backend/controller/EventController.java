@@ -77,21 +77,22 @@ public class EventController extends AbstractRdfController {
   public ResponseEntity<String> postEvent(
       @RequestHeader("accept") Lang lang,
       @RequestParam("type") Resource type,
-      @RequestParam("labels[]") List<Literal> label,
-      @RequestParam(value = "comments[]", required = false) List<Literal> comment,
-      @RequestParam(value = "texts[]", required = false) List<Literal> text,
-      @RequestParam("authors[]") List<Resource> authors,
+      @RequestParam("label[]") List<Literal> labels,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
+      @RequestParam(value = "text[]", required = false) List<Literal> texts,
+      @RequestParam("author[]") List<Resource> authors,
       @RequestParam("source") Resource source,
       @RequestParam("sourceLocation") Literal sourceLocation,
       @RequestParam("mainParticipant") ResourceCouple mainParticipant,
-      @RequestParam(value = "otherParticipants[]",
+      @RequestParam(value = "otherParticipant[]",
           required = false) List<ResourceCouple> otherParticipants,
-      @RequestParam(value = "aspects[]", required = false) List<ResourceCouple> aspects,
+      @RequestParam(value = "aspect[]", required = false) List<ResourceCouple> aspects,
       @RequestParam("place") Optional<Resource> place,
       @RequestParam("date") Optional<DateRange> date) {
-    InsertResult result = eventRepository.insert(lang, type, label, asList(comment), asList(text),
-        authors, source, sourceLocation, mainParticipant, asList(otherParticipants),
-        asList(aspects), place, date);
+    InsertResult result =
+        eventRepository.insert(lang, type, labels, asList(comments), asList(texts),
+            authors, source, sourceLocation, mainParticipant, asList(otherParticipants),
+            asList(aspects), place, date);
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
@@ -103,25 +104,26 @@ public class EventController extends AbstractRdfController {
       @PathVariable("id") UUID id,
       @RequestHeader("accept") Lang lang,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> label,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comment,
-      @RequestParam(value = "text[]", required = false) List<Literal> text,
-      @RequestParam("authors[]") List<Resource> authors,
+      @RequestParam("label[]") List<Literal> labels,
+      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
+      @RequestParam(value = "text[]", required = false) List<Literal> texts,
+      @RequestParam("author[]") List<Resource> authors,
       @RequestParam("source") Resource source,
       @RequestParam("sourceLocation") Literal sourceLocation,
       @RequestParam("mainParticipant") ResourceCouple mainParticipant,
-      @RequestParam(value = "otherParticipants[]",
+      @RequestParam(value = "otherParticipant[]",
           required = false) List<ResourceCouple> otherParticipants,
-      @RequestParam(value = "aspects[]", required = false) List<ResourceCouple> aspects,
+      @RequestParam(value = "aspect[]", required = false) List<ResourceCouple> aspects,
       @RequestParam("place") Optional<Resource> place,
       @RequestParam("date") Optional<DateRange> date) {
     UUID userId = userRepository.getCurrentUser().map(user -> user.getRdfId()).orElseThrow();
     if (!eventRepository.isAuthor(userId, id)) {
       throw new ForbiddenException();
     }
-    String newEvent = eventRepository.update(lang, id, type, label, asList(comment), asList(text),
-        authors, source, sourceLocation, mainParticipant, asList(otherParticipants),
-        asList(aspects), place, date);
+    String newEvent =
+        eventRepository.update(lang, id, type, labels, asList(comments), asList(texts),
+            authors, source, sourceLocation, mainParticipant, asList(otherParticipants),
+            asList(aspects), place, date);
     return new ResponseEntity<String>(newEvent, HttpStatus.CREATED);
   }
 
