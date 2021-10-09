@@ -59,9 +59,9 @@ public class PlaceController extends AbstractRdfController {
   public ResponseEntity<String> postPlace(
       @RequestHeader("accept") Lang lang,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> labels,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
-      @RequestParam(value = "text[]", required = false) List<Literal> texts,
+      @RequestParam("labels[]") List<Literal> labels,
+      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
+      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
       @RequestParam(value = "latitude", required = false) Optional<Double> latitude,
       @RequestParam(value = "longitude", required = false) Optional<Double> longitude) {
@@ -79,9 +79,9 @@ public class PlaceController extends AbstractRdfController {
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
       @RequestParam("type") Resource type,
-      @RequestParam("label[]") List<Literal> labels,
-      @RequestParam(value = "comment[]", required = false) List<Literal> comments,
-      @RequestParam(value = "text[]", required = false) List<Literal> texts,
+      @RequestParam("labels[]") List<Literal> labels,
+      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
+      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
       @RequestParam(value = "latitude", required = false) Optional<Double> latitude,
       @RequestParam(value = "longitude", required = false) Optional<Double> longitude) {
