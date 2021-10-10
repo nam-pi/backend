@@ -18,12 +18,12 @@ public class HydraInsertBuilder extends AbstractHydraUpdateBuilder {
   public UUID id;
 
   public HydraInsertBuilder(JenaService jenaService, HierarchyRepository hierarchyRepository,
-      TypeRepository typeRepository, Lang lang, String baseUri, Resource mainType,
+      TypeRepository typeRepository, Lang lang, String baseUri, List<Resource> mainTypes,
       List<Literal> labels, List<Literal> comments, List<Literal> texts,
       Optional<List<Resource>> optionalSameAs, UUID id) {
-    super(jenaService, hierarchyRepository, typeRepository, baseUri, mainType);
+    super(jenaService, hierarchyRepository, typeRepository, baseUri);
     this.id = id;
-    addInsert(root, RDF.type, mainType);
+    mainTypes.forEach(type -> addInsert(root, RDF.type, type));
     labels.forEach(label -> addInsert(root, RDFS.label, label));
     comments.forEach(labelcomment -> addInsert(root, RDFS.comment, labelcomment));
     texts.forEach(text -> addInsert(root, Core.hasText, text));

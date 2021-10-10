@@ -122,20 +122,20 @@ public class AspectRepository {
         .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
   }
 
-  public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
-      List<Literal> texts, List<Resource> sameAs) {
-    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
+  public InsertResult insert(Lang lang, List<Resource> types, List<Literal> labels,
+      List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
+    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, types,
         labels, comments, texts, sameAs);
-    builder.validateSubnode(Core.aspect, type);
+    builder.validateSubresources(Core.aspect, types);
     builder.build();
     return new InsertResult(builder.root, findOne(lang, builder.id));
   }
 
-  public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
+  public String update(Lang lang, UUID id, List<Resource> types, List<Literal> labels,
       List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
-    HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
+    HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, types,
         labels, comments, texts, sameAs);
-    builder.validateSubnode(Core.aspect, type);
+    builder.validateSubresources(Core.aspect, types);
     builder.build();
     return findOne(lang, builder.id);
   }

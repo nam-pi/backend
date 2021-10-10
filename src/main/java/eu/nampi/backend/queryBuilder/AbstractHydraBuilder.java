@@ -26,7 +26,7 @@ public abstract class AbstractHydraBuilder {
   public static final Node VAR_TYPE = NodeFactory.createVariable("type");
 
 
-  protected AbstractHydraBuilder(JenaService jenaService, String baseUri, Resource mainType) {
+  protected AbstractHydraBuilder(JenaService jenaService, String baseUri) {
     this.root = ResourceFactory.createResource(baseUri);
     this.jenaService = jenaService;
   }

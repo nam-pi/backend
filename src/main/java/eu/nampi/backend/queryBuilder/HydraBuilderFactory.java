@@ -83,22 +83,22 @@ public class HydraBuilderFactory {
    * Hydra Insert Builders
    */
 
-  public HydraInsertBuilder insertBuilder(Lang lang, String endpointName, Resource mainType,
+  public HydraInsertBuilder insertBuilder(Lang lang, String endpointName, List<Resource> mainTypes,
       List<Literal> labels, List<Literal> comments, List<Literal> texts) {
-    return insertBuilder(lang, endpointName, mainType, labels, comments, texts, new ArrayList<>());
+    return insertBuilder(lang, endpointName, mainTypes, labels, comments, texts, new ArrayList<>());
   }
 
-  public HydraInsertBuilder insertBuilder(Lang lang, String endpointName, Resource mainType,
+  public HydraInsertBuilder insertBuilder(Lang lang, String endpointName, List<Resource> mainTypes,
       List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     UUID id = UUID.randomUUID();
-    return insertBuilder(lang, id, endpointName, mainType, labels, comments, texts, sameAs);
+    return insertBuilder(lang, id, endpointName, mainTypes, labels, comments, texts, sameAs);
   }
 
   public HydraInsertBuilder insertBuilder(Lang lang, UUID id, String endpointName,
-      Resource mainType,
-      List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
+      List<Resource> mainTypes, List<Literal> labels, List<Literal> comments, List<Literal> texts,
+      List<Resource> sameAs) {
     return new HydraInsertBuilder(jenaService, hierarchyRepository, typeRepository, lang,
-        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
+        urlBuilder.endpointUri(endpointName, id), mainTypes, labels, comments, texts,
         Optional.of(sameAs), id);
   }
 
@@ -107,17 +107,17 @@ public class HydraBuilderFactory {
    */
 
   public HydraUpdateBuilder updateBuilder(Lang lang, UUID id, String endpointName,
-      Resource mainType, List<Literal> labels, List<Literal> comments, List<Literal> texts) {
+      List<Resource> mainTypes, List<Literal> labels, List<Literal> comments, List<Literal> texts) {
     return new HydraUpdateBuilder(jenaService, hierarchyRepository, typeRepository, lang,
-        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
+        urlBuilder.endpointUri(endpointName, id), mainTypes, labels, comments, texts,
         Optional.empty(), id);
   }
 
   public HydraUpdateBuilder updateBuilder(Lang lang, UUID id, String endpointName,
-      Resource mainType, List<Literal> labels, List<Literal> comments, List<Literal> texts,
+      List<Resource> mainTypes, List<Literal> labels, List<Literal> comments, List<Literal> texts,
       List<Resource> sameAs) {
     return new HydraUpdateBuilder(jenaService, hierarchyRepository, typeRepository, lang,
-        urlBuilder.endpointUri(endpointName, id), mainType, labels, comments, texts,
+        urlBuilder.endpointUri(endpointName, id), mainTypes, labels, comments, texts,
         Optional.of(sameAs), id);
   }
 
