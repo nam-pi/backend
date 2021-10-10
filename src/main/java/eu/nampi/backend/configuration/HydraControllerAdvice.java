@@ -1,5 +1,6 @@
 package eu.nampi.backend.configuration;
 
+import java.util.Objects;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -67,10 +68,19 @@ public class HydraControllerAdvice extends ResponseEntityExceptionHandler {
     return handle(ex, request, HttpStatus.BAD_REQUEST, name + " parameter is missing");
   }
 
+  private static Throwable findCause(Throwable throwable) {
+    Objects.requireNonNull(throwable);
+    Throwable rootCause = throwable;
+    while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+      rootCause = rootCause.getCause();
+    }
+    return rootCause;
+  }
+
   private Model createErrorModel(Exception ex, WebRequest request, HttpStatus status,
       String fallbackMessage) {
     Literal title = ResourceFactory.createLangLiteral(status.toString(), "en");
-    String message = ex.getMessage();
+    String message = findCause(ex).getMessage();
     Literal description = ResourceFactory
         .createLangLiteral(message == null || message.isBlank() ? fallbackMessage : message, "en");
     Resource error = ResourceFactory.createResource();
