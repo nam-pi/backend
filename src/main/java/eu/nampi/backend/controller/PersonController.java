@@ -60,14 +60,13 @@ public class PersonController extends AbstractRdfController {
       "application/rdf+xml", "application/n-triples"})
   public ResponseEntity<String> postPerson(
       @RequestHeader("accept") Lang lang,
-      @RequestParam("type") Resource type,
+      @RequestParam("types[]") List<Resource> types,
       @RequestParam("labels[]") List<Literal> labels,
       @RequestParam(value = "comments[]", required = false) List<Literal> comments,
       @RequestParam(value = "texts[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
-    InsertResult result =
-        personRepository.insert(lang, type, labels, asList(comments), asList(texts),
-            asList(sameAs));
+    InsertResult result = personRepository.insert(lang, types, labels, asList(comments),
+        asList(texts), asList(sameAs));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
@@ -78,12 +77,12 @@ public class PersonController extends AbstractRdfController {
   public ResponseEntity<String> putPerson(
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
-      @RequestParam("type") Resource type,
+      @RequestParam("types[]") List<Resource> types,
       @RequestParam("labels[]") List<Literal> labels,
       @RequestParam(value = "comments[]", required = false) List<Literal> comments,
       @RequestParam(value = "texts[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
-    String newPerson = personRepository.update(lang, id, type, labels,
+    String newPerson = personRepository.update(lang, id, types, labels,
         comments == null ? new ArrayList<>() : asList(comments), asList(texts), asList(sameAs));
     return new ResponseEntity<String>(newPerson, HttpStatus.OK);
   }

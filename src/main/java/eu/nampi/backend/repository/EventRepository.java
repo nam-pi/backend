@@ -69,8 +69,8 @@ public class EventRepository {
   @Autowired
   UrlBuilder urlBuilder;
 
-  private static final String NEGATIVE_DEFAULT_DATE = "-9999-01-01T00:00:00";
-  private static final String POSITIVE_DEFAULT_DATE = "9999-01-01T00:00:00";
+  private static final String NEGATIVE_DEFAULT_DATE = "-999999-01-01T00:00:00";
+  private static final String POSITIVE_DEFAULT_DATE = "999999-01-01T00:00:00";
 
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 
@@ -540,18 +540,18 @@ public class EventRepository {
     builder.build();
   }
 
-  public InsertResult insert(Optional<UUID> optionalId, Lang lang, Resource type,
+  public InsertResult insert(Optional<UUID> optionalId, Lang lang, List<Resource> types,
       List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> authors,
       Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     // Create builder depending on whether or not id is present
     HydraInsertBuilder builder = optionalId
-        .map(id -> hydraBuilderFactory.insertBuilder(lang, id, ENDPOINT_NAME, type,
+        .map(id -> hydraBuilderFactory.insertBuilder(lang, id, ENDPOINT_NAME, types,
             labels, comments, texts, new ArrayList<>()))
-        .orElse(hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
+        .orElse(hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, types,
             labels, comments, texts, new ArrayList<>()));
-    builder.validateSubnode(Core.event, type);
+    builder.validateSubresources(Core.event, types);
     // Event main participant
     builder.validateType(Core.person, mainParticipant.getObject());
     mainParticipant.getPredicate().ifPresentOrElse(predicate -> {
@@ -625,22 +625,22 @@ public class EventRepository {
     return new InsertResult(builder.root, result);
   }
 
-  public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
-      List<Literal> texts, List<Resource> authors, Resource source,
+  public InsertResult insert(Lang lang, List<Resource> types, List<Literal> labels,
+      List<Literal> comments, List<Literal> texts, List<Resource> authors, Resource source,
       Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
-    return insert(Optional.empty(), lang, type, labels, comments, texts, authors, source,
+    return insert(Optional.empty(), lang, types, labels, comments, texts, authors, source,
         sourceLocation, mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
   }
 
-  public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
-      List<Literal> comments, List<Literal> texts, List<Resource> authors,
-      Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
+  public String update(Lang lang, UUID id, List<Resource> types, List<Literal> labels,
+      List<Literal> comments, List<Literal> texts, List<Resource> authors, Resource source,
+      Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     delete(id);
-    insert(Optional.of(id), lang, type, labels, comments, texts, authors, source,
+    insert(Optional.of(id), lang, types, labels, comments, texts, authors, source,
         sourceLocation, mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
     return findOne(lang, id);
   }

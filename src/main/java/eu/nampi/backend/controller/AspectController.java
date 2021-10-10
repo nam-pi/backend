@@ -59,13 +59,13 @@ public class AspectController extends AbstractRdfController {
       "application/rdf+xml", "application/n-triples"})
   public ResponseEntity<String> postAspect(
       @RequestHeader("accept") Lang lang,
-      @RequestParam("type") Resource type,
+      @RequestParam("types[]") List<Resource> types,
       @RequestParam("labels[]") List<Literal> labels,
       @RequestParam(value = "comments[]", required = false) List<Literal> comments,
       @RequestParam(value = "texts[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
     InsertResult result =
-        aspectRepository.insert(lang, type, labels, asList(comments), asList(texts),
+        aspectRepository.insert(lang, types, labels, asList(comments), asList(texts),
             asList(sameAs));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
@@ -77,13 +77,13 @@ public class AspectController extends AbstractRdfController {
   public ResponseEntity<String> putAspect(
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
-      @RequestParam("type") Resource type,
+      @RequestParam("types[]") List<Resource> types,
       @RequestParam("labels[]") List<Literal> labels,
       @RequestParam(value = "comments[]", required = false) List<Literal> comments,
       @RequestParam(value = "texts[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
     String newAspect =
-        aspectRepository.update(lang, id, type, labels, asList(comments), asList(texts),
+        aspectRepository.update(lang, id, types, labels, asList(comments), asList(texts),
             asList(sameAs));
     return new ResponseEntity<String>(newAspect, HttpStatus.OK);
   }

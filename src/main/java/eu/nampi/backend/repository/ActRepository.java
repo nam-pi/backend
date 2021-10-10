@@ -232,8 +232,9 @@ public class ActRepository {
 
   public Resource insert(Lang lang, List<Resource> authors, Resource source,
       Literal sourceLocation) {
-    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, Core.act,
-        DEFAULT_LABEL, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+    HydraInsertBuilder builder =
+        hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, Arrays.asList(Core.act),
+            DEFAULT_LABEL, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     // Insert authors
     authors.forEach(author -> {
       builder

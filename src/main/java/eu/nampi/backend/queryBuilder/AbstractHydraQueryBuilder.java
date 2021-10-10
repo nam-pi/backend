@@ -31,7 +31,7 @@ public abstract class AbstractHydraQueryBuilder extends AbstractHydraBuilder {
 
   protected AbstractHydraQueryBuilder(JenaService jenaService, Serializer serializer,
       String baseUri, Resource mainType) {
-    super(jenaService, baseUri, mainType);
+    super(jenaService, baseUri);
     this.mainType = mainType;
     this.ef = coreData.getExprFactory();
     this.serializer = serializer;

@@ -18,16 +18,16 @@ public class HydraUpdateBuilder extends AbstractHydraUpdateBuilder {
   public UUID id;
 
   public HydraUpdateBuilder(JenaService jenaService, HierarchyRepository hierarchyRepository,
-      TypeRepository typeRepository, Lang lang, String baseUri, Resource mainType,
+      TypeRepository typeRepository, Lang lang, String baseUri, List<Resource> mainTypes,
       List<Literal> labels, List<Literal> comments, List<Literal> texts,
       Optional<List<Resource>> optionalSameAs, UUID id) {
-    super(jenaService, hierarchyRepository, typeRepository, baseUri, mainType);
+    super(jenaService, hierarchyRepository, typeRepository, baseUri);
     this.id = id;
     updateBuilder
         .addFilter(ef.sameTerm(VAR_MAIN, root))
         .addWhere(VAR_MAIN, VAR_PREDICATE, VAR_OBJECT)
-        .addDelete(VAR_MAIN, VAR_PREDICATE, VAR_OBJECT)
-        .addInsert(root, RDF.type, mainType);
+        .addDelete(VAR_MAIN, VAR_PREDICATE, VAR_OBJECT);
+    mainTypes.forEach(type -> addInsert(root, RDF.type, type));
     labels.forEach(label -> addInsert(root, RDFS.label, label));
     comments.forEach(labelcomment -> addInsert(root, RDFS.comment, labelcomment));
     texts.forEach(text -> addInsert(root, Core.hasText, text));

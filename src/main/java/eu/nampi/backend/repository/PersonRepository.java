@@ -157,20 +157,20 @@ public class PersonRepository {
     return builder.query(ROW_MAPPER, lang);
   }
 
-  public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
-      List<Literal> texts, List<Resource> sameAs) {
-    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
+  public InsertResult insert(Lang lang, List<Resource> types, List<Literal> labels,
+      List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
+    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, types,
         labels, comments, texts, sameAs);
-    builder.validateSubnode(Core.person, type);
+    builder.validateSubresources(Core.person, types);
     builder.build();
     return new InsertResult(builder.root, findOne(lang, builder.id));
   }
 
-  public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
+  public String update(Lang lang, UUID id, List<Resource> types, List<Literal> labels,
       List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
-    HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
+    HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, types,
         labels, comments, texts, sameAs);
-    builder.validateSubnode(Core.person, type);
+    builder.validateSubresources(Core.person, types);
     builder.build();
     return findOne(lang, builder.id);
   }

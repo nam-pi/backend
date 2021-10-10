@@ -1,5 +1,6 @@
 package eu.nampi.backend.queryBuilder;
 
+import java.util.List;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
@@ -23,9 +24,8 @@ public abstract class AbstractHydraUpdateBuilder extends AbstractHydraBuilder {
   public static final Node VAR_OBJECT = NodeFactory.createVariable("object");
 
   protected AbstractHydraUpdateBuilder(JenaService jenaService,
-      HierarchyRepository hierarchyRepository, TypeRepository typeRepository, String baseUri,
-      Resource mainType) {
-    super(jenaService, baseUri, mainType);
+      HierarchyRepository hierarchyRepository, TypeRepository typeRepository, String baseUri) {
+    super(jenaService, baseUri);
     this.hierarchyRepository = hierarchyRepository;
     this.typeRepository = typeRepository;
     this.ef = updateBuilder.getExprFactory();
@@ -48,6 +48,10 @@ public abstract class AbstractHydraUpdateBuilder extends AbstractHydraBuilder {
           String.format("'%s' is not allowed to be a subtype of '%s'.", child.toString(),
               parent.toString()));
     }
+  }
+
+  public void validateSubresources(RDFNode parent, List<Resource> childs) {
+    childs.forEach(child -> validateSubnode(parent, child));
   }
 
   public void validateType(RDFNode type, RDFNode node) {

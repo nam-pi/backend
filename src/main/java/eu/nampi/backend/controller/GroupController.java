@@ -60,14 +60,14 @@ public class GroupController extends AbstractRdfController {
       "application/rdf+xml", "application/n-triples"})
   public ResponseEntity<String> postGroup(
       @RequestHeader("accept") Lang lang,
-      @RequestParam("type") Resource type,
+      @RequestParam("types[]") List<Resource> types,
       @RequestParam("labels[]") List<Literal> labels,
       @RequestParam(value = "comments[]", required = false) List<Literal> comments,
       @RequestParam(value = "texts[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
       @RequestParam(value = "partOf[]", required = false) List<Resource> partOfs) {
     InsertResult result =
-        groupRepository.insert(lang, type, labels, asList(comments), asList(texts),
+        groupRepository.insert(lang, types, labels, asList(comments), asList(texts),
             asList(sameAs), asList(partOfs));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
@@ -79,15 +79,14 @@ public class GroupController extends AbstractRdfController {
   public ResponseEntity<String> putGroup(
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
-      @RequestParam("type") Resource type,
+      @RequestParam("types[]") List<Resource> types,
       @RequestParam("labels[]") List<Literal> labels,
       @RequestParam(value = "comments[]", required = false) List<Literal> comments,
       @RequestParam(value = "texts[]", required = false) List<Literal> texts,
       @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
       @RequestParam(value = "partOf[]", required = false) List<Resource> partOfs) {
-    String newGroup =
-        groupRepository.update(lang, id, type, labels, asList(comments), asList(texts),
-            asList(sameAs), asList(partOfs));
+    String newGroup = groupRepository.update(lang, id, types, labels, asList(comments),
+        asList(texts), asList(sameAs), asList(partOfs));
     return new ResponseEntity<String>(newGroup, HttpStatus.OK);
   }
 

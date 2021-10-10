@@ -118,23 +118,23 @@ public class PlaceRepository {
     return builder.query(ROW_MAPPER, lang);
   }
 
-  public InsertResult insert(Lang lang, Resource type, List<Literal> labels, List<Literal> comments,
-      List<Literal> texts, List<Resource> sameAs, Optional<Double> optionalLatitude,
-      Optional<Double> optionalLongitude) {
-    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, type,
+  public InsertResult insert(Lang lang, List<Resource> types, List<Literal> labels,
+      List<Literal> comments, List<Literal> texts, List<Resource> sameAs,
+      Optional<Double> optionalLatitude, Optional<Double> optionalLongitude) {
+    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, types,
         labels, comments, texts, sameAs);
-    builder.validateSubnode(Core.place, type);
+    builder.validateSubresources(Core.place, types);
     addPlace(builder, optionalLatitude, optionalLongitude);
     builder.build();
     return new InsertResult(builder.root, findOne(lang, builder.id));
   }
 
-  public String update(Lang lang, UUID id, Resource type, List<Literal> labels,
+  public String update(Lang lang, UUID id, List<Resource> types, List<Literal> labels,
       List<Literal> comments, List<Literal> texts, List<Resource> sameAs,
       Optional<Double> optionalLatitude, Optional<Double> optionalLongitude) {
-    HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, type,
+    HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, types,
         labels, comments, texts, sameAs);
-    builder.validateSubnode(Core.place, type);
+    builder.validateSubresources(Core.place, types);
     addPlace(builder, optionalLatitude, optionalLongitude);
     builder.build();
     return findOne(lang, builder.id);
