@@ -69,8 +69,8 @@ public class EventRepository {
   @Autowired
   UrlBuilder urlBuilder;
 
-  private static final String NEGATIVE_DEFAULT_DATE = "-9999-01-01T00:00:00";
-  private static final String POSITIVE_DEFAULT_DATE = "9999-01-01T00:00:00";
+  private static final String NEGATIVE_DEFAULT_DATE = "-999999-01-01T00:00:00";
+  private static final String POSITIVE_DEFAULT_DATE = "999999-01-01T00:00:00";
 
   private static final StringToDateRangeConverter CONVERTER = new StringToDateRangeConverter();
 

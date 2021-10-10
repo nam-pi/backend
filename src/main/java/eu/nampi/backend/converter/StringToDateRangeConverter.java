@@ -10,7 +10,8 @@ import eu.nampi.backend.model.DateRange;
 public class StringToDateRangeConverter implements Converter<String, DateRange> {
 
   public static final Pattern SPLIT_REGEX =
-      Pattern.compile("^(-?\\w{4})?(-(\\w{2})-(\\w{2}))?(-)?(-?\\w{4})?(-(\\w{2})-(\\w{2}))?$");
+      Pattern.compile(
+          "^(?<y1>(\\+|-)?\\d{4,6})?(-(?<m1>\\d{2})-(?<d1>\\d{2}))?(-)?(?<y2>(\\+|-)?\\d{4,6})?(-(?<m2>\\d{2})-(?<d2>\\d{2}))?$");
 
   private Optional<LocalDateTime> parse(String year, String month, String day) {
     Optional<LocalDateTime> date = Optional.empty();
@@ -40,13 +41,13 @@ public class StringToDateRangeConverter implements Converter<String, DateRange> 
     boolean isRange = false;
     while (matcher.find()) {
       isRange = Optional.ofNullable(matcher.group(5)).isPresent();
-      String year1 = matcher.group(1);
-      String month1 = matcher.group(3);
-      String day1 = matcher.group(4);
+      String year1 = matcher.group("y1");
+      String month1 = matcher.group("m1");
+      String day1 = matcher.group("d1");
       start = parse(year1, month1, day1);
-      String year2 = matcher.group(6);
-      String month2 = matcher.group(8);
-      String day2 = matcher.group(9);
+      String year2 = matcher.group("y2");
+      String month2 = matcher.group("m2");
+      String day2 = matcher.group("d2");
       end = parse(year2, month2, day2);
     }
     if (start.isPresent() && end.isPresent()) {
