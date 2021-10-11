@@ -12,7 +12,7 @@ public class HydraDeleteBuilder extends AbstractHydraUpdateBuilder {
 
   public HydraDeleteBuilder(JenaService jenaService, HierarchyRepository hierarchyRepository,
       TypeRepository typeRepository, String baseUri, Resource mainType, UUID id) {
-    super(jenaService, hierarchyRepository, typeRepository, baseUri, mainType);
+    super(jenaService, hierarchyRepository, typeRepository, baseUri);
     this.id = id;
     updateBuilder
         .addFilter(ef.sameTerm(VAR_MAIN, root))
