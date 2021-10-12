@@ -36,6 +36,7 @@ public class Api {
   @Deprecated
   public static Resource classOrderByVar = resource("classOrderByVariable");
 
+  public static Property ancestorOf = property("ancestorOf");
   public static Property descendantOf = property("descendantOf");
   public static Property hierarchyRoot = property("hierarchyRoot");
   public static Property isAuthor = property("is_author");

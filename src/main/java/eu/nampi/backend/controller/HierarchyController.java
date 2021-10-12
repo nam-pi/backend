@@ -20,8 +20,10 @@ public class HierarchyController extends AbstractRdfController {
       "application/rdf+xml", "application/n-triples"})
   public ResponseEntity<String> getHierarchy(
       @RequestHeader("accept") Lang lang,
-      @RequestParam("iri") String iri) {
-    String result = hierarchyRepository.findHierarchy(lang, iri);
+      @RequestParam("iri") String iri,
+      @RequestParam(value = "descendants", required = false) Boolean descendants) {
+    String result =
+        hierarchyRepository.findHierarchy(lang, iri, descendants == null ? false : descendants);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 }
