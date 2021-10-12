@@ -52,6 +52,7 @@ public class Core {
   public static final Property isAuthoredOn = property("is_authored_on");
   public static final Property isBornIn = property("is_born_in");
   public static final Property isInterpretationOf = property("is_interpretation_of");
+  public static final Property isMainParticipantIn = property("is_main_participant_in");
   public static final Property isPartOf = property("is_part_of");
   public static final Property sameAs = property("same_as");
   public static final Property startsLifeOf = property("starts_life_of");
