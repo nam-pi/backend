@@ -61,8 +61,16 @@ public class HierarchyRepository {
     return jenaService.ask(builder);
   }
 
-  @Cacheable(key = "{#lang, #iri}")
-  public String findHierarchy(Lang lang, String iri) {
+  @Cacheable(key = "{#lang, #iri, #descendants}")
+  public String findHierarchy(Lang lang, String iri, boolean descendants) {
+    if (descendants) {
+      return findDescendants(lang, iri);
+    } else {
+      return findAncestors(lang, iri);
+    }
+  }
+
+  private String findAncestors(Lang lang, String iri) {
     HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(RDFS.Resource, iri, false);
     ExprFactory ef = builder.ef;
     Expr childNotRdf = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDF.getURI()));
@@ -120,6 +128,62 @@ public class HierarchyRepository {
       if (!child.equals(parent)) {
         model.add(child, Api.descendantOf, parent);
         model.add(parent, RDF.type, RDFS.Resource);
+      }
+      Optional
+          .ofNullable(row.getLiteral(VAR_LABEL.toString()))
+          .ifPresent(literal -> model.add(main, RDFS.label, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
+          .ifPresent(literal -> model.add(main, RDFS.comment, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_CHILD_LABEL.toString()))
+          .ifPresent(literal -> model.add(child, RDFS.label, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_CHILD_COMMENT.toString()))
+          .ifPresent(literal -> model.add(child, RDFS.comment, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_PARENT_LABEL.toString()))
+          .ifPresent(literal -> model.add(parent, RDFS.label, literal));
+      Optional
+          .ofNullable(row.getLiteral(VAR_PARENT_COMMENT.toString()))
+          .ifPresent(literal -> model.add(parent, RDFS.comment, literal));
+      return base;
+    };
+    return builder.query(rowMapper, lang, base);
+  }
+
+  private String findDescendants(Lang lang, String iri) {
+    HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(RDFS.Resource, iri, false);
+    builder.coreData
+        .addOptional(new WhereBuilder()
+            .addWhere(VAR_PARENT, RDFS.subClassOf, VAR_MAIN)
+            .addWhere(VAR_CHILD, RDFS.subClassOf, VAR_PARENT))
+        .addOptional(new WhereBuilder()
+            .addWhere(VAR_PARENT, RDFS.subPropertyOf, VAR_MAIN)
+            .addWhere(VAR_CHILD, RDFS.subPropertyOf, VAR_PARENT))
+        .addOptional(VAR_CHILD, RDFS.label, VAR_CHILD_LABEL)
+        .addOptional(VAR_CHILD, RDFS.comment, VAR_CHILD_COMMENT)
+        .addOptional(VAR_PARENT, RDFS.label, VAR_PARENT_LABEL)
+        .addOptional(VAR_PARENT, RDFS.comment, VAR_PARENT_COMMENT);
+    Resource base = ResourceFactory.createResource(urlBuilder.endpointUri("hierarchy"));
+    builder.model
+        .add(base, RDF.type, Api.hierarchy)
+        .add(base, Api.hierarchyRoot, builder.root);
+    // Create the row mapper using the base and root (==main) resources
+    BiFunction<Model, QuerySolution, RDFNode> rowMapper = (model, row) -> {
+      Resource main = row.getResource(VAR_MAIN.toString());
+      Resource child = row.getResource(VAR_CHILD.toString());
+      Resource parent = row.getResource(VAR_PARENT.toString());
+      model.add(main, RDF.type, RDFS.Resource);
+      if (!main.equals(parent)) {
+        model
+            .add(main, Api.ancestorOf, parent)
+            .add(parent, RDF.type, RDFS.Resource);
+      }
+      if (!parent.equals(child)) {
+        model
+            .add(parent, Api.ancestorOf, child)
+            .add(child, RDF.type, RDFS.Resource);
       }
       Optional
           .ofNullable(row.getLiteral(VAR_LABEL.toString()))
