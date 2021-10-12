@@ -34,7 +34,6 @@ public class Core {
   public static final Property aspectIsUsedIn = property("aspect_is_used_in");
   public static final Property diesIn = property("dies_in");
   public static final Property endsLifeOf = property("ends_life_of");
-  public static final Property hasAspectChangedIn = property("has_aspect_changed_in");
   public static final Property hasDate = property("has_date");
   public static final Property hasDateTime = property("has_date_time");
   public static final Property hasInterpretation = property("has_interpretation");
