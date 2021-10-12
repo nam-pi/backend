@@ -142,7 +142,7 @@ public class PersonRepository {
     // Add aspect query
     builder.mapper.add("aspect", Api.personAspectVar, aspect);
     aspect.ifPresent(resAspect -> {
-      Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.hasAspectChangedIn.asNode()),
+      Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.isMainParticipantIn.asNode()),
           PathFactory.pathLink(Core.usesAspect.asNode()));
       builder.coreData.addWhere(VAR_MAIN, path, resAspect);
     });

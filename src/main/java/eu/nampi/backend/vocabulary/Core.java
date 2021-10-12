@@ -34,7 +34,6 @@ public class Core {
   public static final Property aspectIsUsedIn = property("aspect_is_used_in");
   public static final Property diesIn = property("dies_in");
   public static final Property endsLifeOf = property("ends_life_of");
-  public static final Property hasAspectChangedIn = property("has_aspect_changed_in");
   public static final Property hasDate = property("has_date");
   public static final Property hasDateTime = property("has_date_time");
   public static final Property hasInterpretation = property("has_interpretation");
@@ -53,6 +52,7 @@ public class Core {
   public static final Property isAuthoredOn = property("is_authored_on");
   public static final Property isBornIn = property("is_born_in");
   public static final Property isInterpretationOf = property("is_interpretation_of");
+  public static final Property isMainParticipantIn = property("is_main_participant_in");
   public static final Property isPartOf = property("is_part_of");
   public static final Property sameAs = property("same_as");
   public static final Property startsLifeOf = property("starts_life_of");
