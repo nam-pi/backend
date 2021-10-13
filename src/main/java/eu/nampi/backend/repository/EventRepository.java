@@ -581,10 +581,10 @@ public class EventRepository {
       builder.addInsert(builder.root, Core.takesPlaceAt, place);
     });
     // Event date
-    optionalDate.ifPresent(date -> {
-      if (date.getStart().isPresent()) {
-        if (date.isRange()) {
-          date.getStart().ifPresent(start -> {
+    optionalDate.ifPresent(range -> {
+      if (range.getStart().isPresent() || range.getEnd().isPresent()) {
+        if (range.isRange()) {
+          range.getStart().ifPresent(start -> {
             Resource startRes = ResourceFactory.createResource();
             builder
                 .addInsert(builder.root, Core.takesPlaceNotEarlierThan, startRes)
@@ -594,7 +594,7 @@ public class EventRepository {
                         start.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                         XSDDatatype.XSDdateTime));
           });
-          date.getEnd().ifPresent(end -> {
+          range.getEnd().ifPresent(end -> {
             Resource endRes = ResourceFactory.createResource();
             builder
                 .addInsert(builder.root, Core.takesPlaceNotLaterThan, endRes)
@@ -611,7 +611,7 @@ public class EventRepository {
               .addInsert(exactRes, RDF.type, Core.date)
               .addInsert(exactRes, Core.hasDateTime, ResourceFactory
                   .createTypedLiteral(
-                      date.getStart().get().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                      range.getStart().get().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                       XSDDatatype.XSDdateTime));
         }
       }
