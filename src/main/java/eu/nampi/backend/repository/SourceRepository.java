@@ -3,13 +3,14 @@ package eu.nampi.backend.repository;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_COMMENT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_LABEL;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_MAIN;
+import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TEXT;
 import static eu.nampi.backend.queryBuilder.AbstractHydraBuilder.VAR_TYPE;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.QuerySolution;
@@ -18,6 +19,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +60,10 @@ public class SourceRepository {
     Optional
         .ofNullable(row.getLiteral(VAR_LABEL.toString()))
         .ifPresent(label -> model.add(main, RDFS.label, label));
+    // Text
+    Optional
+        .ofNullable(row.getLiteral(VAR_TEXT.toString()))
+        .ifPresent(text -> model.add(main, Core.hasText, text));
     // Comment
     Optional
         .ofNullable(row.getLiteral(VAR_COMMENT.toString()))
@@ -72,7 +79,18 @@ public class SourceRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.source, Api.sourceOrderByVar, params);
+        Core.source, Api.sourceOrderByVar, params, false);
+    ExprFactory ef = builder.ef;
+
+    // Add custom text select
+    params.getText().ifPresent(text -> {
+      Node varSearchString = NodeFactory.createVariable("searchString");
+      Path path = PathFactory.pathAlt(PathFactory.pathLink(RDFS.label.asNode()),
+          PathFactory.pathLink(Core.hasText.asNode()));
+      builder.coreData.addOptional(VAR_MAIN, path, varSearchString)
+          .addFilter(ef.regex(varSearchString, params.getText().get(), "i"));
+    });
+
     builder.extendedData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
     return builder.query(ROW_MAPPER, lang);
   }
@@ -80,23 +98,25 @@ public class SourceRepository {
   @Cacheable(key = "{#lang, #id}")
   public String findOne(Lang lang, UUID id) {
     HydraSingleBuilder builder = hydraBuilderFactory.singleBuilder(ENDPOINT_NAME, id, Core.source);
-    builder.coreData.addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
+    builder.coreData
+        .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
+        .addOptional(VAR_MAIN, Core.sameAs, VAR_SAME_AS);
     return builder.query(ROW_MAPPER, lang);
   }
 
   public InsertResult insert(Lang lang, List<Resource> types, List<Literal> labels,
-      List<Literal> comments, List<Resource> sameAs) {
+      List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, types,
-        labels, comments, new ArrayList<>(), sameAs);
+        labels, comments, texts, sameAs);
     builder.validateSubresources(Core.source, types);
     builder.build();
     return new InsertResult(builder.root, findOne(lang, builder.id));
   }
 
   public String update(Lang lang, UUID id, List<Resource> types, List<Literal> labels,
-      List<Literal> comments, List<Resource> sameAs) {
+      List<Literal> comments, List<Literal> texts, List<Resource> sameAs) {
     HydraUpdateBuilder builder = hydraBuilderFactory.updateBuilder(lang, id, ENDPOINT_NAME, types,
-        labels, comments, new ArrayList<>(), sameAs);
+        labels, comments, texts, sameAs);
     builder.validateSubresources(Core.source, types);
     builder.build();
     return findOne(lang, builder.id);
