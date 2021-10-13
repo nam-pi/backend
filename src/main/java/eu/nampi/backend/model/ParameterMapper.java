@@ -120,6 +120,9 @@ public class ParameterMapper {
     }
     int nextOffset = offset + limit;
     int lastOffset = (int) (Math.floor(totalItems / limit) * limit);
+    if (lastOffset == totalItems) {
+      lastOffset = totalItems - limit;
+    }
     int previousOffset = offset - limit;
     if (target == IriTarget.FIRST) {
       if (offset == 0) {
