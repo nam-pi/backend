@@ -11,7 +11,7 @@ public class StringToDateRangeConverter implements Converter<String, DateRange> 
 
   public static final Pattern SPLIT_REGEX =
       Pattern.compile(
-          "^((?<y1>(\\+|-)?\\d{4,6})?(-(?<m1>\\d{2})-(?<d1>\\d{2})))?(?<r>\\|)?((?<y2>(\\+|-)?\\d{4,6})?(-(?<m2>\\d{2})-(?<d2>\\d{2})))?$");
+          "^(?<y1>(\\+|-)?\\d{4,6})?(-(?<m1>\\d{2})-(?<d1>\\d{2}))?(?<r>\\|)?(?<y2>(\\+|-)?\\d{4,6})?(-(?<m2>\\d{2})-(?<d2>\\d{2}))?$");
 
   private Optional<LocalDateTime> parse(String year, String month, String day) {
     Optional<LocalDateTime> date = Optional.empty();
