@@ -36,7 +36,7 @@ services:
       TDB: 2
 
   keycloak:
-    image: quay.io/keycloak/keycloak:15.0.4
+    image: quay.io/keycloak/keycloak:15.0.2
     restart: always
     environment:
       DB_ADDR: postgres
