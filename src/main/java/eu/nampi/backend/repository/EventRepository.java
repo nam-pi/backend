@@ -112,6 +112,9 @@ public class EventRepository {
       NodeFactory.createVariable("participationType");
   private static final Node VAR_PLACE = NodeFactory.createVariable("place");
   private static final Node VAR_PLACE_LABEL = NodeFactory.createVariable("placeLabel");
+  private static final Node VAR_PLACE_LATITUDE = NodeFactory.createVariable("placeLatitude");
+  private static final Node VAR_PLACE_LONGITUDE = NodeFactory.createVariable("placeLongitude");
+  private static final Node VAR_PLACE_SAME_AS = NodeFactory.createVariable("placeSameAs");
   private static final Node VAR_PLACE_TYPE = NodeFactory.createVariable("placeType");
   private static final Node VAR_SOURCE = NodeFactory.createVariable("source");
   private static final Node VAR_SOURCE_LABEL = NodeFactory.createVariable("sourceLocation");
@@ -214,10 +217,17 @@ public class EventRepository {
           model
               .add(main, Core.takesPlaceAt, place)
               .add(place, RDFS.label, row.getLiteral(VAR_PLACE_LABEL.toString()));
+          Optional.ofNullable(row.getResource(VAR_PLACE_SAME_AS.toString()))
+              .ifPresent(sameAs -> model.add(place, Core.sameAs, sameAs));
           Optional
               .ofNullable(row.getResource(VAR_PLACE_TYPE.toString()))
               .ifPresentOrElse(type -> model.add(place, RDF.type, type),
                   () -> model.add(place, RDF.type, Core.place));
+          Optional.ofNullable(row.getLiteral(VAR_PLACE_LATITUDE.toString())).ifPresent(
+              latitude -> Optional.ofNullable(row.getLiteral(VAR_PLACE_LONGITUDE.toString()))
+                  .ifPresent(longitude -> model
+                      .add(place, Core.hasLatitude, latitude)
+                      .add(place, Core.hasLongitude, longitude)));
         });
     // Exact date
     Optional
@@ -506,7 +516,10 @@ public class EventRepository {
     ExprFactory ef = builder.getExprFactory();
     builder
         .addWhere(VAR_MAIN, Core.takesPlaceAt, VAR_PLACE)
-        .addWhere(VAR_PLACE, RDFS.label, VAR_PLACE_LABEL);
+        .addWhere(VAR_PLACE, RDFS.label, VAR_PLACE_LABEL)
+        .addOptional(VAR_PLACE, Core.sameAs, VAR_PLACE_SAME_AS)
+        .addOptional(VAR_PLACE, Core.hasLatitude, VAR_PLACE_LATITUDE)
+        .addOptional(VAR_PLACE, Core.hasLongitude, VAR_PLACE_LONGITUDE);
     if (withTypes) {
       builder
           .addWhere(VAR_PLACE, RDF.type, VAR_PLACE_TYPE)
