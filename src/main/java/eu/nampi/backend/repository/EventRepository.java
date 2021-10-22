@@ -539,13 +539,13 @@ public class EventRepository {
     Node varDatePredicate = NodeFactory.createVariable("datePredicate");
     Node varDateObject = NodeFactory.createVariable("dateObject");
     builder
-        .addFilter(ef.in(
-            varHasDatePredicate,
-            Core.hasDate, Core.takesPlaceNotEarlierThan,
-            Core.takesPlaceNotLaterThan, Core.takesPlaceOn))
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, varHasDatePredicate, varDate)
-            .addWhere(varDate, varDatePredicate, varDateObject))
+            .addWhere(varDate, varDatePredicate, varDateObject)
+            .addFilter(ef.in(
+                varHasDatePredicate,
+                Core.hasDate, Core.takesPlaceNotEarlierThan,
+                Core.takesPlaceNotLaterThan, Core.takesPlaceOn)))
         .addDelete(VAR_MAIN, varHasDatePredicate, varDate)
         .addDelete(varDate, varDatePredicate, varDateObject);
     // Delete act
@@ -576,9 +576,9 @@ public class EventRepository {
       builder.validateType(Core.actor, participant.getObject());
       participant.getPredicate().ifPresentOrElse(predicate -> {
         builder.validateNotSubnode(Core.hasMainParticipant, predicate);
-        builder.validateSubnode(Core.hasParticipant, predicate);
+        builder.validateSubnode(Core.hasOtherParticipant, predicate);
         builder.addInsert(builder.root, predicate, participant.getObject());
-      }, () -> builder.addInsert(builder.root, Core.hasParticipant, participant.getObject()));
+      }, () -> builder.addInsert(builder.root, Core.hasOtherParticipant, participant.getObject()));
     });
     // Event aspects
     aspects.forEach(aspect -> {

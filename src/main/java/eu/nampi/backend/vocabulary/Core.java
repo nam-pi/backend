@@ -40,6 +40,7 @@ public class Core {
   public static final Property hasLatitude = property("has_latitude");
   public static final Property hasLongitude = property("has_longitude");
   public static final Property hasMainParticipant = property("has_main_participant");
+  public static final Property hasOtherParticipant = property("has_other_participant");
   public static final Property hasPart = property("has_part");
   public static final Property hasParticipant = property("has_participant");
   public static final Property hasSortingDate = property("has_sorting_date");
