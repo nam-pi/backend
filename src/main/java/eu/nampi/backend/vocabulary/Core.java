@@ -12,7 +12,7 @@ public class Core {
   /**
    * The namespace of the vocabulary as a string
    */
-  public static final String uri = "https://purl.org/nampi/owl/core#";
+  public static final String uri = "http://purl.org/nampi/owl/core#";
 
   /**
    * returns the URI for this schema

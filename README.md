@@ -39,7 +39,7 @@ A number of command line parameters are available to configure the application.
 | Parameter                 | Mandatory | Default Value                               | Example                                           | Description                                                                                                                                  |
 | ------------------------- | --------- | ------------------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | APPLICATION_PORT          |           | 8080                                        |                                                   | The port the application will run on                                                                                                         |
-| CORE_OWL_URL              |           | https://purl.org/nampi/owl/core             |                                                   | The location of the NAMPI-Core ontology                                                                                                      |
+| CORE_OWL_URL              |           | http://purl.org/nampi/owl/core             |                                                   | The location of the NAMPI-Core ontology                                                                                                      |
 | DATA_BASE_URL             |           | The URL used in the current Servlet Request | https://example.com/nampi/data                    | The URL to use when creating internal links or new database individuals. When omitted, the current servlet request is used                   |
 | DATA_URL                  | \*        |                                             | http://localhost:3030/data                        | The URL to the data dataset where the original data will be stored                                                                           |
 | DEFAULT_LIMIT             |           | 20                                          |                                                   | The default result number to return when requesting from a collection endpoint like '/persons                                                |
@@ -74,7 +74,7 @@ The application can be run as a standalone Docker container connected to pre-exi
 Example:
 
 ```
-docker build --build-arg DATA_BASE_URL=https://example.com/nampi/data --build-arg KEYCLOAK_FRONTEND_URL=http://localhost:8080/auth --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life --build-arg REDIS_PORT=6379 --build-arg REDIS_URL=http://example.com/redis --build-arg INF_CACHE_URL=http://example.com/fuseki/inf-cache --build-arg DATA_URL=http://example.com/fuseki/data .
+docker build --build-arg DATA_BASE_URL=https://example.com/nampi/data --build-arg KEYCLOAK_FRONTEND_URL=http://localhost:8080/auth --build-arg KEYCLOAK_REALM=nampi --build-arg KEYCLOAK_RESOURCE=nampi-client --build-arg KEYCLOAK_URL=http://example.com/keycloak/auth --build-arg LOGGING_LEVEL=TRACE --build-arg OTHER_OWL_URLS=http://purl.org/nampi/owl/monastic-life --build-arg REDIS_PORT=6379 --build-arg REDIS_URL=http://example.com/redis --build-arg INF_CACHE_URL=http://example.com/fuseki/inf-cache --build-arg DATA_URL=http://example.com/fuseki/data .
 ```
 
 ## Deploying with `docker-compose`
@@ -93,7 +93,7 @@ KEYCLOAK_PASSWORD=[keycloak password]
 KEYCLOAK_PG_PASSWORD=[keycloak pg password]
 KEYCLOAK_REALM=nampi
 KEYCLOAK_RESOURCE=nampi-client
-OTHER_OWL_URLS=https://purl.org/nampi/owl/monastic-life
+OTHER_OWL_URLS=http://purl.org/nampi/owl/monastic-life
 ```
 
 To directly expose the containers (for example to use the Fuseki and Keycloak admin interfaces) to the web, the following docker-compose.override.yml file can be used as a starting point:
