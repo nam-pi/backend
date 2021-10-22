@@ -1,6 +1,4 @@
-ARG JAVA_VERSION=11
-
-FROM adoptopenjdk/maven-openjdk${JAVA_VERSION}
+FROM openjdk:11.0.12
 LABEL maintainer=“nampi@icar-us.eu”
 
 ARG APPLICATION_PORT=8080
@@ -35,11 +33,15 @@ ENV PROFILE=${PROFILE}
 ENV REDIS_PORT=${REDIS_PORT}
 ENV REDIS_URL=${REDIS_URL}
 
-RUN curl -fsSL https://deb.nodesource.com/setup_15.x | bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_17.x | bash -
 RUN apt-get install -y nodejs
 RUN npm install -g yarn
+
+RUN cd /opt && curl -sSl http://mirror.vorboss.net/apache/maven/maven-3/3.8.3/binaries/apache-maven-3.8.3-bin.tar.gz | tar -xz
+ENV PATH "$PATH:/opt/apache-maven-3.8.3/bin"
 
 EXPOSE ${APPLICATION_PORT}
 COPY ./ ./
 RUN mvn package -Dmaven.test.skip=true
+
 ENTRYPOINT ["java","-jar","./target/nampi-backend.jar"]

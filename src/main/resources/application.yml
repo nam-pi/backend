@@ -15,7 +15,7 @@ logging:
           wire: WARN
 
 nampi:
-  core-owl-url: ${CORE_OWL_URL:https://purl.org/nampi/owl/core}
+  core-owl-url: ${CORE_OWL_URL:http://purl.org/nampi/owl/core}
   data-base-url: ${DATA_BASE_URL:}
   dataset-url-data: ${DATA_URL}
   dataset-url-inf-cache: ${INF_CACHE_URL}

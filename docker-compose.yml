@@ -23,8 +23,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.fuseki
-      args:
-        FUSEKI_VERSION: 4.0.0
     restart: always
     volumes:
       - fuseki_data:/fuseki
@@ -57,12 +55,11 @@ services:
       dockerfile: Dockerfile
       args:
         APPLICATION_PORT: ${APPLICATION_PORT:-8080}
-        CORE_OWL_URL: https://purl.org/nampi/owl/core
+        CORE_OWL_URL: http://purl.org/nampi/owl/core
         DATA_BASE_URL: ${DATA_BASE_URL}
         DATA_URL: http://fuseki:3030/data
         DEFAULT_LIMIT: ${DEFAULT_LIMIT:-20}
         INF_CACHE_URL: http://fuseki:3030/inf_cache
-        JAVA_VERSION: 11
         KEYCLOAK_RDF_ID_ATTRIBUTE: ${KEYCLOAK_RDF_ID_ATTRIBUTE:-rdf-id}
         KEYCLOAK_REALM: ${KEYCLOAK_REALM}
         KEYCLOAK_RESOURCE: ${KEYCLOAK_RESOURCE}

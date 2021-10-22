@@ -12,7 +12,7 @@ public class Api {
   /**
    * The namespace of the vocabulary as a string
    */
-  public static String uri = "https://purl.org/nampi/owl/api#";
+  public static String uri = "http://purl.org/nampi/owl/api#";
 
   /**
    * returns the URI for this schema
