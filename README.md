@@ -39,7 +39,7 @@ A number of command line parameters are available to configure the application.
 | Parameter                 | Mandatory | Default Value                               | Example                                           | Description                                                                                                                                  |
 | ------------------------- | --------- | ------------------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | APPLICATION_PORT          |           | 8080                                        |                                                   | The port the application will run on                                                                                                         |
-| CORE_OWL_URL              |           | http://purl.org/nampi/owl/core             |                                                   | The location of the NAMPI-Core ontology                                                                                                      |
+| CORE_OWL_URL              |           | http://purl.org/nampi/owl/core              |                                                   | The location of the NAMPI-Core ontology                                                                                                      |
 | DATA_BASE_URL             |           | The URL used in the current Servlet Request | https://example.com/nampi/data                    | The URL to use when creating internal links or new database individuals. When omitted, the current servlet request is used                   |
 | DATA_URL                  | \*        |                                             | http://localhost:3030/data                        | The URL to the data dataset where the original data will be stored                                                                           |
 | DEFAULT_LIMIT             |           | 20                                          |                                                   | The default result number to return when requesting from a collection endpoint like '/persons                                                |
@@ -139,3 +139,7 @@ Access Token Endpoint: `[Keycloak URL]/realms/nampi/protocol/openid-connect/toke
 
 Authorization Endpoint: `[Keycloak URL]/auth/realms/nampi/protocol/openid-connect/auth`
 Access Token Endpoint: `[Keycloak URL]/auth/realms/nampi/protocol/openid-connect/token`
+
+## API use
+
+Note: Comma in Literals need to be URL Encoded to %2C: instead of `Lastname, Firstname@en`, `Lastname%2C Firstname@en` needs to be used.
