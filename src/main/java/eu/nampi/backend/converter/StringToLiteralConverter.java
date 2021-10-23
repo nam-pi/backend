@@ -16,6 +16,7 @@ public class StringToLiteralConverter implements Converter<String, Literal> {
 
   @Override
   public Literal convert(String string) {
+    string = string.replace("%2C", ",");
     // Only tries to match languages if the string contains an "@"
     if (string.contains("@")) {
       // Tries a faster simple pattern
