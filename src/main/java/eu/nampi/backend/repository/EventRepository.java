@@ -558,39 +558,32 @@ public class EventRepository {
       Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
+    validatePayload(lang, types, labels, comments, texts, authors, source, sourceLocation,
+        mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
     // Create builder depending on whether or not id is present
     HydraInsertBuilder builder = optionalId
         .map(id -> hydraBuilderFactory.insertBuilder(lang, id, ENDPOINT_NAME, types,
             labels, comments, texts, new ArrayList<>()))
         .orElse(hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, types,
             labels, comments, texts, new ArrayList<>()));
-    builder.validateSubresources(Core.event, types);
     // Event main participant
-    builder.validateType(Core.person, mainParticipant.getObject());
     mainParticipant.getPredicate().ifPresentOrElse(predicate -> {
-      builder.validateSubnode(Core.hasMainParticipant, predicate);
       builder.addInsert(builder.root, predicate, mainParticipant.getObject());
     }, () -> builder.addInsert(builder.root, Core.hasMainParticipant, mainParticipant.getObject()));
     // Other event participants
     otherParticipants.forEach(participant -> {
-      builder.validateType(Core.actor, participant.getObject());
       participant.getPredicate().ifPresentOrElse(predicate -> {
-        builder.validateNotSubnode(Core.hasMainParticipant, predicate);
-        builder.validateSubnode(Core.hasOtherParticipant, predicate);
         builder.addInsert(builder.root, predicate, participant.getObject());
       }, () -> builder.addInsert(builder.root, Core.hasOtherParticipant, participant.getObject()));
     });
     // Event aspects
     aspects.forEach(aspect -> {
-      builder.validateType(Core.aspect, aspect.getObject());
       aspect.getPredicate().ifPresentOrElse(predicate -> {
-        builder.validateSubnode(Core.usesAspect, predicate);
         builder.addInsert(builder.root, predicate, aspect.getObject());
       }, () -> builder.addInsert(builder.root, Core.usesAspect, aspect.getObject()));
     });
     // Event place
     optionalPlace.ifPresent(place -> {
-      builder.validateType(Core.place, place);
       builder.addInsert(builder.root, Core.takesPlaceAt, place);
     });
     // Event date
@@ -652,10 +645,50 @@ public class EventRepository {
       Literal sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
+    validatePayload(lang, types, labels, comments, texts, authors, source, sourceLocation,
+        mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
     delete(id);
-    insert(Optional.of(id), lang, types, labels, comments, texts, authors, source,
-        sourceLocation, mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
+    insert(Optional.of(id), lang, types, labels, comments, texts, authors, source, sourceLocation,
+        mainParticipant, otherParticipants, aspects, optionalPlace, optionalDate);
     return findOne(lang, id);
+  }
+
+  private void validatePayload(Lang lang, List<Resource> types,
+      List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> authors,
+      Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
+      List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
+      Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
+    HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, types,
+        labels, comments, texts, new ArrayList<>());
+    builder.validateSubresources(Core.event, types);
+    // Event main participant
+    builder.validateType(Core.person, mainParticipant.getObject());
+    mainParticipant.getPredicate().ifPresent(predicate -> {
+      builder.validateSubnode(Core.hasMainParticipant, predicate);
+    });
+    // Other event participants
+    otherParticipants.forEach(participant -> {
+      if (participant.getObject().getURI().equals(mainParticipant.getObject().getURI())) {
+        throw new IllegalArgumentException(
+            "The main participant is not allowed to occur in the list of other participants");
+      }
+      builder.validateType(Core.actor, participant.getObject());
+      participant.getPredicate().ifPresent(predicate -> {
+        builder.validateNotSubnode(Core.hasMainParticipant, predicate);
+        builder.validateSubnode(Core.hasOtherParticipant, predicate);
+      });
+    });
+    // Event aspects
+    aspects.forEach(aspect -> {
+      builder.validateType(Core.aspect, aspect.getObject());
+      aspect.getPredicate().ifPresent(predicate -> {
+        builder.validateSubnode(Core.usesAspect, predicate);
+      });
+    });
+    // Event place
+    optionalPlace.ifPresent(place -> {
+      builder.validateType(Core.place, place);
+    });
   }
 
   @Cacheable(key = "{#authorId.toString(), #eventId.toString()}")

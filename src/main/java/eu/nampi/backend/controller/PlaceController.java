@@ -1,8 +1,8 @@
 package eu.nampi.backend.controller;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.validation.Valid;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
@@ -15,11 +15,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.OrderByClauses;
+import eu.nampi.backend.model.PlaceMutationPayload;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.repository.PlaceRepository;
 
@@ -55,37 +57,27 @@ public class PlaceController extends AbstractRdfController {
   }
 
   @PostMapping(value = "/places", produces = {"application/ld+json", "text/turtle",
-      "application/rdf+xml", "application/n-triples"})
+      "application/rdf+xml", "application/n-triples"}, consumes = {"application/json"})
   public ResponseEntity<String> postPlace(
       @RequestHeader("accept") Lang lang,
-      @RequestParam("types[]") List<Resource> types,
-      @RequestParam("labels[]") List<Literal> labels,
-      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
-      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
-      @RequestParam(value = "latitude", required = false) Optional<Double> latitude,
-      @RequestParam(value = "longitude", required = false) Optional<Double> longitude) {
-    InsertResult result = placeRepository.insert(lang, types, labels, asList(comments),
-        asList(texts), asList(sameAs), latitude, longitude);
+      @Valid @RequestBody PlaceMutationPayload payload) {
+    InsertResult result = placeRepository.insert(lang, payload.getTypes(), payload.getLabels(),
+        asList(payload.getComments()), asList(payload.getTexts()), asList(payload.getSameAs()),
+        Optional.ofNullable(payload.getLatitude()), Optional.ofNullable(payload.getLogitude()));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
   }
 
   @PutMapping(value = "/places/{id}", produces = {"application/ld+json", "text/turtle",
-      "application/rdf+xml", "application/n-triples"})
+      "application/rdf+xml", "application/n-triples"}, consumes = {"application/json"})
   public ResponseEntity<String> putPlace(
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
-      @RequestParam("types[]") List<Resource> types,
-      @RequestParam("labels[]") List<Literal> labels,
-      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
-      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
-      @RequestParam(value = "latitude", required = false) Optional<Double> latitude,
-      @RequestParam(value = "longitude", required = false) Optional<Double> longitude) {
-    String newPlace = placeRepository.update(lang, id, types, labels, asList(comments),
-        asList(texts), asList(sameAs), latitude, longitude);
+      @Valid @RequestBody PlaceMutationPayload payload) {
+    String newPlace = placeRepository.update(lang, id, payload.getTypes(), payload.getLabels(),
+        asList(payload.getComments()), asList(payload.getTexts()), asList(payload.getSameAs()),
+        Optional.ofNullable(payload.getLatitude()), Optional.ofNullable(payload.getLogitude()));
     return new ResponseEntity<String>(newPlace, HttpStatus.OK);
   }
 

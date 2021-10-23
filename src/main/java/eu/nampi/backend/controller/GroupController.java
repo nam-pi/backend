@@ -1,8 +1,8 @@
 package eu.nampi.backend.controller;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.validation.Valid;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import eu.nampi.backend.model.GroupMutationPayload;
 import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
@@ -57,36 +59,27 @@ public class GroupController extends AbstractRdfController {
   }
 
   @PostMapping(value = "/groups", produces = {"application/ld+json", "text/turtle",
-      "application/rdf+xml", "application/n-triples"})
+      "application/rdf+xml", "application/n-triples"}, consumes = {"application/json"})
   public ResponseEntity<String> postGroup(
       @RequestHeader("accept") Lang lang,
-      @RequestParam("types[]") List<Resource> types,
-      @RequestParam("labels[]") List<Literal> labels,
-      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
-      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
-      @RequestParam(value = "partOf[]", required = false) List<Resource> partOfs) {
-    InsertResult result =
-        groupRepository.insert(lang, types, labels, asList(comments), asList(texts),
-            asList(sameAs), asList(partOfs));
+      @Valid @RequestBody GroupMutationPayload payload) {
+    InsertResult result = groupRepository.insert(lang, payload.getTypes(), payload.getLabels(),
+        asList(payload.getComments()), asList(payload.getTexts()), asList(payload.getSameAs()),
+        asList(payload.getPartOf()));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
   }
 
   @PutMapping(value = "/groups/{id}", produces = {"application/ld+json", "text/turtle",
-      "application/rdf+xml", "application/n-triples"})
+      "application/rdf+xml", "application/n-triples"}, consumes = {"application/json"})
   public ResponseEntity<String> putGroup(
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
-      @RequestParam("types[]") List<Resource> types,
-      @RequestParam("labels[]") List<Literal> labels,
-      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
-      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs,
-      @RequestParam(value = "partOf[]", required = false) List<Resource> partOfs) {
-    String newGroup = groupRepository.update(lang, id, types, labels, asList(comments),
-        asList(texts), asList(sameAs), asList(partOfs));
+      @Valid @RequestBody GroupMutationPayload payload) {
+    String newGroup = groupRepository.update(lang, id, payload.getTypes(), payload.getLabels(),
+        asList(payload.getComments()), asList(payload.getTexts()), asList(payload.getSameAs()),
+        asList(payload.getPartOf()));
     return new ResponseEntity<String>(newGroup, HttpStatus.OK);
   }
 
