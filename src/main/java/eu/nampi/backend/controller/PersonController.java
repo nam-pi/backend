@@ -1,9 +1,8 @@
 package eu.nampi.backend.controller;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.validation.Valid;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
@@ -16,11 +15,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.OrderByClauses;
+import eu.nampi.backend.model.PersonMutationPayload;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.repository.PersonRepository;
 
@@ -57,33 +58,25 @@ public class PersonController extends AbstractRdfController {
   }
 
   @PostMapping(value = "/persons", produces = {"application/ld+json", "text/turtle",
-      "application/rdf+xml", "application/n-triples"})
+      "application/rdf+xml", "application/n-triples"}, consumes = {"application/json"})
   public ResponseEntity<String> postPerson(
       @RequestHeader("accept") Lang lang,
-      @RequestParam("types[]") List<Resource> types,
-      @RequestParam("labels[]") List<Literal> labels,
-      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
-      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
-    InsertResult result = personRepository.insert(lang, types, labels, asList(comments),
-        asList(texts), asList(sameAs));
+      @Valid @RequestBody PersonMutationPayload payload) {
+    InsertResult result = personRepository.insert(lang, payload.getTypes(), payload.getLabels(),
+        asList(payload.getComments()), asList(payload.getTexts()), asList(payload.getSameAs()));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
   }
 
   @PutMapping(value = "/persons/{id}", produces = {"application/ld+json", "text/turtle",
-      "application/rdf+xml", "application/n-triples"})
+      "application/rdf+xml", "application/n-triples"}, consumes = {"application/json"})
   public ResponseEntity<String> putPerson(
       @RequestHeader("accept") Lang lang,
       @PathVariable UUID id,
-      @RequestParam("types[]") List<Resource> types,
-      @RequestParam("labels[]") List<Literal> labels,
-      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
-      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
-      @RequestParam(value = "sameAs[]", required = false) List<Resource> sameAs) {
-    String newPerson = personRepository.update(lang, id, types, labels,
-        comments == null ? new ArrayList<>() : asList(comments), asList(texts), asList(sameAs));
+      @Valid @RequestBody PersonMutationPayload payload) {
+    String newPerson = personRepository.update(lang, id, payload.getTypes(), payload.getLabels(),
+        asList(payload.getComments()), asList(payload.getTexts()), asList(payload.getSameAs()));
     return new ResponseEntity<String>(newPerson, HttpStatus.OK);
   }
 

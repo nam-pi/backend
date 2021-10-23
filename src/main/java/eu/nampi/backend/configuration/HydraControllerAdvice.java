@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -66,6 +67,13 @@ public class HydraControllerAdvice extends ResponseEntityExceptionHandler {
       WebRequest request) {
     String name = ex.getParameterName();
     return handle(ex, request, HttpStatus.BAD_REQUEST, name + " parameter is missing");
+  }
+
+  @Override
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(
+      MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status,
+      WebRequest request) {
+    return handle(ex, request, HttpStatus.BAD_REQUEST, "Incorrect request body");
   }
 
   private static Throwable findCause(Throwable throwable) {

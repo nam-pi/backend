@@ -1,8 +1,8 @@
 package eu.nampi.backend.controller;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.validation.Valid;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -16,15 +16,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.nampi.backend.exception.ForbiddenException;
-import eu.nampi.backend.model.DateRange;
+import eu.nampi.backend.model.EventMutationPayload;
 import eu.nampi.backend.model.InsertResult;
 import eu.nampi.backend.model.OrderByClauses;
 import eu.nampi.backend.model.QueryParameters;
-import eu.nampi.backend.model.ResourceCouple;
 import eu.nampi.backend.repository.EventRepository;
 import eu.nampi.backend.repository.UserRepository;
 
@@ -73,57 +73,35 @@ public class EventController extends AbstractRdfController {
   }
 
   @PostMapping(value = "/events", produces = {"application/ld+json", "text/turtle",
-      "application/rdf+xml", "application/n-triples"})
+      "application/rdf+xml", "application/n-triples"}, consumes = {"application/json"})
   public ResponseEntity<String> postEvent(
       @RequestHeader("accept") Lang lang,
-      @RequestParam("types[]") List<Resource> types,
-      @RequestParam("labels[]") List<Literal> labels,
-      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
-      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
-      @RequestParam("authors[]") List<Resource> authors,
-      @RequestParam("source") Resource source,
-      @RequestParam("sourceLocation") Literal sourceLocation,
-      @RequestParam("mainParticipant") ResourceCouple mainParticipant,
-      @RequestParam(value = "otherParticipants[]",
-          required = false) List<ResourceCouple> otherParticipants,
-      @RequestParam(value = "aspects[]", required = false) List<ResourceCouple> aspects,
-      @RequestParam("place") Optional<Resource> place,
-      @RequestParam("date") Optional<DateRange> date) {
-    InsertResult result =
-        eventRepository.insert(lang, types, labels, asList(comments), asList(texts),
-            authors, source, sourceLocation, mainParticipant, asList(otherParticipants),
-            asList(aspects), place, date);
+      @Valid @RequestBody EventMutationPayload payload) {
+    InsertResult result = eventRepository.insert(lang, payload.getTypes(), payload.getLabels(),
+        asList(payload.getComments()), asList(payload.getTexts()), payload.getAuthors(),
+        payload.getSource(), payload.getSourceLocation(), payload.getMainParticipant(),
+        asList(payload.getOtherParticipants()), asList(payload.getAspects()),
+        Optional.ofNullable(payload.getPlace()), Optional.ofNullable(payload.getDate()));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
   }
 
   @PutMapping(value = "/events/{id}", produces = {"application/ld+json", "text/turtle",
-      "application/rdf+xml", "application/n-triples"})
+      "application/rdf+xml", "application/n-triples"}, consumes = {"application/json"})
   public ResponseEntity<String> putEvent(
       @PathVariable("id") UUID id,
       @RequestHeader("accept") Lang lang,
-      @RequestParam("types[]") List<Resource> types,
-      @RequestParam("labels[]") List<Literal> labels,
-      @RequestParam(value = "comments[]", required = false) List<Literal> comments,
-      @RequestParam(value = "texts[]", required = false) List<Literal> texts,
-      @RequestParam("authors[]") List<Resource> authors,
-      @RequestParam("source") Resource source,
-      @RequestParam("sourceLocation") Literal sourceLocation,
-      @RequestParam("mainParticipant") ResourceCouple mainParticipant,
-      @RequestParam(value = "otherParticipants[]",
-          required = false) List<ResourceCouple> otherParticipants,
-      @RequestParam(value = "aspects[]", required = false) List<ResourceCouple> aspects,
-      @RequestParam("place") Optional<Resource> place,
-      @RequestParam("date") Optional<DateRange> date) {
+      @Valid @RequestBody EventMutationPayload payload) {
     UUID userId = userRepository.getCurrentUser().map(user -> user.getRdfId()).orElseThrow();
     if (!eventRepository.isAuthor(userId, id)) {
       throw new ForbiddenException();
     }
-    String newEvent =
-        eventRepository.update(lang, id, types, labels, asList(comments), asList(texts), authors,
-            source, sourceLocation, mainParticipant, asList(otherParticipants), asList(aspects),
-            place, date);
+    String newEvent = eventRepository.update(lang, id, payload.getTypes(), payload.getLabels(),
+        asList(payload.getComments()), asList(payload.getTexts()), payload.getAuthors(),
+        payload.getSource(), payload.getSourceLocation(), payload.getMainParticipant(),
+        asList(payload.getOtherParticipants()), asList(payload.getAspects()),
+        Optional.ofNullable(payload.getPlace()), Optional.ofNullable(payload.getDate()));
     return new ResponseEntity<String>(newEvent, HttpStatus.CREATED);
   }
 
