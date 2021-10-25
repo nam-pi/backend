@@ -53,10 +53,6 @@ public class StringToDateRangeConverter implements Converter<String, DateRange> 
     if (start.isPresent() && end.isPresent()) {
       var startVal = start.get();
       var endVal = end.get();
-      if (startVal.isAfter(endVal)) {
-        throw new IllegalArgumentException(
-            String.format("Start date '%s' is not allowed to be after '%s'", startVal, endVal));
-      }
       if (startVal.equals(endVal)) {
         end = Optional.empty();
         isRange = false;
