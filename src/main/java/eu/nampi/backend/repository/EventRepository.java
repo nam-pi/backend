@@ -661,6 +661,16 @@ public class EventRepository {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, types,
         labels, comments, texts, new ArrayList<>());
     builder.validateSubresources(Core.event, types);
+    // Date
+    optionalDate
+        .ifPresent(date -> date.getStart().ifPresent(start -> date.getEnd().ifPresent(end -> {
+          if (start.isAfter(end)) {
+            throw new IllegalArgumentException(
+                String.format("Start date '%s' is not allowed to be after '%s'",
+                    start.format(DateTimeFormatter.ISO_DATE),
+                    end.format(DateTimeFormatter.ISO_DATE)));
+          }
+        })));
     // Event main participant
     builder.validateType(Core.person, mainParticipant.getObject());
     mainParticipant.getPredicate().ifPresent(predicate -> {
