@@ -79,9 +79,12 @@ public class EventController extends AbstractRdfController {
       @Valid @RequestBody EventMutationPayload payload) {
     InsertResult result = eventRepository.insert(lang, payload.getTypes(), payload.getLabels(),
         asList(payload.getComments()), asList(payload.getTexts()), payload.getAuthors(),
-        payload.getSource(), payload.getSourceLocation(), payload.getMainParticipant(),
-        asList(payload.getOtherParticipants()), asList(payload.getAspects()),
-        Optional.ofNullable(payload.getPlace()), Optional.ofNullable(payload.getDate()));
+        payload.getSource(),
+        Optional.ofNullable(payload.getSourceLocation())
+            .map(location -> location.getString().isBlank() ? null : location),
+        payload.getMainParticipant(), asList(payload.getOtherParticipants()),
+        asList(payload.getAspects()), Optional.ofNullable(payload.getPlace()),
+        Optional.ofNullable(payload.getDate()));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
@@ -99,9 +102,12 @@ public class EventController extends AbstractRdfController {
     }
     String newEvent = eventRepository.update(lang, id, payload.getTypes(), payload.getLabels(),
         asList(payload.getComments()), asList(payload.getTexts()), payload.getAuthors(),
-        payload.getSource(), payload.getSourceLocation(), payload.getMainParticipant(),
-        asList(payload.getOtherParticipants()), asList(payload.getAspects()),
-        Optional.ofNullable(payload.getPlace()), Optional.ofNullable(payload.getDate()));
+        payload.getSource(),
+        Optional.ofNullable(payload.getSourceLocation())
+            .map(location -> location.getString().isBlank() ? null : location),
+        payload.getMainParticipant(), asList(payload.getOtherParticipants()),
+        asList(payload.getAspects()), Optional.ofNullable(payload.getPlace()),
+        Optional.ofNullable(payload.getDate()));
     return new ResponseEntity<String>(newEvent, HttpStatus.CREATED);
   }
 
