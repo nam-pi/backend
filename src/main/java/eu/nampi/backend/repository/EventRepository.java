@@ -275,11 +275,12 @@ public class EventRepository {
   };
 
   @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place, #author}")
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place, #author, #source}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates,
       Optional<Resource> aspect, Optional<Resource> aspectType, Optional<Property> aspectUseType,
       Optional<Resource> participant, Optional<Resource> participantType,
-      Optional<Property> participationType, Optional<Resource> place, Optional<Resource> author) {
+      Optional<Property> participationType, Optional<Resource> place, Optional<Resource> author,
+      Optional<Resource> source) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
         Core.event, Api.eventOrderByVar, params, false);
     ExprFactory ef = builder.ef;
@@ -349,6 +350,10 @@ public class EventRepository {
     builder.mapper.add("author", Api.eventAuthorVar, author);
     author.ifPresent(resAuthor -> builder.coreData.addWhere(actWhere(false))
         .addFilter(ef.sameTerm(VAR_AUTHOR, resAuthor)));
+    // Source data
+    builder.mapper.add("source", Api.eventSourceVar, source);
+    source.ifPresent(resSource -> builder.coreData.addWhere(actWhere(false))
+        .addFilter(ef.sameTerm(VAR_SOURCE, resSource)));
     // Dates data
     if (hasDateSort || dates.isPresent()) {
       builder.coreData.addWhere(datesWhere(order, VAR_DATE_REAL_SORT, VAR_DATE));
