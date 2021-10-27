@@ -46,7 +46,6 @@ public class EventMutationPayload {
   @JsonDeserialize(using = ResourceDeserializer.class)
   private Resource source;
 
-  @NotNull
   @JsonDeserialize(using = LiteralDeserializer.class)
   private Literal sourceLocation;
 

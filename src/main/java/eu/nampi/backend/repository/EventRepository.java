@@ -144,7 +144,6 @@ public class EventRepository {
     Resource date = row.getResource(VAR_ACT_DATE.toString());
     Resource location = row.getResource(VAR_LOCATION.toString());
     Resource source = row.getResource(VAR_SOURCE.toString());
-    Literal locationText = row.getLiteral(VAR_LOCATION_TEXT.toString());
     model
         .add(main, Core.isInterpretationOf, act)
         .add(act, RDF.type, Core.act)
@@ -155,7 +154,6 @@ public class EventRepository {
         .add(date, RDF.type, Core.date)
         .add(date, Core.hasDateTime, row.getLiteral(VAR_ACT_DATE_TIME.toString()))
         .add(act, Core.hasSourceLocation, location)
-        .add(location, Core.hasText, locationText)
         .add(location, Core.hasSource, source)
         .add(source, RDF.type, Core.source)
         .add(source, RDFS.label, row.getLiteral(VAR_SOURCE_LABEL.toString()));
@@ -163,10 +161,14 @@ public class EventRepository {
         .ofNullable(row.getResource(VAR_LOCATION_TYPE.toString()))
         .ifPresentOrElse(type -> model.add(location, RDF.type, type),
             () -> model.add(location, RDF.type, Core.sourceLocation));
-    Optional
-        .ofNullable(row.getResource(VAR_LOCATION_TEXT_TYPE.toString()))
-        .map(type -> ResourceFactory.createProperty(type.getURI()))
-        .ifPresent(type -> model.add(location, type, locationText));
+    Optional.ofNullable(row.getLiteral(VAR_LOCATION_TEXT.toString()))
+        .ifPresent(locationText -> {
+          model.add(location, Core.hasText, locationText);
+          Optional
+              .ofNullable(row.getResource(VAR_LOCATION_TEXT_TYPE.toString()))
+              .map(type -> ResourceFactory.createProperty(type.getURI()))
+              .ifPresent(type -> model.add(location, type, locationText));
+        });
     // Aspect
     Optional
         .ofNullable(row.getResource(VAR_ASPECT.toString()))
@@ -273,11 +275,12 @@ public class EventRepository {
   };
 
   @Cacheable(
-      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates,#aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place, #author}")
+      key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #dates, #aspect, #aspectType, #aspectUseType, #participant, #participantType, #participationType, #place, #author, #source}")
   public String findAll(QueryParameters params, Lang lang, Optional<String> dates,
       Optional<Resource> aspect, Optional<Resource> aspectType, Optional<Property> aspectUseType,
       Optional<Resource> participant, Optional<Resource> participantType,
-      Optional<Property> participationType, Optional<Resource> place, Optional<Resource> author) {
+      Optional<Property> participationType, Optional<Resource> place, Optional<Resource> author,
+      Optional<Resource> source) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
         Core.event, Api.eventOrderByVar, params, false);
     ExprFactory ef = builder.ef;
@@ -347,6 +350,10 @@ public class EventRepository {
     builder.mapper.add("author", Api.eventAuthorVar, author);
     author.ifPresent(resAuthor -> builder.coreData.addWhere(actWhere(false))
         .addFilter(ef.sameTerm(VAR_AUTHOR, resAuthor)));
+    // Source data
+    builder.mapper.add("source", Api.eventSourceVar, source);
+    source.ifPresent(resSource -> builder.coreData.addWhere(actWhere(false))
+        .addFilter(ef.sameTerm(VAR_SOURCE, resSource)));
     // Dates data
     if (hasDateSort || dates.isPresent()) {
       builder.coreData.addWhere(datesWhere(order, VAR_DATE_REAL_SORT, VAR_DATE));
@@ -397,6 +404,15 @@ public class EventRepository {
   private WhereBuilder actWhere(boolean withTypes) {
     WhereBuilder builder = new WhereBuilder();
     ExprFactory ef = builder.getExprFactory();
+    WhereBuilder locationBuilder = new WhereBuilder()
+        .addWhere(VAR_LOCATION, Core.hasText, VAR_LOCATION_TEXT);
+    if (withTypes) {
+      locationBuilder
+          .addWhere(VAR_LOCATION, VAR_LOCATION_TEXT_TYPE, VAR_LOCATION_TEXT)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TEXT), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TEXT), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TEXT), RDF.getURI())));
+    }
     builder
         .addWhere(VAR_MAIN, Core.isInterpretationOf, VAR_ACT)
         .addWhere(VAR_ACT, Core.isAuthoredBy, VAR_AUTHOR)
@@ -404,20 +420,15 @@ public class EventRepository {
         .addWhere(VAR_ACT, Core.isAuthoredOn, VAR_ACT_DATE)
         .addWhere(VAR_ACT_DATE, Core.hasDateTime, VAR_ACT_DATE_TIME)
         .addWhere(VAR_ACT, Core.hasSourceLocation, VAR_LOCATION)
-        .addWhere(VAR_LOCATION, Core.hasText, VAR_LOCATION_TEXT)
         .addWhere(VAR_LOCATION, Core.hasSource, VAR_SOURCE)
-        .addWhere(VAR_SOURCE, RDFS.label, VAR_SOURCE_LABEL);
+        .addWhere(VAR_SOURCE, RDFS.label, VAR_SOURCE_LABEL)
+        .addOptional(locationBuilder);
     if (withTypes) {
       builder
           .addWhere(VAR_LOCATION, RDF.type, VAR_LOCATION_TYPE)
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TYPE), OWL.getURI())))
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TYPE), RDFS.getURI())))
-          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TYPE), RDF.getURI())))
-          .addWhere(VAR_LOCATION, VAR_LOCATION_TEXT_TYPE, VAR_LOCATION_TEXT)
-          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TEXT_TYPE), OWL.getURI())))
-          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TEXT_TYPE), RDFS.getURI())))
-          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TEXT_TYPE), RDF.getURI())))
-          .addFilter(ef.not(ef.sameTerm(VAR_LOCATION_TEXT_TYPE, Core.hasValue)));
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOCATION_TYPE), RDF.getURI())));
     }
     return builder;
   }
@@ -555,7 +566,7 @@ public class EventRepository {
 
   public InsertResult insert(Optional<UUID> optionalId, Lang lang, List<Resource> types,
       List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> authors,
-      Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
+      Resource source, Optional<Literal> sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     validatePayload(lang, types, labels, comments, texts, authors, source, sourceLocation,
@@ -633,7 +644,7 @@ public class EventRepository {
 
   public InsertResult insert(Lang lang, List<Resource> types, List<Literal> labels,
       List<Literal> comments, List<Literal> texts, List<Resource> authors, Resource source,
-      Literal sourceLocation, ResourceCouple mainParticipant,
+      Optional<Literal> sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     return insert(Optional.empty(), lang, types, labels, comments, texts, authors, source,
@@ -642,7 +653,7 @@ public class EventRepository {
 
   public String update(Lang lang, UUID id, List<Resource> types, List<Literal> labels,
       List<Literal> comments, List<Literal> texts, List<Resource> authors, Resource source,
-      Literal sourceLocation, ResourceCouple mainParticipant,
+      Optional<Literal> sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     validatePayload(lang, types, labels, comments, texts, authors, source, sourceLocation,
@@ -655,12 +666,16 @@ public class EventRepository {
 
   private void validatePayload(Lang lang, List<Resource> types,
       List<Literal> labels, List<Literal> comments, List<Literal> texts, List<Resource> authors,
-      Resource source, Literal sourceLocation, ResourceCouple mainParticipant,
+      Resource source, Optional<Literal> sourceLocation, ResourceCouple mainParticipant,
       List<ResourceCouple> otherParticipants, List<ResourceCouple> aspects,
       Optional<Resource> optionalPlace, Optional<DateRange> optionalDate) {
     HydraInsertBuilder builder = hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, types,
         labels, comments, texts, new ArrayList<>());
     builder.validateSubresources(Core.event, types);
+    // Author
+    authors.forEach(author -> builder.validateType(Core.author, author));
+    // Source
+    builder.validateType(Core.source, source);
     // Date
     optionalDate
         .ifPresent(date -> date.getStart().ifPresent(start -> date.getEnd().ifPresent(end -> {

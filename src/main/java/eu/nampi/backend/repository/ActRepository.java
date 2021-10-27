@@ -100,8 +100,9 @@ public class ActRepository {
     Resource resLocation = row.getResource(VAR_LOC.toString());
     Literal litLocationText = row.getLiteral(VAR_LOC_TEXT.toString());
     model
-        .add(main, Core.hasSourceLocation, resLocation)
-        .add(resLocation, Core.hasText, litLocationText);
+        .add(main, Core.hasSourceLocation, resLocation);
+    Optional.of(row.getLiteral(VAR_LOC_TEXT.toString()))
+        .ifPresent(text -> model.add(resLocation, Core.hasText, litLocationText));
     Optional
         .ofNullable(row.getResource(VAR_LOC_TYPE.toString()))
         .ifPresentOrElse(type -> model.add(resLocation, RDF.type, type),
@@ -172,28 +173,32 @@ public class ActRepository {
 
   private void addData(WhereBuilder builder, boolean withTypes) {
     ExprFactory ef = builder.getExprFactory();
+    WhereBuilder locationBuilder = new WhereBuilder()
+        .addWhere(VAR_LOC, Core.hasText, VAR_LOC_TEXT);
+    if (withTypes) {
+      locationBuilder
+          .addWhere(VAR_LOC, VAR_LOC_TEXT_TYPE, VAR_LOC_TEXT)
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), OWL.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), RDFS.getURI())))
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), RDF.getURI())));
+    }
     builder
         .addWhere(VAR_MAIN, Core.isAuthoredBy, VAR_AUTHOR)
         .addWhere(VAR_AUTHOR, RDFS.label, VAR_AUTHOR_LABEL)
         .addWhere(VAR_MAIN, Core.hasInterpretation, VAR_INT)
         .addWhere(VAR_INT, RDFS.label, VAR_INT_LABEL)
         .addWhere(VAR_MAIN, Core.hasSourceLocation, VAR_LOC)
-        .addWhere(VAR_LOC, Core.hasValue, VAR_LOC_TEXT)
         .addWhere(VAR_LOC, Core.hasSource, VAR_SRC)
         .addWhere(VAR_SRC, RDFS.label, VAR_SRC_LABEL)
         .addWhere(VAR_MAIN, Core.isAuthoredOn, VAR_DATE)
-        .addWhere(VAR_DATE, Core.hasDateTime, VAR_DATE_TIME);
+        .addWhere(VAR_DATE, Core.hasDateTime, VAR_DATE_TIME)
+        .addOptional(locationBuilder);
     if (withTypes) {
       builder
           .addWhere(VAR_LOC, RDF.type, VAR_LOC_TYPE)
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TYPE), OWL.getURI())))
           .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TYPE), RDFS.getURI())))
-          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TYPE), RDF.getURI())))
-          .addWhere(VAR_LOC, VAR_LOC_TEXT_TYPE, VAR_LOC_TEXT)
-          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), OWL.getURI())))
-          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), RDFS.getURI())))
-          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TEXT_TYPE), RDF.getURI())))
-          .addFilter(ef.not(ef.sameTerm(VAR_LOC_TEXT_TYPE, Core.hasValue)));
+          .addFilter(ef.not(ef.strstarts(ef.str(VAR_LOC_TYPE), RDF.getURI())));
     }
   }
 
@@ -231,7 +236,7 @@ public class ActRepository {
   }
 
   public Resource insert(Lang lang, List<Resource> authors, Resource source,
-      Literal sourceLocation) {
+      Optional<Literal> sourceLocation) {
     HydraInsertBuilder builder =
         hydraBuilderFactory.insertBuilder(lang, ENDPOINT_NAME, Arrays.asList(Core.act),
             DEFAULT_LABEL, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
@@ -248,9 +253,10 @@ public class ActRepository {
     Resource sourceLocationResource = ResourceFactory.createResource();
     builder
         .addInsert(builder.root, Core.hasSourceLocation, sourceLocationResource)
-        .addInsert(sourceLocationResource, RDF.type, Core.sourceLocation)
-        .addInsert(sourceLocationResource, Core.hasText, sourceLocation)
-        .addInsert(sourceLocationResource, Core.hasSource, source);
+        .addInsert(sourceLocationResource, Core.hasSource, source)
+        .addInsert(sourceLocationResource, RDF.type, Core.sourceLocation);
+    sourceLocation.ifPresent(location -> builder
+        .addInsert(sourceLocationResource, Core.hasText, location));
     // Insert date
     Resource date = ResourceFactory.createResource();
     builder

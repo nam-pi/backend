@@ -56,11 +56,12 @@ public class EventController extends AbstractRdfController {
       @RequestParam("participantType") Optional<Resource> participantType,
       @RequestParam("participationType") Optional<Property> participationType,
       @RequestParam("place") Optional<Resource> place,
-      @RequestParam("author") Optional<Resource> author) {
+      @RequestParam("author") Optional<Resource> author,
+      @RequestParam("source") Optional<Resource> source) {
     QueryParameters params = getParameters(page, pageIndex, limit, offset, orderBy, type, text);
     String result =
         eventRepository.findAll(params, lang, dates, aspect, aspectType, aspectUseType, participant,
-            participantType, participationType, place, author);
+            participantType, participationType, place, author, source);
     return new ResponseEntity<String>(result, HttpStatus.OK);
   }
 
@@ -79,9 +80,12 @@ public class EventController extends AbstractRdfController {
       @Valid @RequestBody EventMutationPayload payload) {
     InsertResult result = eventRepository.insert(lang, payload.getTypes(), payload.getLabels(),
         asList(payload.getComments()), asList(payload.getTexts()), payload.getAuthors(),
-        payload.getSource(), payload.getSourceLocation(), payload.getMainParticipant(),
-        asList(payload.getOtherParticipants()), asList(payload.getAspects()),
-        Optional.ofNullable(payload.getPlace()), Optional.ofNullable(payload.getDate()));
+        payload.getSource(),
+        Optional.ofNullable(payload.getSourceLocation())
+            .map(location -> location.getString().isBlank() ? null : location),
+        payload.getMainParticipant(), asList(payload.getOtherParticipants()),
+        asList(payload.getAspects()), Optional.ofNullable(payload.getPlace()),
+        Optional.ofNullable(payload.getDate()));
     HttpHeaders headers = new HttpHeaders();
     headers.add("Location", result.getEntity().getURI());
     return new ResponseEntity<String>(result.getResponseBody(), headers, HttpStatus.CREATED);
@@ -99,9 +103,12 @@ public class EventController extends AbstractRdfController {
     }
     String newEvent = eventRepository.update(lang, id, payload.getTypes(), payload.getLabels(),
         asList(payload.getComments()), asList(payload.getTexts()), payload.getAuthors(),
-        payload.getSource(), payload.getSourceLocation(), payload.getMainParticipant(),
-        asList(payload.getOtherParticipants()), asList(payload.getAspects()),
-        Optional.ofNullable(payload.getPlace()), Optional.ofNullable(payload.getDate()));
+        payload.getSource(),
+        Optional.ofNullable(payload.getSourceLocation())
+            .map(location -> location.getString().isBlank() ? null : location),
+        payload.getMainParticipant(), asList(payload.getOtherParticipants()),
+        asList(payload.getAspects()), Optional.ofNullable(payload.getPlace()),
+        Optional.ofNullable(payload.getDate()));
     return new ResponseEntity<String>(newEvent, HttpStatus.CREATED);
   }
 
