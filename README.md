@@ -139,7 +139,3 @@ Access Token Endpoint: `[Keycloak URL]/realms/nampi/protocol/openid-connect/toke
 
 Authorization Endpoint: `[Keycloak URL]/auth/realms/nampi/protocol/openid-connect/auth`
 Access Token Endpoint: `[Keycloak URL]/auth/realms/nampi/protocol/openid-connect/token`
-
-## API use
-
-Note: Comma in Literals need to be URL Encoded to %2C: instead of `Lastname, Firstname@en`, `Lastname%2C Firstname@en` needs to be used.
