@@ -55,7 +55,7 @@ tdb2:DatasetTDB2  rdfs:subClassOf  ja:RDFDataset .
 :model_inf a ja:InfModel ;
      ja:baseModel :graph ;
      ja:reasoner [
-         ja:reasonerURL <http://jena.hpl.hp.com/2003/OWLFBRuleReasoner>
+         ja:reasonerURL <http://jena.hpl.hp.com/2003/OWLMicroFBRuleReasoner>
      ] .
 
 :graph rdf:type tdb2:GraphTDB ;

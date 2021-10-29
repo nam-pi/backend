@@ -55,6 +55,13 @@ A number of command line parameters are available to configure the application.
 | REDIS_PORT                |           | 6379                                        |                                                   | The port on which the Redis instance is available                                                                                            |
 | REDIS_URL                 | \*        |                                             | http://example.com/redis                          | The url under which the Redis instance is available                                                                                          |
 
+### Custom ontologies
+
+Using the `OTHER_OWL_URLS` environment parameter, custom ontologies can be added to the inference of the database. For performance and data integrity reasons they need to conform to the following rules:
+
+1. Build on the [NAMPI core ontology](http://purl.org/nampi/owl/core) with regards to the core entities like `person`, `event`, `act` or `aspect`
+2. Only use rules compatible with the OWL Micro reasoner as described in the [Apache Jena inference documentation](https://jena.apache.org/documentation/inference/#OWLcoverage)
+
 ## Deploying as a standalone Spring Boot application
 
 The application can be run from the command line using Maven, the environment parameters can be appended to the command.
