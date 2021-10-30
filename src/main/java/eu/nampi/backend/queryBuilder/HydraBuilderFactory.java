@@ -8,6 +8,7 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import eu.nampi.backend.model.QueryParameters;
 import eu.nampi.backend.repository.HierarchyRepository;
@@ -34,6 +35,10 @@ public class HydraBuilderFactory {
   @Autowired
   TypeRepository typeRepository;
 
+  @Value("${nampi.crm-prefix}")
+  private String crmPrefix;
+
+
   /**
    * Hydra Collection Builders
    */
@@ -42,7 +47,7 @@ public class HydraBuilderFactory {
       Resource orderByVar, QueryParameters params, boolean includeTextFilter,
       boolean includeTypeAndText) {
     return new HydraCollectionBuilder(jenaService, serializer, urlBuilder.endpointUri(endpointName),
-        mainType, orderByVar, params, includeTextFilter, includeTypeAndText);
+        mainType, orderByVar, params, includeTextFilter, includeTypeAndText, crmPrefix);
   }
 
   public HydraCollectionBuilder collectionBuilder(String endpointName, Resource mainType,
@@ -62,7 +67,7 @@ public class HydraBuilderFactory {
   public HydraSingleBuilder singleBuilder(String endpointName, UUID id, Resource mainType,
       boolean filterBasic) {
     return new HydraSingleBuilder(jenaService, serializer, urlBuilder.endpointUri(endpointName, id),
-        mainType, filterBasic);
+        mainType, filterBasic, crmPrefix);
   }
 
   public HydraSingleBuilder singleBuilder(String endpointName, UUID id, Resource mainType) {
@@ -72,11 +77,11 @@ public class HydraBuilderFactory {
   public HydraSingleBuilder singleBuilder(String endpointName, Resource mainType,
       boolean filterBasic) {
     return new HydraSingleBuilder(jenaService, serializer, urlBuilder.endpointUri(endpointName),
-        mainType, filterBasic);
+        mainType, filterBasic, crmPrefix);
   }
 
   public HydraSingleBuilder singleBuilder(Resource mainType, String iri, boolean filterBasic) {
-    return new HydraSingleBuilder(jenaService, serializer, iri, mainType, filterBasic);
+    return new HydraSingleBuilder(jenaService, serializer, iri, mainType, filterBasic, crmPrefix);
   }
 
   /**

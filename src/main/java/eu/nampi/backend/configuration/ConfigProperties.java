@@ -20,6 +20,8 @@ public class ConfigProperties {
 
   int defaultLimit;
 
+  String crmPrefix;
+
   String keycloakRdfIdAttribute;
 
   List<String> otherOwlUrls;

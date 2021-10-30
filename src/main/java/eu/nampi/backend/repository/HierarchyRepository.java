@@ -21,6 +21,7 @@ import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -42,6 +43,9 @@ public class HierarchyRepository {
 
   @Autowired
   UrlBuilder urlBuilder;
+
+  @Value("${nampi.crm-prefix}")
+  String crmPrefix;
 
   private static final Node VAR_CHILD = NodeFactory.createVariable("child");
   private static final Node VAR_CHILD_LABEL = NodeFactory.createVariable("childLabel");
@@ -76,37 +80,45 @@ public class HierarchyRepository {
     Expr childNotRdf = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDF.getURI()));
     Expr childNotRdfs = ef.not(ef.strstarts(ef.str(VAR_CHILD), RDFS.getURI()));
     Expr childNotOwl = ef.not(ef.strstarts(ef.str(VAR_CHILD), OWL.getURI()));
+    Expr childNotCrm = ef.not(ef.strstarts(ef.str(VAR_CHILD), crmPrefix));
     Expr parentNotRdf = ef.not(ef.strstarts(ef.str(VAR_PARENT), RDF.getURI()));
     Expr parentNotRdfs = ef.not(ef.strstarts(ef.str(VAR_PARENT), RDFS.getURI()));
     Expr parentNotOwl = ef.not(ef.strstarts(ef.str(VAR_PARENT), OWL.getURI()));
+    Expr parentNotCrm = ef.not(ef.strstarts(ef.str(VAR_PARENT), crmPrefix));
     builder.coreData
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, RDFS.subClassOf, VAR_CHILD)
             .addFilter(childNotRdf)
             .addFilter(childNotRdfs)
             .addFilter(childNotOwl)
+            .addFilter(childNotCrm)
             .addWhere(VAR_CHILD, RDFS.subClassOf, VAR_PARENT)
             .addFilter(parentNotRdf)
             .addFilter(parentNotRdfs)
-            .addFilter(parentNotOwl))
+            .addFilter(parentNotOwl)
+            .addFilter(parentNotCrm))
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, RDFS.subPropertyOf, VAR_CHILD)
             .addFilter(childNotRdf)
             .addFilter(childNotRdfs)
             .addFilter(childNotOwl)
+            .addFilter(childNotCrm)
             .addWhere(VAR_CHILD, RDFS.subPropertyOf, VAR_PARENT)
             .addFilter(parentNotRdf)
             .addFilter(parentNotRdfs)
-            .addFilter(parentNotOwl))
+            .addFilter(parentNotOwl)
+            .addFilter(parentNotCrm))
         .addOptional(new WhereBuilder()
             .addWhere(VAR_MAIN, RDF.type, VAR_CHILD)
             .addFilter(childNotRdf)
             .addFilter(childNotRdfs)
             .addFilter(childNotOwl)
+            .addFilter(childNotCrm)
             .addWhere(VAR_CHILD, RDFS.subClassOf, VAR_PARENT)
             .addFilter(parentNotRdf)
             .addFilter(parentNotRdfs)
-            .addFilter(parentNotOwl))
+            .addFilter(parentNotOwl)
+            .addFilter(parentNotCrm))
         .addOptional(VAR_CHILD, RDFS.label, VAR_CHILD_LABEL)
         .addOptional(VAR_CHILD, RDFS.comment, VAR_CHILD_COMMENT)
         .addOptional(VAR_PARENT, RDFS.label, VAR_PARENT_LABEL)
