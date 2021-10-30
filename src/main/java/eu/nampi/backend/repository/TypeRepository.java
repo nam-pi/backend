@@ -16,6 +16,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -39,6 +40,9 @@ public class TypeRepository {
 
   @Autowired
   JenaService jenaService;
+
+  @Value("${nampi.crm-prefix}")
+  String crmPrefix;
 
   private static final String ENDPOINT_NAME = "types";
 
@@ -64,7 +68,10 @@ public class TypeRepository {
     // Try to get results as class
     HydraCollectionBuilder classesBuilder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
         RDFS.Resource, Api.typeOrderByVar, params, false, false);
-    classesBuilder.coreData.addWhere(VAR_MAIN, RDFS.subClassOf, params.getType().orElseThrow());
+    var ef = classesBuilder.ef;
+    classesBuilder.coreData
+        .addWhere(VAR_MAIN, RDFS.subClassOf, params.getType().orElseThrow())
+        .addFilter(ef.not(ef.strstarts(ef.str(VAR_MAIN), crmPrefix)));
     classesBuilder.build(ROW_MAPPER);
     StmtIterator iterator =
         classesBuilder.model.listStatements(classesBuilder.root, Hydra.totalItems, (RDFNode) null);

@@ -15,9 +15,8 @@ import eu.nampi.backend.util.Serializer;
 public class HydraSingleBuilder extends AbstractHydraQueryBuilder {
 
   public HydraSingleBuilder(JenaService jenaService, Serializer serializer, String baseUri,
-      Resource mainType,
-      boolean filterBasic) {
-    super(jenaService, serializer, baseUri, mainType);
+      Resource mainType, boolean filterBasic, String crmPrefix) {
+    super(jenaService, serializer, baseUri, mainType, crmPrefix);
     coreData
         .addFilter(ef.sameTerm(VAR_MAIN, root))
         .addWhere(VAR_MAIN, RDF.type, VAR_TYPE);

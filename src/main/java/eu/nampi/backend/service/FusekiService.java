@@ -50,6 +50,9 @@ public class FusekiService implements JenaService {
   @Value("${nampi.other-owl-urls}")
   private List<String> otherOwlUrls;
 
+  @Value("${nampi.crm-prefix}")
+  private String crmPrefix;
+
   public FusekiService(RDFConnectionRemoteBuilder dataBuilder,
       RDFConnectionRemoteBuilder infCacheBuilder) {
     this.dataBuilder = dataBuilder;
@@ -109,10 +112,16 @@ public class FusekiService implements JenaService {
   @Override
   public void select(SelectBuilder selectBuilder, Consumer<QuerySolution> rowAction) {
     try (RDFConnectionFuseki conn = (RDFConnectionFuseki) infCacheBuilder.build()) {
-      String query = selectBuilder.addPrefix("api", Api.getURI()).addPrefix("core", Core.getURI())
-          .addPrefix("hydra", Hydra.getURI()).addPrefix("rdf", RDF.getURI())
-          .addPrefix("rdfs", RDFS.getURI())
-          .addPrefix("schema", SchemaOrg.getURI()).addPrefix("xsd", XSD.getURI()).buildString();
+      String query = selectBuilder
+        .addPrefix("api", Api.getURI())
+        .addPrefix("core", Core.getURI())
+        .addPrefix("hydra", Hydra.getURI())
+        .addPrefix("rdf", RDF.getURI())
+        .addPrefix("rdfs", RDFS.getURI())
+        .addPrefix("schema", SchemaOrg.getURI())
+        .addPrefix("xsd", XSD.getURI())
+        .addPrefix("crm", crmPrefix)
+        .buildString();
       log.debug(query);
       conn.querySelect(query, rowAction);
     }

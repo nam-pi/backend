@@ -28,10 +28,9 @@ public class HydraCollectionBuilder extends AbstractHydraQueryBuilder {
   public WhereBuilder extendedData = new WhereBuilder();
 
   public HydraCollectionBuilder(JenaService jenaService, Serializer serializer, String baseUri,
-      Resource mainType,
-      Resource orderByVar, QueryParameters params, boolean includeTextFilter,
-      boolean includeTypeAndText) {
-    super(jenaService, serializer, baseUri, mainType);
+      Resource mainType, Resource orderByVar, QueryParameters params, boolean includeTextFilter,
+      boolean includeTypeAndText, String crmPrefix) {
+    super(jenaService, serializer, baseUri, mainType, crmPrefix);
     this.mapper = new ParameterMapper(baseUri, root, model);
     this.orderByVar = orderByVar;
     this.params = params;

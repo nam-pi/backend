@@ -30,13 +30,14 @@ public abstract class AbstractHydraQueryBuilder extends AbstractHydraBuilder {
   public WhereBuilder coreData = new WhereBuilder();
 
   protected AbstractHydraQueryBuilder(JenaService jenaService, Serializer serializer,
-      String baseUri, Resource mainType) {
+      String baseUri, Resource mainType, String crmPrefix) {
     super(jenaService, baseUri);
     this.mainType = mainType;
     this.ef = coreData.getExprFactory();
     this.serializer = serializer;
     coreData.addWhere(VAR_MAIN, RDF.type, mainType);
     model
+        .setNsPrefix("crm", crmPrefix)
         .setNsPrefix("api", Api.getURI())
         .setNsPrefix("core", Core.getURI())
         .setNsPrefix("hydra", Hydra.getURI())
