@@ -282,7 +282,7 @@ public class EventRepository {
       Optional<Property> participationType, Optional<Resource> place, Optional<Resource> author,
       Optional<Resource> source) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.event, Api.eventOrderByVar, params, false);
+        Core.event, Api.eventOrderByProp, params, false);
     ExprFactory ef = builder.ef;
     boolean hasDateSort = params.getOrderByClauses().containsKey("date");
     Order order = params.getOrderByClauses().getOrderFor("date").orElse(Order.ASCENDING);
@@ -295,14 +295,14 @@ public class EventRepository {
           .addFilter(ef.regex(varSearchString, params.getText().get(), "i"));
     });
     // Place data
-    builder.mapper.add("place", Api.eventPlaceVar, place);
+    builder.mapper.add("place", Api.eventPlaceProp, place);
     builder.extendedData
         .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT);
     place.ifPresent(resPlace -> builder.coreData.addWhere(placeWhere(false))
         .addFilter(ef.sameTerm(VAR_PLACE, resPlace)));
     // Participant data
     AtomicBoolean useParticipantWhere = new AtomicBoolean(false);
-    builder.mapper.add("participant", Api.eventParticipantVar, participant);
+    builder.mapper.add("participant", Api.eventParticipantProp, participant);
     participant.ifPresent(resParticipant -> {
       if (!useParticipantWhere.get()) {
         builder.coreData.addWhere(participantWhere(false));
@@ -311,7 +311,7 @@ public class EventRepository {
       useParticipantWhere.set(true);
     });
     // Participant type data
-    builder.mapper.add("participantType", Api.eventParticipantTypeVar, participantType);
+    builder.mapper.add("participantType", Api.eventParticipantTypeProp, participantType);
     participantType.ifPresent(resType -> {
       if (!useParticipantWhere.get()) {
         builder.coreData.addWhere(participantWhere(false));
@@ -320,13 +320,13 @@ public class EventRepository {
       useParticipantWhere.set(true);
     });
     // Participation type data
-    builder.mapper.add("participationType", Api.eventParticipationTypeVar, participationType);
+    builder.mapper.add("participationType", Api.eventParticipationTypeProp, participationType);
     participationType
         .ifPresent(resType -> builder.coreData.addWhere(VAR_MAIN, resType, VAR_PARTICIPANT));
 
     AtomicBoolean useAspectWhere = new AtomicBoolean(false);
     // Aspect data
-    builder.mapper.add("aspect", Api.eventAspectVar, aspect);
+    builder.mapper.add("aspect", Api.eventAspectProp, aspect);
     aspect.ifPresent(resAspect -> {
       if (!useAspectWhere.get()) {
         builder.coreData.addWhere(aspectWhere(false));
@@ -335,7 +335,7 @@ public class EventRepository {
       useAspectWhere.set(true);
     });
     // Aspect type data
-    builder.mapper.add("aspectType", Api.eventAspectTypeVar, aspectType);
+    builder.mapper.add("aspectType", Api.eventAspectTypeProp, aspectType);
     aspectType.ifPresent(resType -> {
       if (!useAspectWhere.get()) {
         builder.coreData.addWhere(aspectWhere(false));
@@ -344,21 +344,21 @@ public class EventRepository {
       useAspectWhere.set(true);
     });
     // Aspect use type data
-    builder.mapper.add("aspectUseType", Api.eventAspectUseTypeVar, aspectUseType);
+    builder.mapper.add("aspectUseType", Api.eventAspectUseTypeProp, aspectUseType);
     aspectUseType.ifPresent(resType -> builder.coreData.addWhere(VAR_MAIN, resType, VAR_ASPECT));
     // Author data
-    builder.mapper.add("author", Api.eventAuthorVar, author);
+    builder.mapper.add("author", Api.eventAuthorProp, author);
     author.ifPresent(resAuthor -> builder.coreData.addWhere(actWhere(false))
         .addFilter(ef.sameTerm(VAR_AUTHOR, resAuthor)));
     // Source data
-    builder.mapper.add("source", Api.eventSourceVar, source);
+    builder.mapper.add("source", Api.eventSourceProp, source);
     source.ifPresent(resSource -> builder.coreData.addWhere(actWhere(false))
         .addFilter(ef.sameTerm(VAR_SOURCE, resSource)));
     // Dates data
     if (hasDateSort || dates.isPresent()) {
       builder.coreData.addWhere(datesWhere(order, VAR_DATE_REAL_SORT, VAR_DATE));
     }
-    builder.mapper.add("dates", Api.eventDatesVar, dates);
+    builder.mapper.add("dates", Api.eventDatesProp, dates);
     dates.ifPresent(datesString -> {
       DateRange dateRange = CONVERTER.convert(datesString);
       Optional<Expr> start =

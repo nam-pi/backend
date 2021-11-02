@@ -67,7 +67,7 @@ public class TypeRepository {
   public String findAll(QueryParameters params, Lang lang) {
     // Try to get results as class
     HydraCollectionBuilder classesBuilder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        RDFS.Resource, Api.typeOrderByVar, params, false, false);
+        RDFS.Resource, Api.typeOrderByProp, params, false, false);
     var ef = classesBuilder.ef;
     classesBuilder.coreData
         .addWhere(VAR_MAIN, RDFS.subClassOf, params.getType().orElseThrow())
@@ -84,7 +84,7 @@ public class TypeRepository {
     // Try to get results as property
     HydraCollectionBuilder builder =
         hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME, RDFS.Resource,
-            Api.typeOrderByVar, params, false, false);
+            Api.typeOrderByProp, params, false, false);
     builder.coreData.addWhere(VAR_MAIN, RDFS.subPropertyOf,
         params.getType().orElseThrow());
     return builder.query(ROW_MAPPER, lang);

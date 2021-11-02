@@ -73,7 +73,7 @@ public class AuthorRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.author, Api.authorOrderByVar, params);
+        Core.author, Api.authorOrderByProp, params);
     return builder.query(ROW_MAPPER, lang);
   }
 

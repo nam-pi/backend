@@ -79,7 +79,7 @@ public class SourceRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.source, Api.sourceOrderByVar, params, false);
+        Core.source, Api.sourceOrderByProp, params, false);
     ExprFactory ef = builder.ef;
 
     // Add custom text select

@@ -129,12 +129,12 @@ public class ActRepository {
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> author,
       Optional<Resource> source) {
     HydraCollectionBuilder builder =
-        hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME, Core.act, Api.actOrderByVar, params);
+        hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME, Core.act, Api.actOrderByProp, params);
     ExprFactory ef = builder.ef;
 
     // Add author query
     builder.mapper
-        .add("author", Api.actAuthorVar, author);
+        .add("author", Api.actAuthorProp, author);
     author.ifPresent(res -> {
       builder.coreData
           .addWhere(VAR_MAIN, Core.isAuthoredBy, VAR_AUTHOR)
@@ -143,7 +143,7 @@ public class ActRepository {
 
     // Add source query
     builder.mapper
-        .add("source", Api.actSourceVar, source);
+        .add("source", Api.actSourceProp, source);
     source.ifPresent(res -> {
       Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.hasSourceLocation.asNode()),
           PathFactory.pathLink(Core.hasSource.asNode()));

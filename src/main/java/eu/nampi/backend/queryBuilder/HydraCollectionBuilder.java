@@ -95,7 +95,7 @@ public class HydraCollectionBuilder extends AbstractHydraQueryBuilder {
         .add("pageIndex", Hydra.pageIndex, Optional.empty())
         .add("type", RDF.type, params.getType());
     if (includeTypeAndText) {
-      this.mapper.add("text", Api.textVar, params.getText());
+      this.mapper.add("text", Api.textProp, params.getText());
     }
     this.mapper.insertTemplate().insertView(totalItems);
   }

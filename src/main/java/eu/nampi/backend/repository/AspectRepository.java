@@ -84,11 +84,11 @@ public class AspectRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #participant}")
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> participant) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.aspect, Api.aspectOrderByVar, params, false);
+        Core.aspect, Api.aspectOrderByProp, params, false);
     ExprFactory ef = builder.ef;
 
     // Add participant query
-    builder.mapper.add("participant", Api.aspectParticipantVar, participant);
+    builder.mapper.add("participant", Api.aspectParticipantProp, participant);
     participant.ifPresent(resParticipant -> {
       Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.aspectIsUsedIn.asNode()),
           PathFactory.pathLink(Core.hasParticipant.asNode()));
