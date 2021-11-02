@@ -129,7 +129,7 @@ public class PersonRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text, #aspect}")
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> aspect) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.person, Api.personOrderByVar, params, false);
+        Core.person, Api.personOrderByProp, params, false);
     ExprFactory ef = builder.ef;
     // Add custom text select
     params.getText().ifPresent(text -> {
@@ -140,7 +140,7 @@ public class PersonRepository {
           .addFilter(ef.regex(varSearchString, params.getText().get(), "i"));
     });
     // Add aspect query
-    builder.mapper.add("aspect", Api.personAspectVar, aspect);
+    builder.mapper.add("aspect", Api.personAspectProp, aspect);
     aspect.ifPresent(resAspect -> {
       Path path = PathFactory.pathSeq(PathFactory.pathLink(Core.isMainParticipantIn.asNode()),
           PathFactory.pathLink(Core.usesAspect.asNode()));

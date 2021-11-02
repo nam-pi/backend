@@ -89,7 +89,7 @@ public class PlaceRepository {
       key = "{#lang, #params.limit, #params.offset, #params.orderByClauses, #params.type, #params.text}")
   public String findAll(QueryParameters params, Lang lang) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.place, Api.placeOrderByVar, params, false);
+        Core.place, Api.placeOrderByProp, params, false);
     ExprFactory ef = builder.ef;
     builder.extendedData
         .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)

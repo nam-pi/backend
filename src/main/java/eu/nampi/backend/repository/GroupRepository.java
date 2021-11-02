@@ -110,7 +110,7 @@ public class GroupRepository {
   public String findAll(QueryParameters params, Lang lang, Optional<Resource> partOf,
       Optional<Resource> hasPart) {
     HydraCollectionBuilder builder = hydraBuilderFactory.collectionBuilder(ENDPOINT_NAME,
-        Core.group, Api.groupOrderByVar, params, false);
+        Core.group, Api.groupOrderByProp, params, false);
     ExprFactory ef = builder.ef;
     builder.extendedData
         .addOptional(VAR_MAIN, Core.hasText, VAR_TEXT)
@@ -124,13 +124,13 @@ public class GroupRepository {
           .addFilter(ef.regex(varSearchString, params.getText().get(), "i"));
     });
     // Part of
-    builder.mapper.add("partOf", Api.groupPartOfVar, partOf);
+    builder.mapper.add("partOf", Api.groupPartOfProp, partOf);
     partOf.ifPresent(partOfType -> builder.coreData
         .addWhere(VAR_MAIN, Core.isPartOf, VAR_PART_OF)
         .addFilter(ef.sameTerm(VAR_PART_OF, partOfType))
         .addWhere(VAR_PART_OF, RDFS.label, VAR_PART_OF_LABEL));
     // Has part
-    builder.mapper.add("hasPart", Api.groupHasPartVar, hasPart);
+    builder.mapper.add("hasPart", Api.groupHasPartProp, hasPart);
     hasPart.ifPresent(hasPartType -> builder.coreData
         .addWhere(VAR_MAIN, Core.hasPart, VAR_HAS_PART)
         .addFilter(ef.sameTerm(VAR_HAS_PART, hasPartType))
