@@ -34,7 +34,7 @@ public class Api {
   public static Property ancestorOf = property("ancestorOf");
   public static Property descendantOf = property("descendantOf");
   public static Property hierarchyRoot = property("hierarchyRoot");
-  public static Property isAuthor = property("is_author");
+  public static Property isAuthor = property("isAuthor");
 
   public static Resource actAuthorVar = resource("actAuthorVariable");
   public static Resource actCollection = resource("actCollection");
