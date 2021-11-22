@@ -32,6 +32,8 @@ services:
       ADMIN_PASSWORD: ${FUSEKI_ADMIN_PASSWORD}
       JVM_ARGS: ${JVM_ARGS:--Xmx2g}
       TDB: 2
+    # Delete TDB lock files before starting
+    command: bash -c "find .. -name \tdb.lock -type f -delete &&  ./fuseki-server"
 
   keycloak:
     image: quay.io/keycloak/keycloak:15.0.2
